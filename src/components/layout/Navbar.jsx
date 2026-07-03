@@ -6,9 +6,9 @@ const Navbar = () => {
     //       bg-white/20: Semi-transparent white background
     //       border-white/30: Subtle border for glass edge
     //   */}
-      <div className="absolute top-6 left-5 right-5 z-10 px-4">
+      <div className="absolute top-6 left-5 right-5 z-10 ">
         <nav
-          className="flex items-center  justify-between px-8 py-4 mx-auto max-w-7xl 
+          className="flex items-center  justify-between px-8 py-2 mx-auto max-w-7xl 
                         bg-white/20 backdrop-blur-lg border-2 border-white/70 
                         rounded-2xl shadow-lg"
         >
