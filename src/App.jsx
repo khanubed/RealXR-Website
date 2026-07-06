@@ -1,61 +1,69 @@
 import React, { useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
 import FluidCanvas from "./components/three/FluidCanvas";
-import Navbar from "./components/layout/Navbar";
 import Hero from "./sections/Hero/Hero";
+import HeroVideo from "./sections/Hero/HeroVideo";
 import About from "./sections/About/About";
+import Domains from "./sections/Domains/Domains";
+import Projects from "./sections/Projects/Projects";
+import Moments from "./sections/Events/Moments";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const App = () => {
-
   useEffect(() => {
-    // Init Lenis here directly — simplest and safest
+    // Single Lenis instance — only here, nowhere else
     const lenis = new Lenis({
-      duration: 1.4,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
 
-    // CRITICAL — connect lenis scroll events to ScrollTrigger
+    // Connect lenis → ScrollTrigger
     lenis.on("scroll", ScrollTrigger.update);
 
-    // CRITICAL — drive lenis via gsap ticker, NOT requestAnimationFrame
-    gsap.ticker.add((time) => {
-      lenis.raf(time * 1000);
-    });
-
-    // Prevents GSAP compensating for dropped frames (causes jitter)
+    // ✅ Named function so we can actually remove it from ticker on cleanup
+    const tickerFn = (time) => lenis.raf(time * 1000);
+    gsap.ticker.add(tickerFn);
     gsap.ticker.lagSmoothing(0);
 
+    ScrollTrigger.defaults({ scroller: window });
+
+    // Refresh after mount so all child ScrollTriggers calculate correctly
+    const t = setTimeout(() => ScrollTrigger.refresh(), 300);
+
     return () => {
+      clearTimeout(t);
+      gsap.ticker.remove(tickerFn); // ✅ removes the exact same function reference
       lenis.destroy();
+      ScrollTrigger.getAll().forEach(st => st.kill());
     };
   }, []);
 
   return (
-    // ✅ No height, no overflow — let window handle scrolling
-    <div style={{ width: "100vw", position: "relative" }}>
+    <div className="w-full relative">
 
-      {/* Fixed WebGL background — sits behind everything */}
-      <div style={{
-        position: "fixed",
-        top: 0, left: 0,
-        width: "100%", height: "100%",  // ✅ Behind content, not above it
-      }}>
+      {/* Fixed WebGL background */}
+      <div
+        className="fixed top-0 left-0 w-full h-full pointer-events-none"
+        style={{ zIndex: 0 }}
+      >
         <Canvas camera={{ position: [0, 0, 1] }}>
           <FluidCanvas />
         </Canvas>
       </div>
 
-      {/* All page content sits above the WebGL layer */}
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <Navbar />
+      {/* Page content — no zIndex, no overflow */}
+      <div className="relative w-full">
         <Hero />
+        <HeroVideo />
         <About />
+        <Domains />
+        <Projects/>
+        <Moments/>
       </div>
 
     </div>
