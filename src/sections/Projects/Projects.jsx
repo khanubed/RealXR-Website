@@ -32,37 +32,51 @@ const Projects = () => {
       ease: "none",
     });
 
-    // 3. ScrollTrigger to monitor page scroll velocity
+    // 3. Section Pinning & Intro Sequence Timeline
+    const pinTimeline = gsap.timeline({
+      scrollTrigger: {
+        trigger: componentRef.current,
+        start: "top top",       // Lock section when its top edge hits the top of viewport
+        end: "+=1200",          // Total scroll reach the section remains locked (increase for longer hold)
+        pin: true,              // Pins the section in place
+        scrub: 1,               // Smoothly links timeline progression to scroll distance
+        anticipatePin: 1,       // Prevents layout jumps during fast scroll initialization
+      }
+    });
+
+    // Stagger reveal the project rows as the user scrubs into the pin
+    pinTimeline.fromTo(".project-row", 
+      { opacity: 0, y: 40 },
+      { opacity: 1, y: 0,个人: 0, stagger: 0.15, ease: "power2.out" }
+    )
+    // Extra layout pad duration at the end of the timeline 
+    // This creates the dedicated "hold" frame where the list is completely still and hoverable
+    .to({}, { duration: 1.5 });
+
+    // 4. ScrollTrigger to monitor page scroll velocity (for marquee reaction)
     const velocityTrigger = ScrollTrigger.create({
       trigger: componentRef.current,
       start: "top bottom",
       end: "bottom top",
     });
 
-    // 4. Smoothly map scroll speed to animation timeScale using the ticker
+    // 5. Smoothly map scroll speed to animation timeScale using the ticker
     let currentScale = 1;
     
     const dynamicVelocityTracker = () => {
-      // Get current absolute scroll velocity (pixels per second)
       const scrollVelocity = velocityTrigger ? Math.abs(velocityTrigger.getVelocity()) : 0;
-      
-      // Calculate target scale: Base speed (1) + velocity modifier
-      // Adjust 0.002 to make it more or less sensitive to fast scrolling
       const targetScale = 1 + scrollVelocity * 0.002; 
       
-      // Linear interpolation (Lerp) smoothly glides from current speed to target speed
       currentScale += (targetScale - currentScale) * 0.08;
-      
-      // Update the marquee timeline speed factor
       marqueeTween.timeScale(currentScale);
     };
 
-    // Add tracker to GSAP's engine tick loop
     gsap.ticker.add(dynamicVelocityTracker);
 
     // Cleanup on unmount
     return () => {
       if (velocityTrigger) velocityTrigger.kill();
+      pinTimeline.kill();
       marqueeTween.kill();
       gsap.ticker.remove(dynamicVelocityTracker);
     };
@@ -105,15 +119,14 @@ const Projects = () => {
     <section 
       ref={componentRef} 
       onMouseMove={handleMouseMove}
-      className="relative w-full  py-20 px-4 md:px-12 overflow-hidden select-none text-black"
+      className="relative w-full min-h-screen py-10 px-4 md:px-12 overflow-hidden select-none text-black flex flex-col justify-center "
     >
       {/* Dynamic Velocity Marquee Tracker Wrapper */}
-      <div className="w-full overflow-hidden whitespace-nowrap pb-10 border-b border-black/10">
+      <div className="w-full overflow-hidden whitespace-nowrap  border-b border-black/10">
         <div ref={marqueeRef} className="inline-block whitespace-nowrap will-change-transform">
           <h2 className="inline-block text-[6vw] md:text-[4.5vw] font-black syne-800 tracking-tighter uppercase font-sans">
             RECENT PROJECTS — RECENT PROJECTS — RECENT PROJECTS — RECENT PROJECTS —&nbsp;
           </h2>
-          {/* Duplicate text inside the translation track block ensures a seamless 50% infinite visual snap wrap */}
           <h2 className="inline-block text-[6vw] md:text-[4.5vw] font-black syne-800 tracking-tighter uppercase font-sans">
             RECENT PROJECTS — RECENT PROJECTS — RECENT PROJECTS — RECENT PROJECTS —&nbsp;
           </h2>
@@ -127,7 +140,7 @@ const Projects = () => {
             key={project.id}
             onMouseEnter={() => handleMouseEnterRow(project.img)}
             onMouseLeave={handleMouseLeaveRow}
-            className="group flex justify-between items-center py-4 px-4 md:px-8 border-b border-black transition-colors duration-200 ease-out hover:bg-black cursor-pointer"
+            className="project-row group flex justify-between items-center py-4 px-4 md:px-8 border-b border-black transition-colors duration-200 ease-out hover:bg-black cursor-pointer"
           >
             {/* Title Label Area */}
             <h3 className="text-xl md:text-3xl font-bold tracking-tight text-black transition-colors duration-200 group-hover:text-white syne-600">

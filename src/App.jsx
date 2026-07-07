@@ -11,6 +11,8 @@ import Domains from "./sections/Domains/Domains";
 import Projects from "./sections/Projects/Projects";
 import Moments from "./sections/Events/Moments";
 import PastEvents from "./sections/Events/PastEvents";
+import TeamIntro from "./sections/Team/TeamIntro";
+import Team from "./sections/Team/Team";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -66,6 +68,8 @@ const App = () => {
         <Projects/>
         <Moments/>
         <PastEvents/>
+        <TeamIntro/>
+        <Team/>
       </div>
 
     </div>

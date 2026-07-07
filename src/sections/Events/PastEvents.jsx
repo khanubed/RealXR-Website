@@ -6,7 +6,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 // ── Data ──────────────────────────────────────────────────────────
 
-
 // ── Cursor image preview ───────────────────────────────────────────
 const CursorPreview = ({ images, accent, visible, x, y }) => {
   const [activeIdx, setActiveIdx] = useState(0);
@@ -103,10 +102,10 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
       onMouseMove={onMouseMove}
       style={{
         position: "sticky",
-        minHeight: "520px",
+        height: "80vh",
         top: `${60 + index * 18}px`, // stacking offset
         width: "100%",
-        maxWidth: 860,
+        maxWidth: 1200,
         margin: "0 auto",
         borderRadius: 28,
         overflow: "hidden",
@@ -116,7 +115,7 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
         cursor: "none",
         willChange: "transform",
         transformOrigin: "top center",
-        padding: "24px", // Insets both the image and content fields uniformly
+        padding: "12px", // Insets both the image and content fields uniformly
         boxSizing: "border-box",
       }}
     >
@@ -124,7 +123,7 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
         {/* Left — cover image */}
         <div
           style={{
-            width: "44%",   
+            width: "44%", 
             flexShrink: 0,
             position: "relative",
             overflow: "hidden",
@@ -150,11 +149,12 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
         {/* Right — content */}
         <div
           style={{
-            height : "100%" ,
+            height: "100%",
             flex: 1,
             padding: "12px 12px 12px 0",
             display: "flex",
             flexDirection: "column",
+            alignItems : "end",
             justifyContent: "space-between",
           }}
         >
@@ -164,7 +164,7 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
               style={{
                 fontFamily: "Syne, sans-serif",
                 fontWeight: 800,
-                fontSize: "clamp(2rem, 3.8vw, 2.8rem)",
+                fontSize: "clamp(1.6rem, 3.2vw, 2.2rem)",
                 letterSpacing: "-0.02em",
                 color: "#fff",
                 lineHeight: 1.1,
@@ -188,7 +188,7 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
             >
               <span
                 style={{
-                  fontFamily: "Space Grotesk, sans-serif",
+                  fontFamily: "Syne, sans-serif",
                   fontSize: "0.85rem",
                   fontWeight: "600",
                   color: "#000000",
@@ -203,7 +203,7 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
           {/* Bottom Description */}
           <p
             style={{
-              fontFamily: "Space Grotesk, sans-serif",
+              fontFamily: "Syne, sans-serif",
               fontSize: "0.95rem",
               color: "rgba(255,255,255,0.75)",
               lineHeight: 1.6,
