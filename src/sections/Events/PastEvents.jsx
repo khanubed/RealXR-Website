@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { eventsData, eventSData } from "../../data/data";
+import { eventsData } from "../../data/data";
 gsap.registerPlugin(ScrollTrigger);
 
 // ── Data ──────────────────────────────────────────────────────────
@@ -277,12 +277,12 @@ const PastEvents = () => {
 
         // Scale down slightly as cards stack — gives depth
         gsap.to(card, {
-          scale: 1 - (events.length - 1 - i) * 0.018,
+          scale: 1 - (eventsData.length - 1 - i) * 0.018,
           ease: "none",
           scrollTrigger: {
             trigger: card,
             start: "top top",
-            end: `+=${events.length * 200}`,
+            end: `+=${eventsData.length * 200}`,
             scrub: true,
           },
         });
