@@ -14,7 +14,7 @@ const Navbar = () => {
         >
           {/* Logo */}
           <div className="font-bold orbitron-700 text-xl tracking-tight text-gray-900">
-            RealXR
+            <img src="/public/realXrLogo.PNG" className='drop-shadow-lg' alt="realXrLogo" width={"100px"} />
           </div>
 
           {/* Menu Items */}

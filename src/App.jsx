@@ -13,6 +13,8 @@ import Moments from "./sections/Events/Moments";
 import PastEvents from "./sections/Events/PastEvents";
 import TeamIntro from "./sections/Team/TeamIntro";
 import Team from "./sections/Team/Team";
+import Join from "./sections/Join/Join";
+import Footer from "./sections/Footer/Footer";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -42,13 +44,12 @@ const App = () => {
       clearTimeout(t);
       gsap.ticker.remove(tickerFn); // ✅ removes the exact same function reference
       lenis.destroy();
-      ScrollTrigger.getAll().forEach(st => st.kill());
+      ScrollTrigger.getAll().forEach((st) => st.kill());
     };
   }, []);
 
   return (
     <div className="w-full relative">
-
       {/* Fixed WebGL background */}
       <div
         className="fixed top-0 left-0 w-full h-full pointer-events-none"
@@ -65,13 +66,20 @@ const App = () => {
         <HeroVideo />
         <About />
         <Domains />
-        <Projects/>
-        <Moments/>
-        <PastEvents/>
-        <TeamIntro/>
-        <Team/>
+        <Projects />
+        <Moments />
+        <PastEvents />
+        <TeamIntro />
+        <Team />
+        {/* Join + Footer: 3-layer curtain stack.
+            The 250 vh wrapper gives the sticky Join section its "hold" time.
+            While the user scrolls through it, Join stays pinned at the top
+            (position:sticky) and the Footer slides up from below to overlap it. */}
+        <div style={{ position: "relative", height: "250vh" }}>
+          <Join />
+        </div>
+        <Footer />
       </div>
-
     </div>
   );
 };

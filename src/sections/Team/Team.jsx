@@ -570,7 +570,7 @@ const Team = () => {
   }, []);
 
   return (
-    <div ref={sectionRef} style={{ background: "#000" }}>
+    <div ref={sectionRef} style={{ background: "#000" , position : "relative" , zIndex:"0" }}>
 
       {/* Section intro */}
       {/* <div style={{

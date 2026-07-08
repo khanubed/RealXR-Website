@@ -20,7 +20,11 @@
   .syne-800 { font-family: "Syne", sans-serif; font-weight: 800; }
 }
 
-/* *{
-  margin: 0%;
-  padding: 0%;
-} */
+body {
+    scrollbar-width: none;          /* Hides scrollbar in Firefox */
+    -ms-overflow-style: none;       /* Hides scrollbar in IE and Edge */
+}
+
+body::-webkit-scrollbar {
+    display: none;                  /* Hides scrollbar in Chrome, Safari, and Opera */
+}
