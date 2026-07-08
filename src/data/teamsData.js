@@ -1,294 +1,312 @@
-// Each entry is one horizontal "slide" (team). Each member gets a photo
-// card + a description card, rendered as a pair.
-export const teamsData = [
+import { Arshan , Maheen , Sanskar , Hiteshi , Ubed , Sara ,Sourabh , Naina , Parag , Ikra , Mahendra , Aakif , Pushpraj } from '../assets/images/Teams/index'
+
+export const teams = [
   {
-    id: "web-dev",
-    label: "Web Developers",
+    id: "core",
+    label: "01 — Leadership",
+    title: "CORE TEAM",
+    accent: "#00F5D4",
+    bg: "#050f0d",
     members: [
       {
-        id: "saurav",
-        name: "Saurav",
-        role: "Web Developer",
-        photo: "/assets/images/Team/saurav.jpg",
-        description:
-          "End-to-end builder. Takes a feature from database to deployed UI without blinking.",
+        name: "Pushpraj Singh Jhala",
+        role: "Club President",
+        desc: "Visionary behind RealXR's direction. Drives strategy, partnerships, and makes sure we ship — every semester.",
+        img: Pushpraj,
         socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "https://github.com/",
+          instagram: "https://www.instagram.com/pushpraj_singh_62",
+          linkedin: "#",
+          github: "#",
         },
       },
       {
-        id: "sara",
+        name: "Aakif Makrani",
+        role: "Vice President",
+        desc: "Keeps the chaos organized. Manages events, partnerships, and makes sure things actually get done.",
+        img: Aakif,
+        socials: {
+          instagram: "https://instagram.com/_aakif_raj",
+          linkedin:
+            "https://www.linkedin.com/in/aakif-makrani-6634a9230?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+          github: null,
+        },
+      },
+      {
+        name: "Parag Malvi",
+        role: "Technical Lead",
+        desc: "Owns the technical roadmap. From stack decisions to code reviews — if it ships, it goes through him.",
+        img: Parag,
+        socials: {
+          instagram: "https://instagram.com/paraagmalvi",
+          linkedin: "https://www.linkedin.com/in/parag-malvi-b52330281",
+          github: null,
+        },
+      },
+      {
+        name: "Chandra Shekhar",
+        role: "Operations & Treasurer",
+        desc: "Manages financial allocation, tracks hardware ecosystem requests, and pilots logistics for regional hackathons.",
+        img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=80",
+        socials: { instagram: "#", linkedin: "#", github: "#" },
+      },
+    ],
+  },
+  {
+    id: "web",
+    label: "02 — Engineering",
+    title: "WEB DEVELOPERS",
+    accent: "#60a5fa",
+    bg: "#050810",
+    members: [
+      {
+        name: "Ubed Kkhan",
+        role: "Fullstack Developer and UI/UX Designer",
+        desc: "Hybrid builder mapping high-fidelity visuals to production-grade architecture. Obsessed with modern interactive animations, custom UI/UX design, and engineering clean, scalable server structures.",
+        img: Ubed,
+        socials: { instagram: "https://www.instagram.com/ubyd_.pathan/", linkedin: "#", github: null },
+      },
+      {
+        name: "Sourabh Prajapat",
+        role: "Web Developer",
+        desc: "End-to-end builder. Takes a feature from database to deployed UI without blinking. Three.js + GSAP obsessed.",
+        img: Sourabh,
+        socials: {
+          instagram: "https://instagram.com/sourabh_prajapat_dev",
+          linkedin: "https://www.linkedin.com/in/sourabh-prajapat-008338384",
+          github: null,
+        },
+      },
+      {
         name: "Sara Thakur",
         role: "Web Developer",
-        photo: "/assets/images/Team/sara.jpg",
-        description:
-          "Handles UI components, animations, and making sure everything looks crisp on every screen size.",
+        desc: "Handles UI components, animations, and making sure everything looks crisp on every screen size.",
+        img: Sara,
         socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "https://github.com/",
-        },
-      },
-      {
-        id: "ubed",
-        name: "Ubed Khan",
-        role: "Web Development Lead",
-        photo: "/assets/images/Team/ubed.jpg",
-        description:
-          "Owns the site's technical direction — from motion architecture to shipping performant, Awwwards-grade builds.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "https://github.com/",
-        },
-      },
-      {
-        id: "rohit",
-        name: "Rohit Malhotra",
-        role: "Frontend Engineer",
-        photo: "/assets/images/Team/rohit.jpg",
-        description:
-          "Specializes in optimizing asset pipelines, 3D web frameworks, and immersive interactive graphics.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "https://github.com/",
+          instagram: null,
+          linkedin: "https://www.linkedin.com/in/sara-thakur-1558b5330",
+          github: null,
         },
       },
     ],
   },
   {
-    id: "graphic-design",
-    label: "Graphic Designers",
+    id: "xr",
+    label: "03 — Spatial Computing",
+    title: "AR/VR DEVELOPERS",
+    accent: "#a855f7",
+    bg: "#0d0514",
     members: [
       {
-        id: "arjun",
-        name: "Arjun Mehta",
-        role: "Graphic Designer",
-        photo: "/assets/images/Team/arjun.jpg",
-        description:
-          "Turns rough ideas into posters, banners, and social creatives the club actually gets known for.",
+        name: "Hiteshi Vishwakarma",
+        role: "AR/VR Developer",
+        desc: "Architects interactive spatial landscapes, hand-tracking modules, and immersive XR experiences.",
+        img: Hiteshi,
         socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
+          instagram: "https://instagram.com/hishvish_7",
+          linkedin:
+            "https://www.linkedin.com/in/hiteshi-vishwakarma-68042032a?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+          github: null,
         },
       },
       {
-        id: "priya",
-        name: "Priya Nair",
-        role: "Graphic Designer",
-        photo: "/assets/images/Team/priya.jpg",
-        description:
-          "Owns the visual identity — color, type, and layout consistency across everything we ship.",
+        name: "Naina Seth",
+        role: "AR/VR Developer",
+        desc: "Focuses on spatial workflow configurations, environmental mapping, and asset pipeline integration.",
+        img: Naina,
         socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
+          instagram: null,
+          linkedin: "https://www.linkedin.com/in/naina-seth-9875a3276/",
+          github: null,
         },
       },
       {
-        id: "ishaan",
-        name: "Ishaan Verma",
-        role: "Lead 3D Artist",
-        photo: "/assets/images/Team/ishaan.jpg",
-        description:
-          "Turns complex abstract concepts into high-fidelity 3D assets, textures, and interface models.",
+        name: "Mahendra Nayak",
+        role: "AR/VR Developer",
+        desc: "Breathes functional mechanics into 3D environments. Optimizing physics engines for head-mounted displays.",
+        img: Mahendra,
         socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
-        },
-      },
-      {
-        id: "tanvi",
-        name: "Tanvi Kapoor",
-        role: "Motion Designer",
-        photo: "/assets/images/Team/tanvi.jpg",
-        description:
-          "Breathes life into static branding through sleek promotional reels, micro-interactions, and visual storytelling.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
+          instagram: "https://instagram.com/sayhellotomahendra",
+          linkedin:
+            "https://www.linkedin.com/in/mahendra-nayak-710b9a383?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+          github: null,
         },
       },
     ],
   },
   {
-    id: "social-media",
-    label: "Social Media",
+    id: "graphics",
+    label: "04 — Visual",
+    title: "GRAPHIC DESIGNERS",
+    accent: "#f472b6",
+    bg: "#100510",
     members: [
       {
-        id: "riya",
-        name: "Riya Kapoor",
-        role: "Social Media Lead",
-        photo: "/assets/images/Team/riya.jpg",
-        description:
-          "Plans content calendars, writes captions, and keeps the club's socials consistently active.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
-        },
+        name: "Nisha Sharma",
+        role: "Design Lead",
+        desc: "Crafts the visual identity of RealXR — from event posters to motion graphics that stop your scroll.",
+        img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80",
+        socials: { instagram: "#", linkedin: "#", github: null },
       },
       {
-        id: "kabir",
-        name: "Kabir Sen",
-        role: "Content Strategist",
-        photo: "/assets/images/Team/kabir.jpg",
-        description:
-          "Mastermind behind viral tech reels, campaign copy, and managing public relations across social hubs.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
-        },
+        name: "Amit Verma",
+        role: "3D Artist",
+        desc: "Blender open 24/7. Responsible for every 3D asset, render, and motion piece the club publishes.",
+        img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        socials: { instagram: "#", linkedin: "#", github: "#" },
       },
       {
-        id: "mehak",
-        name: "Mehak Arora",
-        role: "Video Editor & Designer",
-        photo: "/assets/images/Team/mehak.jpg",
-        description:
-          "Directs, shoots, and edits high-tempo event coverage and community interviews for the feed.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
-        },
-      },
-      {
-        id: "samarth",
-        name: "Samarth Joshi",
-        role: "Community Manager",
-        photo: "/assets/images/Team/samarth.jpg",
-        description:
-          "Engages with the audience, hosts interactive stories, and handles real-time event updates.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
-        },
+        name: "Kavya Nair",
+        role: "UI/UX Designer",
+        desc: "Designs interfaces before a single line of code. Figma all day, Spline when the brief calls for 3D.",
+        img: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=400&q=80",
+        socials: { instagram: "#", linkedin: "#", github: null },
       },
     ],
   },
   {
-    id: "core-team",
-    label: "Core Team",
+    id: "social",
+    label: "05 — Community",
+    title: "SOCIAL MEDIA",
+    accent: "#fb923c",
+    bg: "#100800",
     members: [
       {
-        id: "dev",
-        name: "Dev Sharma",
-        role: "President",
-        photo: "/assets/images/Team/dev.jpg",
-        description:
-          "Sets the club's direction, runs weekly syncs, and represents RealXR to the college administration.",
+        name: "Ikra Chhipa",
+        role: "Social Media Manager",
+        desc: "Shoots, edits, and tells the RealXR story across Instagram, LinkedIn, and YouTube.",
+        img: Ikra,
         socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "https://github.com/",
+          instagram: "https://instagram.com/ikrachhipaa",
+          linkedin:
+            "https://www.linkedin.com/in/ikrachhipa?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
+          github: null,
         },
       },
       {
-        id: "ananya",
-        name: "Ananya Rao",
-        role: "Vice President",
-        photo: "/assets/images/Team/ananya.jpg",
-        description:
-          "Coordinates between sub-teams and keeps every event on schedule from planning to execution.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
-        },
+        name: "Ashika Jain",
+        role: "Video Producer",
+        desc: "Behind every reel, every event highlight, and every cinematic that makes people want to join.",
+        img: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=400&q=80",
+        socials: { instagram: "#", linkedin: null, github: null },
       },
       {
-        id: "hrithik",
-        name: "Hrithik Nair",
-        role: "Treasurer & Ops",
-        photo: "/assets/images/Team/hrithik.jpg",
-        description:
-          "Manages sponsorship allocation, operational budgets, and secures essential gear for club workshops.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
-        },
-      },
-      {
-        id: "neha",
-        name: "Neha Gupta",
-        role: "Strategic Partnerships Lead",
-        photo: "/assets/images/Team/neha.jpg",
-        description:
-          "Bridges the gap between corporate sponsors, hackathon judges, and external tech communities.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "https://github.com/",
-        },
+        name: "Kabir Ahuja",
+        role: "Community Growth Manager",
+        desc: "Maintains structural health of our Discord space, pilots custom community game nights, and drives reach.",
+        img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80",
+        socials: { instagram: "#", linkedin: "#", github: null },
       },
     ],
   },
   {
     id: "alumni",
-    label: "Passed Out",
+    label: "06 — Alumni",
+    title: "PASSED OUT LEGENDS",
+    accent: "#facc15",
+    bg: "#0f0f00",
     members: [
       {
-        id: "rahul",
-        name: "Rahul Verma",
-        role: "Founding Member · Class of 2023",
-        photo: "/assets/images/Team/rahul.jpg",
-        description:
-          "Co-founded RealXR in 2022 and led the first hackathon before graduating into a VR studio role.",
-        socials: {
-          instagram: "",
-          linkedin: "https://linkedin.com/",
-          github: "https://github.com/",
-        },
+        name: "Sanskar Goyal",
+        role: "Founder · Batch 2025",
+        desc: "Started RealXR from scratch. Now at Meta Reality Labs. The one who made all of this possible.",
+        img: Sanskar,
+        socials: { instagram: "#", linkedin: "#", github: "#" },
       },
       {
-        id: "karan",
-        name: "Karan Joshi",
-        role: "Founding Lead Designer · Class of 2023",
-        photo: "/assets/images/Team/karan.jpg",
-        description:
-          "Established RealXR's original dark-theme layout, style guide, and early product design blueprints.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
-        },
+        name: "Arshan Mansoori",
+        role: "Past Tech Lead · Batch 2025-26",
+        desc: "Architected the club's unified deployment hub. ",
+        img: Arshan,
+        socials: { instagram: "https://www.instagram.com/arshan_1/", linkedin: "#", github: "#" },
       },
       {
-        id: "shreya",
-        name: "Shreya Ghoshal",
-        role: "Past Vice President · Class of 2024",
-        photo: "/assets/images/Team/shreya.jpg",
-        description:
-          "Scaled the member base from a small cohort to a fully functional, cross-departmental tech club.",
-        socials: {
-          instagram: "https://instagram.com/",
-          linkedin: "https://linkedin.com/",
-          github: "",
-        },
-      },
-      {
-        id: "aman",
-        name: "Aman Preet",
-        role: "Founding Tech Lead · Class of 2024",
-        photo: "/assets/images/Team/aman.jpg",
-        description:
-          "Architected our first open-source deployment engine and established the club's early development workflow.",
-        socials: {
-          instagram: "",
-          linkedin: "https://linkedin.com/",
-          github: "https://github.com/",
-        },
+        name: "Maheen Sheikh",
+        role: "Logistics Manager & Printing Engineer · Legend",
+        desc: "The absolute backbone of our on-ground operations. Masterfully synchronized heavy event logistics with precision print engineering to bring our club's physical assets to life.",
+        img: Maheen, // Using the variable exported from your Teams index.js
+        socials: { instagram: "https://www.instagram.com/_maheen_shaikh_/", linkedin: "#", github: null },
       },
     ],
+  },
+];
+
+export const teamImages = [
+  {
+    id: 1,
+    name: "Pushpraj Singh Jhala",
+    role: "Founding Lead & XR Architect",
+    url: Pushpraj,
+  },
+  {
+    id: 2,
+    name: "Aakif Makrani",
+    role: "Vice President",
+    url: Aakif,
+  },
+  {
+    id: 3,
+    name: "Parag Malvi",
+    role: "Technical Lead",
+    url: Parag,
+  },
+  {
+    id: 4,
+    name: "Ubed Kkhan",
+    role: "Fullstack Developer and UI/UX Designer",
+    url: Ubed,
+  },
+  {
+    id: 5,
+    name: "Sourabh Prajapat",
+    role: "Web Developer",
+    url: Sourabh,
+  },
+  {
+    id: 6,
+    name: "Sara Thakur",
+    role: "Web Developer",
+    url: Sara,
+  },
+  {
+    id: 7,
+    name: "Hiteshi Vishwakarma",
+    role: "AR/VR Developer",
+    url: Hiteshi,
+  },
+  {
+    id: 8,
+    name: "Naina Seth",
+    role: "AR/VR Developer",
+    url: Naina,
+  },
+  {
+    id: 9,
+    name: "Mahendra Nayak",
+    role: "AR/VR Developer",
+    url: Mahendra,
+  },
+  {
+    id: 10,
+    name: "Ikra Chhipa",
+    role: "Social Media Manager",
+    url: Ikra,
+  },
+  {
+    id: 11,
+    name: "Sanskar Goyal",
+    role: "Founder · Batch 2025",
+    url: Sanskar,
+  },
+  {
+    id: 12,
+    name: "Arshan Mansoori",
+    role: "Past Tech Lead · Batch 2025-26",
+    url: Arshan,
+  },
+  {
+    id: 13,
+    name: "Maheen Sheikh",
+    role: "Logistics Manager & Printing Engineer · Legend",
+    url: Maheen,
   },
 ];

@@ -18,6 +18,7 @@ const wordmarkStyle = {
   margin: 0,
   display: "flex",
   gap: HEADSET_SIZE,
+  textAlign: "center",
 };
 
 const reflectionWrapperStyle = {
@@ -27,6 +28,7 @@ const reflectionWrapperStyle = {
   maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.28), transparent 65%)",
   pointerEvents: "none",
   userSelect: "none",
+
 };
 
 const Hero = () => {
@@ -165,7 +167,9 @@ const Hero = () => {
   return (
     <section
       ref={containerRef}
+      className="-mt-24"
       style={{
+        zIndex : -50,
         position: "relative",
         width: "100%",
         minHeight: "100vh",
@@ -177,7 +181,7 @@ const Hero = () => {
         overflow: "hidden", // keeps the blurred/scaled headset from spilling out during the pin
       }}
     >
-      <Navbar />
+      {/* <Navbar /> */}
 
       {/* ── Visual Composition ── */}
       <div ref={sceneRef} style={{
@@ -189,7 +193,7 @@ const Hero = () => {
       }}>
         {/* Text layer — behind headset */}
         <div style={{
-          position: "relative", zIndex: 1,
+          position: "relative", zIndex: 0,
           display: "flex", flexDirection: "column", alignItems: "center",
         }}>
           <div style={{ overflow: "visible" }}>

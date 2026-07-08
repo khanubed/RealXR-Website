@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { teamImages } from "../../data/data.js"; // Renamed to map your team dataset cleanly
+import { teamImages } from "../../data/teamsData.js"; // Renamed to map your team dataset cleanly
 
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
