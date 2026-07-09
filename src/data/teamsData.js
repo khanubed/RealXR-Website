@@ -67,13 +67,13 @@ export const teams = [
       },
       {
         name: "Sourabh Prajapat",
-        role: "Web Developer",
-        desc: "End-to-end builder. Takes a feature from database to deployed UI without blinking. Three.js + GSAP obsessed.",
+        role: "Mern Stack Developer",
+        desc: "End-to-end MERN builder. Turns ideas into scalable web apps from SQL to polished React UIs. Clean architecture, secure APIs, and performance-first development.",
         img: Sourabh,
         socials: {
           instagram: "https://instagram.com/sourabh_prajapat_dev",
           linkedin: "https://www.linkedin.com/in/sourabh-prajapat-008338384",
-          github: null,
+          github: "https://github.com/Sourabh-prajapat25/",
         },
       },
       {
