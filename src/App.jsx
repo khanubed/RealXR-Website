@@ -18,11 +18,14 @@ import GalleryDashboard from "./pages/Gallery/GalleryDashboard"; // The page Cla
 // import Events from "./pages/Events";
 // import Blogs from "./pages/Blogs";
 import Footer from "./sections/Footer/Footer";
+import CustomCursor from "./components/cursor/CustomCursor";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const App = () => {
   const lenisRef = useRef(null);
+
+  const eventRootRef = useRef(null);
 
   useEffect(() => {
     // 1. Single Lenis instance orchestration
@@ -57,26 +60,26 @@ const App = () => {
     <Router>
       {/* Resets Lenis scroller footprint smoothly on route changes */}
       <ScrollToTop lenisRef={lenisRef} />
-
-      <div className="w-full relative bg-[#0a0a0a] text-white min-height-screen">
+      <CustomCursor/>
+      <div ref={eventRootRef} className="w-full relative bg-[#0a0a0a] text-white min-h-screen">
         {/* FIXED 3D WEBGL ENGINE BACKGROUND LAYER */}
         <div
           className="fixed top-0 left-0 w-full h-full pointer-events-none"
           style={{ zIndex: 0 }}
         >
-          <Canvas camera={{ position: [0, 0, 1] }}>
+          <Canvas eventSource={eventRootRef} camera={{ position: [0, 0, 1] }}>
             <FluidCanvas />
           </Canvas>
         </div>
 
         {/* GLOBAL NAVIGATION LAYER */}
         {/* FLOATING CAPSULE NAVIGATION LAYER */}
-        <div className="absolute top-6 left-0 w-full flex justify-center z-50 px-4 pointer-events-none">
-          <Navbar />
+        <div className="absolute w-full flex justify-center mt-3.5 " style={{zIndex: 20}}>
+          <Navbar/>
         </div>
 
         {/* COMPONENT ROUTER VIEWPORTS */}
-        <div className="relative w-full  pt-24 z-0">
+        <div className="relative w-full z-0">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/gallery" element={<GalleryDashboard />} />

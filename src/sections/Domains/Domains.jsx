@@ -141,7 +141,7 @@ const Domains = () => {
   }, []);
 
   return (
-    <div ref={wrapperRef} style={{ position: "relative" }}>
+    <div ref={wrapperRef} className="-mt-24" style={{ position: "relative" }}>
       {/* ── Pinned section: strips + track live INSIDE this now,
           so they pin together as one unit. ── */}
       <div

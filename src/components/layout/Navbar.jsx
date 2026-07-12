@@ -8,7 +8,7 @@ const Navbar = () => {
        border-white/30: Subtle border for glass edge
     */ 
       <nav
-        className="flex z-50 items-center w-full justify-between px-8 py-2 mx-auto max-w-7xl 
+        className="flex z-50 items-center absolute top-0 w-full justify-between px-8 py-2 mx-auto max-w-7xl 
                       bg-white/20 backdrop-blur-lg border-2 border-white/70 
                       rounded-2xl shadow-lg pointer-events-auto"
       >
@@ -18,7 +18,7 @@ const Navbar = () => {
           className="font-bold orbitron-700 text-xl tracking-tight text-gray-900 block"
         >
           <img
-            src="/public/realXrLogo.PNG"
+            src="/realXrLogo.PNG"
             className="drop-shadow-lg"
             alt="realXrLogo"
             width="100px"

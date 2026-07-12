@@ -167,12 +167,11 @@ const Hero = () => {
   return (
     <section
       ref={containerRef}
-      className="-mt-24"
       style={{
         zIndex : -50,
         position: "relative",
         width: "100%",
-        minHeight: "100vh",
+        height: "100vh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

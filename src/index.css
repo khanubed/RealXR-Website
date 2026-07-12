@@ -28,3 +28,9 @@ body {
 body::-webkit-scrollbar {
     display: none;                  /* Hides scrollbar in Chrome, Safari, and Opera */
 }
+
+@media (pointer: fine) {
+  html, body, a, button, input, label, [role="button"] {
+    cursor: none !important;
+  }
+}
