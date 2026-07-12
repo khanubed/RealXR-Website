@@ -6,13 +6,14 @@ import { rainImages } from "../../data/data.js"; // Adjust this path to match yo
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
-const Moments = () => {
+const Moments = ({ images = [] , title , subTitle }) => {
   const containerRef = useRef(null);
   const itemsRef = useRef([]);
+  const imageList = images?.length ? images : rainImages;
 
   useEffect(() => {
     // Clear out stale references
-    itemsRef.current = itemsRef.current.slice(0, rainImages.length);
+    itemsRef.current = itemsRef.current.slice(0, imageList.length);
 
     // Master function to manage a single image's lifecycle
     const startRainCycle = (el, isInitialSpawn = false) => {
@@ -83,14 +84,14 @@ const Moments = () => {
     >
       {/* BACKGROUND: Truly Random Infinite Falling Images */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        {rainImages.map((image, index) => (
+        {imageList.map((image, index) => (
           <div
-            key={image.id}
+            key={image.id || `${image}-${index}`}
             ref={(el) => (itemsRef.current[index] = el)}
             className="absolute w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44 overflow-hidden rounded shadow-sm will-change-transform bg-gray-50"
           >
             <img
-              src={image.url}
+              src={typeof image === "string" ? image : image.url}
               alt="Captured Moment"
               className="w-full h-full object-cover pointer-events-none"
               loading="eager"
@@ -100,13 +101,12 @@ const Moments = () => {
       </div>
 
       {/* FOREGROUND: Typography Section Layer */}
-      <div className="relative z-20 text-center max-w-5xl px-6 pointer-events-none mix-blend-difference md:mix-blend-normal">
+      <div className="relative z-20 text-center max-w-6xl px-6 pointer-events-none mix-blend-difference md:mix-blend-normal">
         <h2 className="text-black syne-800 font-black tracking-tighter uppercase text-5xl sm:text-7xl md:text-[5vw] leading-[0.88] mb-6">
-          Moments That <br /> Shaped Us
+          {title}
         </h2>
-        <p className="text-black font-medium tracking-tight syne-600 text-sm sm:text-base md:text-lg max-w-2xl mx-auto opacity-90">
-          Every event, every late night, every demo that actually worked —
-          captured here.
+        <p className="text-black font-medium tracking-tight syne-600 text-sm sm:text-base md:text-lg max-w-4xl mx-auto opacity-90">
+          {subTitle}
         </p>
       </div>
     </section>

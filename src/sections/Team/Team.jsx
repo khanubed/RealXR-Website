@@ -512,31 +512,6 @@ const Team = () => {
       ref={sectionRef}
       style={{ background: "#000", position: "relative", zIndex: "0" }}
     >
-      {/* Section intro */}
-      {/* <div style={{
-        padding: "8rem 4rem 4rem",
-        maxWidth: 900,
-      }}>
-        <p className="team-section-heading" style={{
-          fontFamily: "Space Grotesk, sans-serif",
-          fontSize: "0.72rem", letterSpacing: "0.2em",
-          textTransform: "uppercase", color: "#00F5D4",
-          marginBottom: "1rem",
-          display: "flex", alignItems: "center", gap: 10,
-        }}>
-          <span style={{ display: "inline-block", width: 24, height: 1, background: "#00F5D4" }} />
-          The People
-        </p>
-        <h2 className="team-section-heading" style={{
-          fontFamily: "Syne, sans-serif", fontWeight: 800,
-          fontSize: "clamp(2rem, 5vw, 4rem)",
-          letterSpacing: "-0.04em", color: "#fff",
-          lineHeight: 1,
-        }}>
-          Meet the Minds<br />
-          <span style={{ color: "#00F5D4" }}>Behind RealXR.</span>
-        </h2>
-      </div> */}
 
       {/* Team slides */}
       {teams.map((team, i) => (

@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import HeroImg from "../../assets/images/Hero/headset.png";
-import Navbar from "../../components/layout/Navbar";
+import Navbar from "../../components/layout/Navbar"; // Ensure path is correct
+
+// You can keep a local fallback image here just in case the API fails
+import FallbackHeroImg from "../../assets/images/Hero/headset.png";
+import { heroData } from "../../data/heroData";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -28,12 +31,14 @@ const reflectionWrapperStyle = {
   maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.28), transparent 65%)",
   pointerEvents: "none",
   userSelect: "none",
-
 };
 
-const Hero = () => {
+// Define fallback content so the UI never breaks
+const defaultContent = heroData
+
+const Hero = ({ content = defaultContent }) => {
   const containerRef    = useRef(null);
-  const sceneRef        = useRef(null); // wraps the whole visual composition for the final pull-back
+  const sceneRef        = useRef(null); 
   const textNormalRef   = useRef(null);
   const textReflectRef  = useRef(null);
   const imgNormalRef    = useRef(null);
@@ -43,7 +48,6 @@ const Hero = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-
       // ── Initial states ───────────────────────────────────
       gsap.set(textNormalRef.current,  { opacity: 0, y: 70 });
       gsap.set(textReflectRef.current, { opacity: 0, y: -70 });
@@ -65,9 +69,6 @@ const Hero = () => {
         .to(scrollIndRef.current, { opacity: 1, duration: 0.4 }, "-=0.1");
 
       // ── Ambient float ────────────────────────────────────
-      // Kept alive only while the user is idle (progress === 0). The moment
-      // the outro scrub engages we kill these so they can't fight the
-      // scroll-driven values on the same properties.
       const floatNormal = gsap.to(imgNormalRef.current, {
         y: -12, duration: 3, ease: "sine.inOut",
         yoyo: true, repeat: -1, delay: 1.4,
@@ -90,14 +91,7 @@ const Hero = () => {
       window.addEventListener("mousemove", onMouseMove);
 
       // ── Scroll outro ─────────────────────────────────────
-      // The section is PINNED for a dedicated scroll distance (1.4 viewport
-      // heights) and one single timeline is scrubbed against that. Because
-      // the section can't move or scroll away underneath the animation,
-      // there's no race between "content fading" and "content scrolling
-      // off" — the whole sequence plays out fully and predictably no
-      // matter how fast or slow the person scrolls.
       const s = containerRef.current;
-
       const outroTl = gsap.timeline({
         scrollTrigger: {
           trigger: s,
@@ -109,8 +103,6 @@ const Hero = () => {
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
-            // Stop the idle float the instant real scrolling begins,
-            // so it can't fight the scrub-driven transforms.
             if (self.progress > 0) {
               if (floatNormal.isActive()) floatNormal.kill();
               if (floatReflect.isActive()) floatReflect.kill();
@@ -119,12 +111,9 @@ const Hero = () => {
         },
       });
 
-      // Scroll hint and eyebrow go first — quick, subtle
       outroTl
         .to(scrollIndRef.current, { opacity: 0, y: 10, duration: 0.3, ease: "power1.out" }, 0)
         .to(taglineRef.current, { opacity: 0, y: -24, duration: 0.35, ease: "power1.out" }, 0.05)
-
-        // Headset punches toward camera and dissolves into a soft blur
         .to([imgNormalRef.current, imgReflectRef.current], {
           scale: 2.4,
           opacity: 0,
@@ -132,8 +121,6 @@ const Hero = () => {
           ease: "power2.in",
           duration: 0.9,
         }, 0.18)
-
-        // Wordmark splits apart — REAL drifts left, XR drifts right, both fade
         .to(textNormalRef.current, {
           x: -260, y: -50, rotate: -3, skewX: -8, opacity: 0,
           ease: "power2.in",
@@ -144,9 +131,6 @@ const Hero = () => {
           ease: "power2.in",
           duration: 0.9,
         }, 0.28)
-
-        // Whole scene pulls back slightly and fades for a clean handoff
-        // to the next section as the pin releases
         .to(sceneRef.current, {
           scale: 0.92,
           opacity: 0,
@@ -176,8 +160,8 @@ const Hero = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "transparent", // shows FluidCanvas behind it
-        overflow: "hidden", // keeps the blurred/scaled headset from spilling out during the pin
+        background: "transparent",
+        overflow: "hidden",
       }}
     >
       {/* <Navbar /> */}
@@ -190,20 +174,22 @@ const Hero = () => {
         alignItems: "center",
         justifyContent: "center",
       }}>
-        {/* Text layer — behind headset */}
+        {/* Text layer */}
         <div style={{
           position: "relative", zIndex: 0,
           display: "flex", flexDirection: "column", alignItems: "center",
         }}>
           <div style={{ overflow: "visible" }}>
-            <h1 ref={textNormalRef} style={wordmarkStyle}>REAL XR</h1>
+            {/* Dynamic Title */}
+            <h1 ref={textNormalRef} style={wordmarkStyle}>{content.title}</h1>
           </div>
           <div style={reflectionWrapperStyle}>
-            <h1 ref={textReflectRef} style={wordmarkStyle}>REAL XR</h1>
+            {/* Dynamic Title Reflection */}
+            <h1 ref={textReflectRef} style={wordmarkStyle}>{content.title}</h1>
           </div>
         </div>
 
-        {/* Headset layer — in front of text, centered in gap */}
+        {/* Headset layer */}
         <div style={{
           position: "absolute",
           zIndex: 2,
@@ -214,10 +200,11 @@ const Hero = () => {
           alignItems: "center",
           justifyContent: "center",
         }}>
+          {/* Dynamic Image & Alt Text */}
           <img
             ref={imgNormalRef}
-            src={HeroImg}
-            alt="VR Headset"
+            src={content.heroImageUrl || FallbackHeroImg}
+            alt={content.imageAltText}
             style={{
               width: HEADSET_SIZE,
               display: "block",
@@ -225,9 +212,10 @@ const Hero = () => {
             }}
           />
           <div style={reflectionWrapperStyle}>
+            {/* Dynamic Image Reflection */}
             <img
               ref={imgReflectRef}
-              src={HeroImg}
+              src={content.heroImageUrl || FallbackHeroImg}
               alt=""
               aria-hidden="true"
               style={{ width: HEADSET_SIZE, display: "block" }}
@@ -235,7 +223,7 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Tagline */}
+        {/* Dynamic Tagline */}
         <div style={{ position: "absolute", top: "-5rem" }}>
           <p ref={taglineRef} style={{
             fontSize: "0.72rem",
@@ -246,12 +234,12 @@ const Hero = () => {
             fontWeight: 500,
             whiteSpace: "nowrap",
           }}>
-            AR/VR Club · IES IPS Academy · Est. 2022
+            {content.tagline}
           </p>
         </div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* Dynamic Scroll indicator */}
       <div ref={scrollIndRef} style={{
         position: "absolute", bottom: 32, left: "50%",
         transform: "translateX(-50%)",
@@ -262,7 +250,9 @@ const Hero = () => {
           fontSize: "0.58rem", letterSpacing: "0.18em",
           textTransform: "uppercase", color: "#999",
           fontFamily: "Space Grotesk, sans-serif",
-        }}>Scroll</span>
+        }}>
+          {content.scrollText}
+        </span>
         <div style={{
           width: 1, height: 44,
           background: "linear-gradient(to bottom, #0a0a0a, transparent)",

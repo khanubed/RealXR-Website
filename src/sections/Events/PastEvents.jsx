@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { eventsData } from "../../data/data";
+
 gsap.registerPlugin(ScrollTrigger);
 
-// ── Data ──────────────────────────────────────────────────────────
-
-// ── Cursor image preview ───────────────────────────────────────────
+// ── 1. Cursor Preview Component ─────────────────────────────────────
 const CursorPreview = ({ images, accent, visible, x, y }) => {
   const [activeIdx, setActiveIdx] = useState(0);
   const intervalRef = useRef(null);
@@ -59,7 +57,6 @@ const CursorPreview = ({ images, accent, visible, x, y }) => {
           }}
         />
       ))}
-      {/* Slide dots */}
       <div
         style={{
           position: "absolute",
@@ -87,12 +84,30 @@ const CursorPreview = ({ images, accent, visible, x, y }) => {
   );
 };
 
-// ── Card ──────────────────────────────────────────────────────────
-const EventCard = React.forwardRef(({ event, index }, ref) => {
+// ── 2. Event Card Component (Now Responsive) ────────────────────────
+const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
   const [hovered, setHovered] = useState(false);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== "undefined") {
+        setIsMobile(window.innerWidth <= 768);
+        setIsTablet(window.innerWidth > 768 && window.innerWidth <= 1024);
+      }
+    };
+
+    handleResize(); // Init on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const onMouseMove = (e) => setCursor({ x: e.clientX, y: e.clientY });
+
+  // Hide custom cursor on touch devices to prevent UX issues
+  const showCursor = hovered && !isMobile && !isTablet;
 
   return (
     <div
@@ -102,8 +117,10 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
       onMouseMove={onMouseMove}
       style={{
         position: "sticky",
-        height: "80vh",
-        top: `${60 + index * 18}px`, // stacking offset
+        // Switch to auto height on mobile, keep 80vh on desktop
+        height: isMobile ? "auto" : isTablet ? "60vh" : "80vh",
+        minHeight: isMobile ? "480px" : "auto",
+        top: `${60 + index * 18}px`,
         width: "100%",
         maxWidth: 1200,
         margin: "0 auto",
@@ -112,22 +129,29 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
         background: "#000000",
         boxShadow:
           "0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
-        cursor: "none",
+        cursor: isMobile || isTablet ? "default" : "none",
         willChange: "transform",
         transformOrigin: "top center",
-        padding: "12px", // Insets both the image and content fields uniformly
+        padding: isMobile ? "16px" : "12px",
         boxSizing: "border-box",
       }}
     >
-      <div style={{ display: "flex", gap: "32px", height: "100%" }}>
-        {/* Left — cover image */}
+      <div 
+        style={{ 
+          display: "flex", 
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? "20px" : "32px", 
+          height: "100%" 
+        }}
+      >
         <div
           style={{
-            width: "44%", 
+            width: isMobile ? "100%" : "44%",
+            height: isMobile ? "240px" : "100%",
             flexShrink: 0,
             position: "relative",
             overflow: "hidden",
-            borderRadius: "20px", // Clean corners all around
+            borderRadius: "20px",
           }}
         >
           <img
@@ -139,27 +163,24 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              opacity: 1, // Full image clarity matching the mockup
               transition: "transform 0.5s ease",
-              transform: hovered ? "scale(1.04)" : "scale(1)",
+              transform: showCursor ? "scale(1.04)" : "scale(1)",
             }}
           />
         </div>
-
-        {/* Right — content */}
+        
         <div
           style={{
-            height: "100%",
+            height: isMobile ? "auto" : "100%",
             flex: 1,
-            padding: "12px 12px 12px 0",
+            padding: isMobile ? "0" : "12px 12px 12px 0",
             display: "flex",
             flexDirection: "column",
-            alignItems : "end",
-            justifyContent: "space-between",
+            alignItems: isMobile ? "flex-start" : "end", // Left align on mobile, Right align on desktop
+            justifyContent: isMobile ? "flex-start" : "space-between",
           }}
         >
-          {/* Top Info Header */}
-          <div>
+          <div style={{ textAlign: isMobile ? "left" : "right" }}>
             <h2
               style={{
                 fontFamily: "Syne, sans-serif",
@@ -174,8 +195,6 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
             >
               {event.title}
             </h2>
-
-            {/* Redesigned solid white date pill */}
             <div
               style={{
                 display: "inline-flex",
@@ -199,8 +218,7 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
               </span>
             </div>
           </div>
-
-          {/* Bottom Description */}
+          
           <p
             style={{
               fontFamily: "Syne, sans-serif",
@@ -208,51 +226,35 @@ const EventCard = React.forwardRef(({ event, index }, ref) => {
               color: "rgba(255,255,255,0.75)",
               lineHeight: 1.6,
               margin: 0,
+              textAlign: isMobile ? "left" : "right",
             }}
           >
             {event.desc}
           </p>
         </div>
       </div>
-
-      {/* Cursor image preview */}
-      <CursorPreview
-        images={event.images}
-        accent={event.accent}
-        visible={hovered}
-        x={cursor.x}
-        y={cursor.y}
-      />
+      
+      {/* Hide Custom Cursor completely on Mobile & Tablet devices */}
+      {showCursor && (
+        <CursorPreview
+          images={event.images}
+          accent={event.accent}
+          visible={hovered}
+          x={cursor.x}
+          y={cursor.y}
+        />
+      )}
     </div>
   );
 });
 
-// ── Section ───────────────────────────────────────────────────────
-const PastEvents = () => {
+// ── 3. Past Events Section ─────────────────────────────────────────
+const PastEvents = ({ events }) => {
   const sectionRef = useRef(null);
-  const headingRef = useRef(null);
   const cardRefs = useRef([]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Heading reveal
-      gsap.fromTo(
-        headingRef.current,
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.9,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: headingRef.current,
-            start: "top 85%",
-            once: true,
-          },
-        },
-      );
-
-      // Cards — each slides up from below when scrolled into view
       cardRefs.current.forEach((card, i) => {
         if (!card) return;
 
@@ -266,23 +268,19 @@ const PastEvents = () => {
             scale: 1,
             duration: 0.85,
             ease: "power3.out",
-            scrollTrigger: {
-              trigger: card,
-              start: "top 90%",
-              once: true,
-            },
+            scrollTrigger: { trigger: card, start: "top 90%", once: true },
             delay: i * 0.06,
           },
         );
 
-        // Scale down slightly as cards stack — gives depth
+        // Scale down as they stack
         gsap.to(card, {
-          scale: 1 - (eventsData.length - 1 - i) * 0.018,
+          scale: 1 - (events.length - 1 - i) * 0.018,
           ease: "none",
           scrollTrigger: {
             trigger: card,
             start: "top top",
-            end: `+=${eventsData.length * 200}`,
+            end: `+=${events.length * 200}`,
             scrub: true,
           },
         });
@@ -290,44 +288,13 @@ const PastEvents = () => {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [events]);
 
   return (
     <section
       ref={sectionRef}
-      style={{
-        // background: "#000",
-        padding: "8rem 2rem 6rem",
-        position: "relative",
-        zIndex: 10,
-      }}
+      style={{ padding: "8rem 1.5rem 6rem", position: "relative", zIndex: 10 }}
     >
-      {/* Heading */}
-      {/* <div ref={headingRef} style={{
-        maxWidth: 860, margin: "0 auto 4rem",
-      }}>
-        <p style={{
-          fontFamily: "Space Grotesk, sans-serif",
-          fontSize: "0.72rem", letterSpacing: "0.2em",
-          textTransform: "uppercase", color: "#00F5D4",
-          marginBottom: "0.8rem",
-          display: "flex", alignItems: "center", gap: 10,
-        }}>
-          <span style={{ display: "inline-block", width: 24, height: 1, background: "#00F5D4" }} />
-          Our Journey
-        </p>
-        <h2 style={{
-          fontFamily: "Syne, sans-serif", fontWeight: 800,
-          fontSize: "clamp(2.2rem, 5vw, 4rem)",
-          letterSpacing: "-0.04em", color: "#fff",
-          lineHeight: 1,
-        }}>
-          Moments That<br />
-          <span style={{ color: "#00F5D4" }}>Shaped Us.</span>
-        </h2>
-      </div> */}
-
-      {/* Stacked cards */}
       <div
         style={{
           maxWidth: 860,
@@ -338,11 +305,12 @@ const PastEvents = () => {
           perspective: "1200px",
         }}
       >
-        {eventsData.map((event, i) => (
+        {events.map((event, i) => (
           <EventCard
             key={event.id}
             event={event}
             index={i}
+            totalCards={events.length}
             ref={(el) => (cardRefs.current[i] = el)}
           />
         ))}

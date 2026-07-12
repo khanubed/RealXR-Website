@@ -1,23 +1,28 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { domainsData } from "../../data/data";
+import { domainsData } from "../../data/domainsData";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Domains = () => {
+const defaultContent = domainsData
+
+const Domains = ({ content = defaultContent }) => {
   const wrapperRef = useRef(null);
-  const sliderSectionRef = useRef(null); // gets pinned
+  const sliderSectionRef = useRef(null);
   const trackRef = useRef(null);
   const strip1Ref = useRef(null);
   const strip2Ref = useRef(null);
 
   useEffect(() => {
+    // If there are no slides, skip the GSAP logic entirely
+    if (!content.slides || content.slides.length === 0) return;
+
     let ctx = gsap.context(() => {
       const panels = gsap.utils.toArray(".slider-panel");
       const total = panels.length;
 
-      const getPanelWidth = () => panels[0].getBoundingClientRect().width;
+      const getPanelWidth = () => panels[0]?.getBoundingClientRect().width || 0;
 
       const holdDur = 1;
       const moveDur = 0.6;
@@ -40,18 +45,16 @@ const Domains = () => {
 
       gsap.set(trackRef.current, { x: 0 });
 
-      // ── Marquee strips — now driven by the SAME timeline as the slides,
-      // so they run continuously across the exact pin duration and stop
-      // exactly when the last slide's hold ends. ──
+      // Marquee strips - run continuously across pin duration
       tl.to(
         strip1Ref.current,
         { x: "-33.333%", ease: "none", duration: totalDuration },
-        0,
+        0
       );
       tl.to(
         strip2Ref.current,
         { x: "-100%", ease: "none", duration: totalDuration },
-        0,
+        0
       );
 
       let cursor = 0;
@@ -61,72 +64,68 @@ const Domains = () => {
         const desc = panel.querySelector(".slide-desc");
         const num = panel.querySelector(".slide-num");
 
-        gsap.set([title, desc, num], { opacity: 0 });
-        gsap.set(title, { y: 60, skewY: 2 });
-        gsap.set(desc, { y: 24 });
-        gsap.set(num, { x: -16 });
+        if (title && desc && num) {
+          gsap.set([title, desc, num], { opacity: 0 });
+          gsap.set(title, { y: 60, skewY: 2 });
+          gsap.set(desc, { y: 24 });
+          gsap.set(num, { x: -16 });
 
-        const holdStart = cursor;
+          const holdStart = cursor;
 
-        tl.fromTo(
-          title,
-          { y: 60, opacity: 0, skewY: 2 },
-          { y: 0, opacity: 1, skewY: 0, ease: "power3.out", duration: inDur },
-          holdStart,
-        );
-        tl.fromTo(
-          desc,
-          { y: 24, opacity: 0 },
-          { y: 0, opacity: 1, ease: "power2.out", duration: inDur },
-          holdStart + 0.05,
-        );
-        tl.fromTo(
-          num,
-          { x: -16, opacity: 0 },
-          { x: 0, opacity: 1, ease: "power2.out", duration: inDur },
-          holdStart,
-        );
-
-        if (i < total - 1) {
-          const exitStart = holdStart + holdDur - outDur;
-
-          tl.to(
+          tl.fromTo(
             title,
-            {
-              y: -50,
-              opacity: 0,
-              skewY: -1.5,
-              ease: "power2.in",
-              duration: outDur,
-            },
-            exitStart,
+            { y: 60, opacity: 0, skewY: 2 },
+            { y: 0, opacity: 1, skewY: 0, ease: "power3.out", duration: inDur },
+            holdStart
           );
-          tl.to(
+          tl.fromTo(
             desc,
-            { y: -20, opacity: 0, ease: "power2.in", duration: outDur },
-            exitStart,
+            { y: 24, opacity: 0 },
+            { y: 0, opacity: 1, ease: "power2.out", duration: inDur },
+            holdStart + 0.05
           );
-          tl.to(
+          tl.fromTo(
             num,
-            { x: 16, opacity: 0, ease: "power2.in", duration: outDur },
-            exitStart,
+            { x: -16, opacity: 0 },
+            { x: 0, opacity: 1, ease: "power2.out", duration: inDur },
+            holdStart
           );
 
-          const moveStart = holdStart + holdDur;
-          const targetIndex = i + 1;
-          tl.to(
-            trackRef.current,
-            {
-              x: () => -(getPanelWidth() * targetIndex),
-              ease: "power1.inOut",
-              duration: moveDur,
-            },
-            moveStart,
-          );
+          if (i < total - 1) {
+            const exitStart = holdStart + holdDur - outDur;
 
-          cursor = moveStart + moveDur;
-        } else {
-          cursor = holdStart + holdDur;
+            tl.to(
+              title,
+              { y: -50, opacity: 0, skewY: -1.5, ease: "power2.in", duration: outDur },
+              exitStart
+            );
+            tl.to(
+              desc,
+              { y: -20, opacity: 0, ease: "power2.in", duration: outDur },
+              exitStart
+            );
+            tl.to(
+              num,
+              { x: 16, opacity: 0, ease: "power2.in", duration: outDur },
+              exitStart
+            );
+
+            const moveStart = holdStart + holdDur;
+            const targetIndex = i + 1;
+            tl.to(
+              trackRef.current,
+              {
+                x: () => -(getPanelWidth() * targetIndex),
+                ease: "power1.inOut",
+                duration: moveDur,
+              },
+              moveStart
+            );
+
+            cursor = moveStart + moveDur;
+          } else {
+            cursor = holdStart + holdDur;
+          }
         }
       });
     }, wrapperRef);
@@ -138,12 +137,10 @@ const Domains = () => {
       window.removeEventListener("resize", onResize);
       ctx.revert();
     };
-  }, []);
+  }, [content.slides]); // Re-run GSAP if the slides array changes
 
   return (
     <div ref={wrapperRef} className="-mt-24" style={{ position: "relative" }}>
-      {/* ── Pinned section: strips + track live INSIDE this now,
-          so they pin together as one unit. ── */}
       <div
         ref={sliderSectionRef}
         style={{
@@ -153,7 +150,7 @@ const Domains = () => {
           position: "relative",
         }}
       >
-        {/* Strip 1 */}
+        {/* Dynamic Strip 1 */}
         <div
           style={{
             width: "100%",
@@ -193,16 +190,16 @@ const Domains = () => {
                     flexShrink: 0,
                   }}
                 >
-                  OUR DOMAINS
+                  {content.marqueeStrip1}
                   <span style={{ color: "#00F5D4", margin: "0 1.2rem" }}>
-                    ✦
+                    {content.marqueeStrip1Icon}
                   </span>
                 </span>
               ))}
           </div>
         </div>
 
-        {/* Strip 2 */}
+        {/* Dynamic Strip 2 */}
         <div
           style={{
             width: "110%",
@@ -244,34 +241,30 @@ const Domains = () => {
                     flexShrink: 0,
                   }}
                 >
-                  AR DEV{" "}
-                  <span style={{ opacity: 0.4, margin: "0 0.8rem" }}>·</span>
-                  VR DEV{" "}
-                  <span style={{ opacity: 0.4, margin: "0 0.8rem" }}>·</span>
-                  GAME DEV{" "}
-                  <span style={{ opacity: 0.4, margin: "0 0.8rem" }}>·</span>
-                  3D MODELLING{" "}
-                  <span style={{ opacity: 0.4, margin: "0 0.8rem" }}>·</span>
-                  WEB XR{" "}
-                  <span style={{ opacity: 0.4, margin: "0 0.8rem" }}>·</span>
+                  {content.marqueeStrip2Items.map((item, idx) => (
+                    <React.Fragment key={idx}>
+                      {item}{" "}
+                      <span style={{ opacity: 0.4, margin: "0 0.8rem" }}>·</span>
+                    </React.Fragment>
+                  ))}
                 </span>
               ))}
           </div>
         </div>
 
-        {/* Slide track */}
+        {/* Dynamic Slide track */}
         <div
           ref={trackRef}
           style={{
             display: "flex",
             height: "100%",
-            width: `${domainsData.length * 100}vw`,
+            width: `${(content.slides?.length || 1) * 100}vw`,
             willChange: "transform",
           }}
         >
-          {domainsData.map((slide, i) => (
+          {content.slides?.map((slide, i) => (
             <section
-              key={slide.id}
+              key={slide.id || i}
               className="slider-panel"
               style={{
                 width: "100vw",
@@ -369,10 +362,11 @@ const Domains = () => {
                     textShadow: "0 2px 24px rgba(0,0,0,0.25)",
                   }}
                 >
-                  {slide.title.split("\n").map((line, j) => (
+                  {/* Safely split dynamic title by newline if provided */}
+                  {(slide.title || "").split("\n").map((line, j, arr) => (
                     <React.Fragment key={j}>
                       {line}
-                      {j < slide.title.split("\n").length - 1 && <br />}
+                      {j < arr.length - 1 && <br />}
                     </React.Fragment>
                   ))}
                 </h2>
