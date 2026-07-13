@@ -1,41 +1,25 @@
-/**
- * Preloader.jsx
- * Awwwards-level animated preloader component.
- *
- * Animation sequence:
- *  1. Counter ticks 00 to 100 with organic pauses
- *  2. Typography stagger-reveals word by word
- *  3. Counter + tagline exit upward
- *  4. Curtain wipes UP via clip-path polygon
- *  5. onComplete() fires - parent unlocks hero content
- *
- * gsap.context() ensures cleanup on unmount / React Strict Mode safety.
- */
-
 import React, { useEffect, useRef, useLayoutEffect, useCallback, memo } from "react";
 import { gsap } from "gsap";
 
-// Word splitter — each word gets overflow:hidden + inner span at y:110%
+// Responsive word splitter with flex-wrapping support to prevent mobile clipping
 const SplitWords = memo(function SplitWords({ text }) {
   const words = text.split(" ");
   return (
-    <>
+    <span className="flex flex-wrap justify-center gap-x-[0.2em] w-full">
       {words.map((word, i) => (
         <span
           key={i}
-          style={{
-            display: "inline-block",
-            overflow: "hidden",
-            verticalAlign: "bottom",
-            marginRight: i < words.length - 1 ? "0.28em" : 0,
-          }}
+          className="inline-block overflow-hidden align-bottom"
         >
-          <span data-word="true" style={{ display: "inline-block", transform: "translateY(110%)" }}>
+          <span 
+            data-word="true" 
+            className="inline-block translate-y-[110%] will-change-transform"
+          >
             {word}
           </span>
         </span>
       ))}
-    </>
+    </span>
   );
 });
 
@@ -53,26 +37,25 @@ const Preloader = ({ onComplete }) => {
     if (ctxRef.current) ctxRef.current.revert();
 
     ctxRef.current = gsap.context(() => {
-      // Collect word spans from both lines
       const words1   = line1Ref.current?.querySelectorAll("[data-word]") ?? [];
       const words2   = line2Ref.current?.querySelectorAll("[data-word]") ?? [];
       const allWords = [...words1, ...words2];
 
-      // Reset initial states — GSAP owns these, not inline style
-      gsap.set(counterRef.current,    { y: 60,  opacity: 0 });
-      gsap.set(taglineRef.current,    { y: 20,  opacity: 0 });
-      gsap.set(progressBarRef.current,{ scaleX: 0, transformOrigin: "left center", opacity: 0 });
-      gsap.set(allWords,              { y: "110%" });
-      gsap.set(curtainRef.current,    { clipPath: "inset(0% 0% 0% 0%)" });
+      // GSAP Initial State Registry
+      gsap.set(counterRef.current,      { y: 40,  opacity: 0 });
+      gsap.set(taglineRef.current,      { y: 20,  opacity: 0 });
+      gsap.set(progressBarRef.current,  { scaleX: 0, transformOrigin: "left center", opacity: 0 });
+      gsap.set(allWords,                { y: "110%" });
+      gsap.set(curtainRef.current,      { clipPath: "inset(0% 0% 0% 0%)" });
       if (preloaderRef.current) preloaderRef.current.style.display = "flex";
 
       const masterTL = gsap.timeline({ onComplete: () => onComplete?.() });
 
-      // Phase 1: Counter appears
+      // Phase 1: Interactive elements emerge
       masterTL.to(counterRef.current, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" });
       masterTL.to(progressBarRef.current, { opacity: 1, duration: 0.4 }, "-=0.4");
 
-      // Proxy object drives counter DOM directly — avoids React state churn
+      // Counter engine setup (Direct DOM manipulation to bypass React render bottleneck)
       const obj = { val: 0 };
       const updateCounter = () => {
         if (counterRef.current)
@@ -81,50 +64,44 @@ const Preloader = ({ onComplete }) => {
           gsap.set(progressBarRef.current, { scaleX: obj.val / 100 });
       };
 
-      // Segment A: 0 -> 20, fast burst
-      masterTL.to(obj, { val: 20, duration: 0.65, ease: "power2.out", onUpdate: updateCounter });
-      // Pause at 20 — slow crawl mimicking heavy asset load
-      masterTL.to(obj, { val: 24, duration: 0.85, ease: "power1.in",  onUpdate: updateCounter });
-      // Burst: 24 -> 68
-      masterTL.to(obj, { val: 68, duration: 0.9,  ease: "expo.out",   onUpdate: updateCounter });
-      // Pause at 68
-      masterTL.to(obj, { val: 71, duration: 0.9,  ease: "power1.inOut", onUpdate: updateCounter });
+      // Organic loading increments
+      masterTL.to(obj, { val: 28, duration: 0.65, ease: "power2.out", onUpdate: updateCounter });
+      masterTL.to(obj, { val: 32, duration: 0.85, ease: "power1.in",  onUpdate: updateCounter });
+      masterTL.to(obj, { val: 74, duration: 0.9,  ease: "expo.out",   onUpdate: updateCounter });
+      masterTL.to(obj, { val: 78, duration: 0.9,  ease: "power1.inOut", onUpdate: updateCounter });
 
-      // Phase 3: Words reveal during the 68 pause
+      // Phase 2: Words reveal staggered during organic pause
       masterTL.to(allWords, {
-        y: "0%", duration: 1.1, ease: "power4.out", stagger: 0.09,
-      }, "-=1.5");
+        y: "0%", duration: 1.1, ease: "power4.out", stagger: 0.08,
+      }, "-=1.6");
 
-      // Tagline fades in
+      // Tagline reveal
       masterTL.to(taglineRef.current, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, "-=0.6");
 
-      // Final acceleration: 71 -> 100
+      // Phase 3: Final speed-burst to completion
       masterTL.to(obj, {
         val: 100, duration: 0.65, ease: "power4.in",
         onUpdate: updateCounter,
         onComplete: () => { if (counterRef.current) counterRef.current.textContent = "100"; },
       });
 
-      // Phase 4: Counter + tagline exit
+      // Phase 4: Seamless Exit Choreography
       masterTL.to([counterRef.current, taglineRef.current], {
-        y: -60, opacity: 0, duration: 0.55, ease: "power3.in", stagger: 0.06,
+        y: -40, opacity: 0, duration: 0.55, ease: "power3.in", stagger: 0.06,
       }, "+=0.15");
 
-      // Words exit upward
       masterTL.to(allWords, {
         y: "-110%", duration: 0.5, ease: "power3.in",
-        stagger: { each: 0.05, from: "end" },
+        stagger: { each: 0.04, from: "end" },
       }, "-=0.45");
 
-      // Phase 5: Curtain wipes upward via clip-path
-      // inset(0%) = full coverage, inset(100% 0% 0%) = top wipes to bottom
+      // Premium upward clip-path reveal wipe
       masterTL.to(curtainRef.current, {
         clipPath: "inset(100% 0% 0% 0%)",
-        duration: 1.2,
+        duration: 1.1,
         ease: "power4.inOut",
       }, "-=0.15");
 
-      // Hide preloader entirely after wipe
       masterTL.set(preloaderRef.current, { display: "none" });
 
     }, preloaderRef);
@@ -135,7 +112,7 @@ const Preloader = ({ onComplete }) => {
     return () => ctxRef.current?.revert();
   }, [runAnimation]);
 
-  // Dev: press R to replay
+  // Dev mode debugger (Tap "R" to trigger visual replay)
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
     const handler = (e) => {
@@ -148,88 +125,59 @@ const Preloader = ({ onComplete }) => {
   return (
     <div
       ref={preloaderRef}
-      style={{
-        position: "fixed", inset: 0, zIndex: 9999,
-        display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        overflow: "hidden", pointerEvents: "all",
-      }}
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden select-none pointer-events-auto"
     >
-      {/* Curtain — clip-path animated to wipe upward */}
+      {/* Background Curtain */}
       <div
         ref={curtainRef}
-        style={{
-          position: "absolute", inset: 0,
-          background: "#0a0a0a",
-          clipPath: "inset(0% 0% 0% 0%)",
-          zIndex: 0,
-        }}
+        className="absolute inset-0 bg-[#0a0a0a]"
+        style={{ clipPath: "inset(0% 0% 0% 0%)", zIndex: 0 }}
       />
 
-      {/* Progress bar — top edge */}
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "rgba(255,255,255,0.05)", zIndex: 2 }}>
+      {/* Top Edge Progress Bar Accent */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/5 z-10">
         <div
           ref={progressBarRef}
-          style={{ position: "absolute", inset: 0, background: "#00F5D4", transform: "scaleX(0)", transformOrigin: "left center", opacity: 0 }}
+          className="absolute inset-0 bg-[#00F5D4]"
         />
       </div>
 
-      {/* Counter — bottom left */}
+      {/* Dynamic Digital Counter */}
       <div
         ref={counterRef}
-        style={{
-          position: "absolute", bottom: "2.5rem", left: "3rem",
-          fontFamily: "'Courier New', monospace",
-          fontWeight: 700, fontSize: "clamp(1rem, 2vw, 1.25rem)",
-          letterSpacing: "0.1em", color: "rgba(255,255,255,0.3)",
-          zIndex: 2, userSelect: "none",
-        }}
-      >00</div>
+        className="absolute bottom-6 left-6 md:bottom-10 md:left-12 font-mono font-bold text-xs sm:text-sm md:text-base tracking-widest text-white/30 z-10"
+      >
+        00
+      </div>
 
-      {/* Main typography */}
-      <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 2rem", maxWidth: 1000 }}>
+      {/* Main Core Typography Stack */}
+      <div className="relative z-10 text-center w-full px-4 max-w-5xl flex flex-col items-center justify-center gap-1 sm:gap-2">
         <div
           ref={line1Ref}
-          style={{
-            display: "block", fontFamily: "Syne, 'Arial Black', sans-serif",
-            fontWeight: 800, fontSize: "clamp(2.5rem, 8vw, 8rem)",
-            letterSpacing: "-0.04em", color: "#ffffff", lineHeight: 0.92, marginBottom: "0.06em",
-          }}
+          className="w-full text-[10vw] sm:text-[7vw] md:text-[6.5vw] lg:text-[6vw] font-['Syne'] font-extrabold text-white tracking-tighter uppercase leading-[0.95]"
         >
-          <SplitWords text="ARCHITECTING" />
+          <SplitWords text="EXTENDING" />
         </div>
         <div
           ref={line2Ref}
-          style={{
-            display: "block", fontFamily: "Syne, 'Arial Black', sans-serif",
-            fontWeight: 800, fontSize: "clamp(2.5rem, 8vw, 8rem)",
-            letterSpacing: "-0.04em", color: "#00F5D4", lineHeight: 0.92,
-          }}
+          className="w-full text-[10vw] sm:text-[7vw] md:text-[6.5vw] lg:text-[6vw] font-['Syne'] font-extrabold text-[#00F5D4] tracking-tighter uppercase leading-[0.95]"
         >
-          <SplitWords text="DIGITAL SPACES" />
+          <SplitWords text="REALITY" />
         </div>
       </div>
 
-      {/* Tagline — bottom right */}
+      {/* Institutional Metadata Tagline */}
       <div
         ref={taglineRef}
-        style={{
-          position: "absolute", bottom: "2.8rem", right: "3rem",
-          fontFamily: "Space Grotesk, sans-serif",
-          fontSize: "0.7rem", letterSpacing: "0.2em",
-          textTransform: "uppercase", color: "rgba(255,255,255,0.25)",
-          zIndex: 2, userSelect: "none",
-        }}
+        className="absolute bottom-6 right-6 md:bottom-10 md:right-12 font-['Space_Grotesk'] text-[9px] md:text-xs tracking-widest uppercase text-white/25 z-10 text-right"
       >
-        IES IPS Academy · RealXR
+        RealXR · IPS Academy
       </div>
 
       {process.env.NODE_ENV === "development" && (
-        <div style={{
-          position: "absolute", top: "1rem", right: "1.2rem",
-          fontFamily: "monospace", fontSize: "0.62rem",
-          color: "rgba(255,255,255,0.12)", zIndex: 3, userSelect: "none",
-        }}>press R to replay</div>
+        <div className="absolute top-4 right-4 font-mono text-[9px] text-white/10 z-20">
+          press R to replay
+        </div>
       )}
     </div>
   );

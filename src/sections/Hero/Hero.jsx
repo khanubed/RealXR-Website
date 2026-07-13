@@ -9,7 +9,7 @@ import { heroData } from "../../data/heroData";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const HEADSET_SIZE = "clamp(160px, 30vw, 400px)";
+const HEADSET_SIZE = "clamp(240px, 30vw, 400px)";
 
 const wordmarkStyle = {
   fontFamily: "Syne, sans-serif",

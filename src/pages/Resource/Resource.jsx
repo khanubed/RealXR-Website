@@ -84,16 +84,10 @@ export default function Resources() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-5 pt-12 pb-20">
+      <div className="relative z-10 max-w-4xl mx-auto px-5 pt-16 pb-20">
         
         {/* Header */}
         <div ref={headerRef} className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-            <span className="text-[0.7rem] tracking-widest uppercase text-cyan-600 font-bold">
-              RealXR Resource Library
-            </span>
-          </div>
 
           <h1 className="font-['Syne'] font-extrabold text-4xl sm:text-5xl md:text-6xl tracking-tight leading-none mb-4 bg-gradient-to-br from-slate-900 to-slate-600 bg-clip-text text-transparent">
             Learn. Build. Ship.
