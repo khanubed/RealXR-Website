@@ -1,98 +1,53 @@
-import React, { useEffect, useRef } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, NavLink } from "react-router-dom";
-import { Canvas } from "@react-three/fiber";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
-import Navbar from "./components/layout/Navbar";
+import React from "react";
+import { createBrowserRouter, RouterProvider, useRouteError } from "react-router-dom";
 
-// Global Canvas asset
-import FluidCanvas from "./components/three/FluidCanvas";
-
-// Routing utilities
-import ScrollToTop from "./components/ui/ScrollToTop";
-
-// Page Views
+// Layout & Views
+import RootLayout from "./components/layout/RootLayout";
 import Home from "./pages/Home/Home";
-import GalleryDashboard from "./pages/Gallery/GalleryDashboard"; // The page Claude is writing for you
-// import Events from "./pages/Events";
-// import Blogs from "./pages/Blogs";
-import Footer from "./sections/Footer/Footer";
-import CustomCursor from "./components/cursor/CustomCursor";
+import GalleryDashboard from "./pages/Gallery/GalleryDashboard";
+import Resources from "./pages/Resource/Resource";
+import Projects from "./pages/Project/Projects";
 
-gsap.registerPlugin(ScrollTrigger);
+// A simple fallback component to catch the crash
+const ErrorPage = () => {
+  const error = useRouteError();
+  return (
+    <div style={{ padding: "2rem", color: "red" }}>
+      <h2>Oops! The app crashed.</h2>
+      <p>{error?.message || "An unexpected error occurred."}</p>
+    </div>
+  );
+};
+
+// Define modern data routes
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    errorElement: <ErrorPage />, // <-- Added here to catch anything in the children
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: "gallery",
+        element: <GalleryDashboard />,
+      },
+      {
+        path: "resources",
+        element: <Resources />,
+      },
+      {
+        path: "projects",
+        element: <Projects />,
+      },
+    ],
+  },
+]);
 
 const App = () => {
-  const lenisRef = useRef(null);
-
-  const eventRootRef = useRef(null);
-
-  useEffect(() => {
-    // 1. Single Lenis instance orchestration
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-
-    lenisRef.current = lenis;
-
-    // Connect Lenis hook feedback straight into ScrollTrigger updates
-    lenis.on("scroll", ScrollTrigger.update);
-
-    const tickerFn = (time) => lenis.raf(time * 1000);
-    gsap.ticker.add(tickerFn);
-    gsap.ticker.lagSmoothing(0);
-
-    ScrollTrigger.defaults({ scroller: window });
-
-    const t = setTimeout(() => ScrollTrigger.refresh(), 400);
-
-    return () => {
-      clearTimeout(t);
-      gsap.ticker.remove(tickerFn);
-      lenis.destroy();
-      ScrollTrigger.getAll().forEach((st) => st.kill());
-    };
-  }, []);
-
-  return (
-    <Router>
-      {/* Resets Lenis scroller footprint smoothly on route changes */}
-      <ScrollToTop lenisRef={lenisRef} />
-      <CustomCursor/>
-      <div ref={eventRootRef} className="w-full relative bg-[#0a0a0a] text-white min-h-screen">
-        {/* FIXED 3D WEBGL ENGINE BACKGROUND LAYER */}
-        <div
-          className="fixed top-0 left-0 w-full h-full pointer-events-none"
-          style={{ zIndex: 0 }}
-        >
-          <Canvas eventSource={eventRootRef} camera={{ position: [0, 0, 1] }}>
-            <FluidCanvas />
-          </Canvas>
-        </div>
-
-        {/* GLOBAL NAVIGATION LAYER */}
-        {/* FLOATING CAPSULE NAVIGATION LAYER */}
-        <div className="absolute w-full flex justify-center mt-3.5 " style={{zIndex: 20}}>
-          <Navbar/>
-        </div>
-
-        {/* COMPONENT ROUTER VIEWPORTS */}
-        <div className="relative w-full z-0">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/gallery" element={<GalleryDashboard />} />
-            {/* <Route path="/events" element={<Events />} />
-            <Route path="/blogs" element={<Blogs />} /> */}
-          </Routes>
-
-          {/* Global Footer remains at the base of every routed page view */}
-          <Footer />
-        </div>
-      </div>
-    </Router>
-  );
+  return <RouterProvider router={router} />;
 };
 
 export default App;

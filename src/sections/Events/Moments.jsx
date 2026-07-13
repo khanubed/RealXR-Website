@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { rainImages } from "../../data/data.js"; // Adjust this path to match your file structure
+import { rainImages } from "../../data/data.js"; 
 
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
