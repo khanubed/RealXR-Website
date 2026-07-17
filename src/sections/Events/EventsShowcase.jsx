@@ -1,6 +1,4 @@
  import React, { useEffect, useRef, useState, useMemo } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Moments from "./Moments";
 import PastEvents from "./PastEvents";
 import { eventsData } from "../../data/eventsData";

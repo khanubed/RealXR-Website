@@ -1,12 +1,17 @@
 /**
  * GalleryDashboard.jsx
  * ─────────────────────────────────────────────────────────────────
- * Main gallery page controller.
- *  • React Router v6 — event slug in URL (?event=<slug>)
- *  • Event tab switcher with GSAP slide indicator
- *  • Custom magnetic cursor
- *  • useMemo guards against re-computing filtered media on every render
- *  • Graceful empty state
+ * RealXR — Gallery page controller
+ *
+ * Design language (paired with the soft white/pink liquid-distort
+ * Three.js background rendered behind this component):
+ *  • Light glass surfaces — never opaque dark panels
+ *  • "REAL" set solid, "XR" cut from glass so the liquid bg shows
+ *    through the letterforms — the club's own "two layers merging"
+ *    idea, expressed as typography instead of decoration
+ *  • AR-reticle custom cursor (viewfinder brackets, not a dot+ring)
+ *  • GSAP: char-level headline reveal, magnetic event cards,
+ *    sliding glass tab indicator, scroll-batched grid reveal
  * ─────────────────────────────────────────────────────────────────
  *
  * Route setup (in your router):
@@ -29,27 +34,79 @@ import { EVENTS, getEventBySlug } from "../../data/galleryData";
 import MediaGrid from "./MediaGrid.jsx";
 import Lightbox  from "./Lightbox";
 
+// ── Design tokens (shared informally across the gallery module) ──
+const INK        = "#15141A";
+const INK_SOFT   = "rgba(21,20,26,0.55)";
+const INK_FAINT  = "rgba(21,20,26,0.32)";
+const LINE       = "rgba(21,20,26,0.09)";
+const GLASS      = "rgba(255,255,255,0.5)";
+const GLASS_HI   = "rgba(255,255,255,0.78)";
+const REAL       = "#FF3D8F";
+const XR         = "#00BFAE";
+
+// ── Split a string into per-character spans for GSAP reveals ─────
+function splitChars(str) {
+  return str.split("").map((ch, i) => (
+    <span
+      key={i}
+      className="char-unit"
+      style={{ display: "inline-block", willChange: "transform" }}
+    >
+      {ch === " " ? "\u00A0" : ch}
+    </span>
+  ));
+}
+
 // ── Event cover card on dashboard ────────────────────────────────
 const EventCard = memo(function EventCard({ event, onClick }) {
   const [hovered, setHovered] = useState(false);
+  const cardRef = useRef(null);
+  const quickX  = useRef(null);
+  const quickY  = useRef(null);
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+    quickX.current = gsap.quickTo(cardRef.current, "x", { duration: 0.6, ease: "power3.out" });
+    quickY.current = gsap.quickTo(cardRef.current, "y", { duration: 0.6, ease: "power3.out" });
+  }, []);
+
+  // Magnetic pull — subtle, capped so it never feels gimmicky
+  const handleMove = useCallback((e) => {
+    const r = cardRef.current.getBoundingClientRect();
+    const relX = e.clientX - (r.left + r.width / 2);
+    const relY = e.clientY - (r.top + r.height / 2);
+    quickX.current?.(relX * 0.06);
+    quickY.current?.(relY * 0.06);
+  }, []);
+
+  const handleLeave = useCallback(() => {
+    setHovered(false);
+    quickX.current?.(0);
+    quickY.current?.(0);
+  }, []);
 
   return (
     <div
+      ref={cardRef}
       onClick={() => onClick(event.slug)}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      data-cursor="view"
       style={{
-        position: "relative", borderRadius: 16,
-        overflow: "hidden", cursor: "none",
+        position: "relative", borderRadius: 20,
+        overflow: "hidden",
         aspectRatio: "16/10",
-        background: "#111",
+        background: GLASS,
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
         border: hovered
-          ? `1px solid ${event.accent}66`
-          : "1px solid rgba(255,255,255,0.06)",
-        transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+          ? `1px solid ${event.accent}55`
+          : `1px solid rgba(255,255,255,0.6)`,
+        transition: "border-color 0.35s ease, box-shadow 0.35s ease",
         boxShadow: hovered
-          ? `0 0 0 1px ${event.accent}22, 0 24px 60px rgba(0,0,0,0.5)`
-          : "0 8px 32px rgba(0,0,0,0.3)",
+          ? `0 0 0 1px ${event.accent}22, 0 30px 70px -20px rgba(255,61,143,0.25)`
+          : "0 12px 40px -18px rgba(21,20,26,0.18)",
         willChange: "transform",
       }}
     >
@@ -61,25 +118,25 @@ const EventCard = memo(function EventCard({ event, onClick }) {
           position: "absolute", inset: 0,
           width: "100%", height: "100%",
           objectFit: "cover",
-          opacity: 0.55,
+          opacity: 0.9,
           transform: hovered ? "scale(1.06)" : "scale(1)",
-          transition: "transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.3s",
+          transition: "transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94)",
         }}
         loading="lazy"
         decoding="async"
       />
 
-      {/* Gradient overlay */}
+      {/* Soft light-to-glass gradient (replaces the old dark scrim) */}
       <div style={{
         position: "absolute", inset: 0,
-        background: `linear-gradient(to top, ${event.bg ?? "#000"} 0%, rgba(0,0,0,0.2) 100%)`,
+        background: `linear-gradient(to top, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.5) 42%, rgba(255,255,255,0.05) 100%)`,
       }} />
 
       {/* Accent top bar */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0,
         height: 3, background: event.accent,
-        opacity: hovered ? 1 : 0.4,
+        opacity: hovered ? 1 : 0.55,
         transition: "opacity 0.3s",
       }} />
 
@@ -88,39 +145,37 @@ const EventCard = memo(function EventCard({ event, onClick }) {
         position: "absolute", inset: 0, padding: "1.4rem",
         display: "flex", flexDirection: "column", justifyContent: "flex-end",
       }}>
-        {/* Date + location pill */}
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           padding: "3px 10px", borderRadius: 999,
-          background: "rgba(0,0,0,0.55)",
+          background: GLASS_HI,
           backdropFilter: "blur(6px)",
-          border: `1px solid ${event.accent}33`,
+          border: `1px solid ${event.accent}44`,
           marginBottom: "0.7rem", width: "fit-content",
         }}>
           <div style={{ width: 5, height: 5, borderRadius: "50%", background: event.accent }} />
           <span style={{
-            fontFamily: "Space Grotesk, sans-serif",
-            fontSize: "0.68rem", color: "rgba(255,255,255,0.7)",
-            letterSpacing: "0.05em",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.66rem", color: INK_SOFT,
+            letterSpacing: "0.04em",
           }}>{event.date} · {event.location}</span>
         </div>
 
         <h3 style={{
           fontFamily: "Syne, sans-serif", fontWeight: 800,
-          fontSize: "clamp(1.1rem, 2.5vw, 1.7rem)",
-          color: "#fff", letterSpacing: "-0.03em",
+          fontSize: "clamp(1.15rem, 2.5vw, 1.8rem)",
+          color: INK, letterSpacing: "-0.03em",
           lineHeight: 1.05, marginBottom: "0.5rem",
         }}>{event.title}</h3>
 
         <p style={{
           fontFamily: "Space Grotesk, sans-serif",
-          fontSize: "0.78rem", color: "rgba(255,255,255,0.5)",
+          fontSize: "0.8rem", color: INK_SOFT,
           lineHeight: 1.5,
           display: "-webkit-box", WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical", overflow: "hidden",
         }}>{event.tagline}</p>
 
-        {/* View gallery arrow */}
         <div style={{
           marginTop: "1rem",
           display: "flex", alignItems: "center", gap: 6,
@@ -144,11 +199,11 @@ const EventCard = memo(function EventCard({ event, onClick }) {
       <div style={{
         position: "absolute", top: 14, right: 14,
         padding: "3px 9px", borderRadius: 999,
-        background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        fontFamily: "Space Grotesk, sans-serif",
-        fontSize: "0.68rem", color: "rgba(255,255,255,0.55)",
-        letterSpacing: "0.05em",
+        background: GLASS_HI, backdropFilter: "blur(8px)",
+        border: "1px solid rgba(21,20,26,0.08)",
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "0.66rem", color: INK_SOFT,
+        letterSpacing: "0.03em",
       }}>
         {event.media.length} items
       </div>
@@ -156,35 +211,57 @@ const EventCard = memo(function EventCard({ event, onClick }) {
   );
 });
 
-// ── Custom cursor ─────────────────────────────────────────────────
-function CustomCursor({ accent }) {
-  const dotRef  = useRef(null);
-  const ringRef = useRef(null);
-  let rx = 0, ry = 0, rafId;
+// ── Custom cursor — AR viewfinder reticle, not a generic dot+ring ─
+function ARCursor({ accent }) {
+  const wrapRef = useRef(null);
+  const [mode, setMode] = useState("default"); // default | view
 
   useEffect(() => {
-    const dot  = dotRef.current;
-    const ring = ringRef.current;
-    let mx = 0, my = 0;
+    const el = wrapRef.current;
+    let mx = 0, my = 0, rx = 0, ry = 0, raf;
 
-    const move = (e) => { mx = e.clientX; my = e.clientY; dot.style.left = mx + "px"; dot.style.top = my + "px"; };
+    const move = (e) => {
+      mx = e.clientX; my = e.clientY;
+      const target = e.target.closest("[data-cursor]");
+      setMode(target ? target.dataset.cursor : "default");
+    };
     const tick = () => {
-      rx += (mx - rx) * 0.1;
-      ry += (my - ry) * 0.1;
-      ring.style.left = rx + "px";
-      ring.style.top  = ry + "px";
-      rafId = requestAnimationFrame(tick);
+      rx += (mx - rx) * 0.18;
+      ry += (my - ry) * 0.18;
+      if (el) el.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+      raf = requestAnimationFrame(tick);
     };
     window.addEventListener("mousemove", move);
     tick();
-    return () => { window.removeEventListener("mousemove", move); cancelAnimationFrame(rafId); };
+    return () => { window.removeEventListener("mousemove", move); cancelAnimationFrame(raf); };
   }, []);
 
+  const size = mode === "view" ? 64 : 34;
+  const corner = mode === "view" ? 10 : 7;
+
   return (
-    <>
-      <div ref={dotRef} style={{ position: "fixed", width: 8, height: 8, background: accent, borderRadius: "50%", pointerEvents: "none", zIndex: 99999, transform: "translate(-50%,-50%)", mixBlendMode: "difference" }} />
-      <div ref={ringRef} style={{ position: "fixed", width: 36, height: 36, border: `1px solid ${accent}`, borderRadius: "50%", pointerEvents: "none", zIndex: 99998, transform: "translate(-50%,-50%)", opacity: 0.5, transition: "width 0.3s, height 0.3s" }} />
-    </>
+    <div
+      ref={wrapRef}
+      style={{
+        position: "fixed", top: 0, left: 0,
+        width: size, height: size,
+        pointerEvents: "none", zIndex: 99999,
+        transition: "width 0.35s cubic-bezier(0.34,1.56,0.64,1), height 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+        mixBlendMode: "difference",
+      }}
+    >
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
+        {[
+          ["M2,C L2,2 C,2", 0],
+        ].map(() => null)}
+        {/* four corner brackets, drawn manually for full control */}
+        <path d={`M2 ${corner + 2} L2 2 L${corner + 2} 2`} fill="none" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
+        <path d={`M${size - corner - 2} 2 L${size - 2} 2 L${size - 2} ${corner + 2}`} fill="none" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
+        <path d={`M${size - 2} ${size - corner - 2} L${size - 2} ${size - 2} L${size - corner - 2} ${size - 2}`} fill="none" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
+        <path d={`M${corner + 2} ${size - 2} L2 ${size - 2} L2 ${size - corner - 2}`} fill="none" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx={size / 2} cy={size / 2} r="1.6" fill={accent} />
+      </svg>
+    </div>
   );
 }
 
@@ -201,97 +278,158 @@ export default function GalleryDashboard() {
   const headerRef    = useRef(null);
   const gridWrapRef  = useRef(null);
   const tabBarRef    = useRef(null);
+  const indicatorRef = useRef(null);
 
-  // ── Page entrance ──────────────────────────────────────────────
-  useEffect(() => {
-    if (headerRef.current) {
-      gsap.fromTo(headerRef.current,
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", delay: 0.1 }
-      );
-    }
-  }, []);
+  // ── Header char-reveal on mount ──────────────────────────────
+  useGSAP(() => {
+    const chars = headerRef.current?.querySelectorAll(".char-unit");
+    if (!chars?.length) return;
+    gsap.fromTo(chars,
+      { opacity: 0, yPercent: 120, rotateZ: 6 },
+      {
+        opacity: 1, yPercent: 0, rotateZ: 0,
+        duration: 0.9, ease: "expo.out",
+        stagger: { each: 0.028, from: "start" },
+        delay: 0.15,
+      }
+    );
+    gsap.fromTo(".eyebrow-tag",
+      { opacity: 0, x: -12 },
+      { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", delay: 0.05 }
+    );
+  }, [activeSlug]);
 
   // ── Event switch transition ────────────────────────────────────
-  useEffect(() => {
+  useGSAP(() => {
     if (!gridWrapRef.current) return;
     gsap.fromTo(gridWrapRef.current,
       { opacity: 0, y: 24 },
-      { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }
+      { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }
     );
   }, [activeSlug]);
+
+  // ── Sliding glass tab indicator ────────────────────────────────
+  useGSAP(() => {
+    if (!activeEvent || !tabBarRef.current || !indicatorRef.current) return;
+    const activeBtn = tabBarRef.current.querySelector(`[data-slug="${activeSlug}"]`);
+    if (!activeBtn) return;
+    const barRect = tabBarRef.current.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+    gsap.to(indicatorRef.current, {
+      x: btnRect.left - barRect.left + tabBarRef.current.scrollLeft,
+      width: btnRect.width,
+      background: `${activeEvent.accent}14`,
+      borderColor: `${activeEvent.accent}55`,
+      duration: 0.5, ease: "power3.out",
+    });
+  }, [activeSlug, activeEvent]);
 
   const openEvent  = useCallback((slug) => setSearchParams({ event: slug }), [setSearchParams]);
   const clearEvent = useCallback(() => setSearchParams({}), [setSearchParams]);
 
-  // All media for current event (memoized — no recompute on cursor move etc.)
   const currentMedia = useMemo(
     () => activeEvent?.media ?? [],
     [activeEvent]
   );
 
+  const heroAccent = activeEvent?.accent ?? XR;
+
   return (
-    <div style={{
+    <div className="pt-12" style={{
       minHeight: "100vh",
-      background: "#0a0a0a",
-      color: "#fff",
+      background: "transparent", // liquid-distort Three.js canvas shows through
+      color: INK,
       fontFamily: "Space Grotesk, sans-serif",
-      cursor: "none",
       overflowX: "hidden",
+      position: "relative",
     }}>
-      <CustomCursor accent={activeEvent?.accent ?? "#00F5D4"} />
+      <ARCursor accent={heroAccent} />
 
       {/* ── Header ────────────────────────────────────────────── */}
       <header
         ref={headerRef}
         style={{
-          padding: "3rem 3rem 2rem",
-          borderBottom: "1px solid rgba(255,255,255,0.05)",
+          padding: "3.5rem 3rem 2rem",
+          borderBottom: `1px solid ${LINE}`,
           display: "flex", alignItems: "flex-end",
           justifyContent: "space-between", flexWrap: "wrap", gap: "1rem",
         }}
       >
         <div>
-          <p style={{
+          <p className="eyebrow-tag" style={{
+            fontFamily: "'JetBrains Mono', monospace",
             fontSize: "0.68rem", letterSpacing: "0.2em",
             textTransform: "uppercase",
-            color: activeEvent?.accent ?? "#00F5D4",
-            marginBottom: "0.5rem",
+            color: heroAccent,
+            marginBottom: "0.6rem",
             display: "flex", alignItems: "center", gap: 8,
           }}>
-            <span style={{ width: 20, height: 1, background: activeEvent?.accent ?? "#00F5D4", display: "inline-block" }} />
-            {activeEvent ? activeEvent.label ?? "Event Gallery" : "Our Journey"}
+            <span style={{ width: 20, height: 1, background: heroAccent, display: "inline-block" }} />
+            {activeEvent ? activeEvent.label ?? "Event Gallery" : "RealXR · IES IPS Academy"}
           </p>
 
           <h1 style={{
             fontFamily: "Syne, sans-serif", fontWeight: 800,
-            fontSize: "clamp(2rem, 5vw, 4rem)",
-            letterSpacing: "-0.04em", lineHeight: 0.95,
+            fontSize: "clamp(2.4rem, 7vw, 5.6rem)",
+            letterSpacing: "-0.04em", lineHeight: 0.92,
+            display: "flex", flexWrap: "wrap",
           }}>
             {activeEvent ? (
-              <>{activeEvent.title}<br /><span style={{ color: activeEvent.accent, fontSize: "0.6em" }}>{activeEvent.date}</span></>
+              <>
+                <span style={{ overflow: "hidden", display: "inline-block" }}>{splitChars(activeEvent.title)}</span>
+                <span style={{
+                  display: "block", width: "100%",
+                  fontSize: "0.4em", color: activeEvent.accent, marginTop: "0.3em",
+                }}>{splitChars(activeEvent.date)}</span>
+              </>
             ) : (
-              <>Moments That<br /><span style={{ color: "#00F5D4" }}>Shaped Us.</span></>
+              <>
+                {/* REAL — solid ink */}
+                <span style={{ overflow: "hidden", display: "inline-block", color: INK }}>
+                  {splitChars("REAL")}
+                </span>
+                {/* XR — glass cutout: a soft pink→teal gradient fill on the
+                    letterforms themselves, so it visually "bleeds" the
+                    liquid background's palette straight through the type */}
+                <span
+                  className="xr-fill"
+                  style={{
+                    overflow: "hidden", display: "inline-block",
+                    marginLeft: "0.14em",
+                  }}
+                >
+                  {splitChars("XR")}
+                </span>
+                <span style={{
+                  display: "block", width: "100%",
+                  fontSize: "0.28em", color: INK_FAINT, marginTop: "0.35em",
+                  fontFamily: "Space Grotesk, sans-serif", fontWeight: 400,
+                  letterSpacing: "-0.01em",
+                }}>
+                  {splitChars("moments that shaped us.")}
+                </span>
+              </>
             )}
           </h1>
         </div>
 
-        {/* Back button */}
         {activeEvent && (
           <button
             onClick={clearEvent}
+            data-cursor="view"
             style={{
               padding: "0.6rem 1.4rem",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 999, background: "transparent",
-              color: "rgba(255,255,255,0.6)", cursor: "none",
+              border: "1px solid rgba(21,20,26,0.12)",
+              borderRadius: 999, background: GLASS,
+              backdropFilter: "blur(10px)",
+              color: INK_SOFT, cursor: "pointer",
               fontFamily: "Space Grotesk, sans-serif",
-              fontSize: "0.8rem", letterSpacing: "0.08em",
+              fontSize: "0.8rem", letterSpacing: "0.05em",
               display: "flex", alignItems: "center", gap: 8,
               transition: "border-color 0.2s, color 0.2s",
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = activeEvent.accent + "66"; e.currentTarget.style.color = activeEvent.accent; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,255,255,0.6)"; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = activeEvent.accent + "77"; e.currentTarget.style.color = INK; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(21,20,26,0.12)"; e.currentTarget.style.color = INK_SOFT; }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <polyline points="15 18 9 12 15 6"/>
@@ -301,30 +439,43 @@ export default function GalleryDashboard() {
         )}
       </header>
 
-      {/* ── Event tab bar (visible when inside an event) ────────── */}
+      {/* ── Event tab bar (glass pills, sliding indicator) ──────── */}
       {activeEvent && (
         <div
           ref={tabBarRef}
           style={{
-            display: "flex", gap: 0, overflowX: "auto",
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
-            padding: "0 3rem",
+            position: "relative",
+            display: "flex", gap: "0.3rem", overflowX: "auto",
+            borderBottom: `1px solid ${LINE}`,
+            padding: "0.6rem 3rem",
             scrollbarWidth: "none",
           }}
         >
+          <div
+            ref={indicatorRef}
+            style={{
+              position: "absolute", top: "0.6rem", left: "3rem",
+              height: "calc(100% - 1.2rem)",
+              borderRadius: 999,
+              border: "1px solid transparent",
+              pointerEvents: "none",
+            }}
+          />
           {EVENTS.map((ev) => (
             <button
               key={ev.id}
+              data-slug={ev.slug}
+              data-cursor="view"
               onClick={() => setSearchParams({ event: ev.slug })}
               style={{
-                padding: "0.9rem 1.2rem",
-                background: "none", border: "none", cursor: "none",
+                position: "relative",
+                padding: "0.6rem 1.1rem",
+                background: "none", border: "none", cursor: "pointer",
                 fontFamily: "Syne, sans-serif", fontWeight: 600,
-                fontSize: "0.78rem", letterSpacing: "0.06em",
-                whiteSpace: "nowrap",
-                color: ev.slug === activeSlug ? ev.accent : "rgba(255,255,255,0.35)",
-                borderBottom: ev.slug === activeSlug ? `2px solid ${ev.accent}` : "2px solid transparent",
-                transition: "color 0.2s, border-color 0.2s",
+                fontSize: "0.78rem", letterSpacing: "0.05em",
+                whiteSpace: "nowrap", borderRadius: 999,
+                color: ev.slug === activeSlug ? INK : INK_FAINT,
+                transition: "color 0.25s",
               }}
             >{ev.title}</button>
           ))}
@@ -332,24 +483,24 @@ export default function GalleryDashboard() {
       )}
 
       {/* ── Main content ─────────────────────────────────────────── */}
-      <main style={{ padding: "2.5rem 3rem 5rem" }}>
+      <main style={{ padding: "2.5rem 3rem 6rem" }}>
 
-        {/* Dashboard — all events */}
         {!activeEvent && (
           <div>
             <p style={{
-              fontSize: "0.8rem", color: "rgba(255,255,255,0.35)",
-              marginBottom: "2rem", lineHeight: 1.6,
+              fontSize: "0.85rem", color: INK_SOFT,
+              marginBottom: "2.2rem", lineHeight: 1.65,
               maxWidth: 480,
             }}>
-              Every event, every late night, every demo that actually worked —
-              captured here. Click an event to explore its gallery.
+              Every build night, every demo that finally worked, every headset
+              tangled in cables — captured here. Click an event to step into
+              its gallery.
             </p>
 
             <div style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: "1.2rem",
+              gap: "1.4rem",
             }}>
               {EVENTS.map((ev) => (
                 <EventCard key={ev.id} event={ev} onClick={openEvent} />
@@ -358,13 +509,11 @@ export default function GalleryDashboard() {
           </div>
         )}
 
-        {/* Event gallery */}
         {activeEvent && (
           <div ref={gridWrapRef}>
-            {/* Event description */}
             <p style={{
-              fontSize: "0.88rem", color: "rgba(255,255,255,0.45)",
-              marginBottom: "2rem", maxWidth: 560, lineHeight: 1.7,
+              fontSize: "0.9rem", color: INK_SOFT,
+              marginBottom: "2.2rem", maxWidth: 560, lineHeight: 1.75,
             }}>{activeEvent.description}</p>
 
             <MediaGrid
@@ -376,10 +525,25 @@ export default function GalleryDashboard() {
         )}
       </main>
 
-      {/* Lightbox — always mounted, reads ?media= param */}
       {activeEvent && (
         <Lightbox items={currentMedia} accent={activeEvent.accent} />
       )}
+
+      <style>{`
+        .xr-fill {
+          background-image: linear-gradient(120deg, ${REAL}, ${XR});
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          -webkit-text-stroke: 0px;
+          display: inline-block;
+        }
+        @media (pointer: fine) {
+          * { cursor: none !important; }
+        }
+      `}</style>
+
+      <div className="h-screen w-full" />
     </div>
   );
 }

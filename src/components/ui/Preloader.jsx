@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useLayoutEffect, useCallback, memo } from "react";
+import React, { useEffect, useRef, useCallback, memo } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 
@@ -25,7 +25,6 @@ const SplitWords = memo(function SplitWords({ text }) {
 });
 
 const Preloader = ({ onComplete }) => {
-  useGSAP();
   const preloaderRef   = useRef(null);
   const curtainRef     = useRef(null);
   const counterRef     = useRef(null);
@@ -33,12 +32,10 @@ const Preloader = ({ onComplete }) => {
   const line2Ref       = useRef(null);
   const taglineRef     = useRef(null);
   const progressBarRef = useRef(null);
-  const ctxRef         = useRef(null);
 
-  const runAnimation = useCallback(() => {
-    if (ctxRef.current) ctxRef.current.revert();
-
-    ctxRef.current = gsap.context(() => {
+  // Modern hook context handling lifecycle, scope, and cleanups automatically
+  const { contextSafe } = useGSAP(
+    () => {
       const words1   = line1Ref.current?.querySelectorAll("[data-word]") ?? [];
       const words2   = line2Ref.current?.querySelectorAll("[data-word]") ?? [];
       const allWords = [...words1, ...words2];
@@ -105,14 +102,52 @@ const Preloader = ({ onComplete }) => {
       }, "-=0.15");
 
       masterTL.set(preloaderRef.current, { display: "none" });
+    },
+    { scope: preloaderRef, dependencies: [onComplete] }
+  );
 
-    }, preloaderRef);
-  }, [onComplete]);
+  // Wrap the interaction retrigger safely inside contextSafe to prevent execution on orphaned scopes
+  const runAnimation = contextSafe(() => {
+    // Re-firing the initial timeline setup sequence safely
+    const words1   = line1Ref.current?.querySelectorAll("[data-word]") ?? [];
+    const words2   = line2Ref.current?.querySelectorAll("[data-word]") ?? [];
+    const allWords = [...words1, ...words2];
 
-  useLayoutEffect(() => {
-    runAnimation();
-    return () => ctxRef.current?.revert();
-  }, [runAnimation]);
+    gsap.killTweensOf([counterRef.current, taglineRef.current, progressBarRef.current, curtainRef.current, allWords]);
+
+    gsap.set(counterRef.current,      { y: 40,  opacity: 0 });
+    gsap.set(taglineRef.current,      { y: 20,  opacity: 0 });
+    gsap.set(progressBarRef.current,  { scaleX: 0, transformOrigin: "left center", opacity: 0 });
+    gsap.set(allWords,                { y: "110%" });
+    gsap.set(curtainRef.current,      { clipPath: "inset(0% 0% 0% 0%)" });
+    if (preloaderRef.current) preloaderRef.current.style.display = "flex";
+
+    const masterTL = gsap.timeline({ onComplete: () => onComplete?.() });
+    masterTL.to(counterRef.current, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" });
+    masterTL.to(progressBarRef.current, { opacity: 1, duration: 0.4 }, "-=0.4");
+
+    const obj = { val: 0 };
+    const updateCounter = () => {
+      if (counterRef.current) counterRef.current.textContent = String(Math.floor(obj.val)).padStart(2, "0");
+      if (progressBarRef.current) gsap.set(progressBarRef.current, { scaleX: obj.val / 100 });
+    };
+
+    masterTL.to(obj, { val: 28, duration: 0.65, ease: "power2.out", onUpdate: updateCounter });
+    masterTL.to(obj, { val: 32, duration: 0.85, ease: "power1.in",  onUpdate: updateCounter });
+    masterTL.to(obj, { val: 74, duration: 0.9,  ease: "expo.out",   onUpdate: updateCounter });
+    masterTL.to(obj, { val: 78, duration: 0.9,  ease: "power1.inOut", onUpdate: updateCounter });
+    masterTL.to(allWords, { y: "0%", duration: 1.1, ease: "power4.out", stagger: 0.08 }, "-=1.6");
+    masterTL.to(taglineRef.current, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, "-=0.6");
+    masterTL.to(obj, {
+      val: 100, duration: 0.65, ease: "power4.in",
+      onUpdate: updateCounter,
+      onComplete: () => { if (counterRef.current) counterRef.current.textContent = "100"; },
+    });
+    masterTL.to([counterRef.current, taglineRef.current], { y: -40, opacity: 0, duration: 0.55, ease: "power3.in", stagger: 0.06 }, "+=0.15");
+    masterTL.to(allWords, { y: "-110%", duration: 0.5, ease: "power3.in", stagger: { each: 0.04, from: "end" } }, "-=0.45");
+    masterTL.to(curtainRef.current, { clipPath: "inset(100% 0% 0% 0%)", duration: 1.1, ease: "power4.inOut" }, "-=0.15");
+    masterTL.set(preloaderRef.current, { display: "none" });
+  });
 
   // Dev mode debugger (Tap "R" to trigger visual replay)
   useEffect(() => {

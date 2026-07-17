@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -51,15 +52,19 @@ const Join = () => {
   const [status, setStatus] = useState("idle"); // idle | submitting | done
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Set initial hidden state for content elements
-      gsap.set([headingRef.current, subRef.current], { opacity: 0, y: 20 });
-      gsap.set(formRef.current, { opacity: 0, y: 24 });
+  // Context-safe animation hook
+  useGSAP(
+    () => {
+      // Gated check: If form is submitted successfully, skip animating form elements
+      if (status === "done") return;
 
-      // Simple once-only content reveal — CSS sticky handles the "pin" hold.
-      // The 250 vh wrapper in App.jsx is what keeps Join on-screen while
-      // the footer scrolls up from below.
+      // Set initial hidden states safely within scope
+      gsap.set([headingRef.current, subRef.current], { opacity: 0, y: 20 });
+      if (formRef.current) {
+        gsap.set(formRef.current, { opacity: 0, y: 24 });
+      }
+
+      // Simple once-only content reveal
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -69,12 +74,14 @@ const Join = () => {
       });
 
       tl.to(headingRef.current, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" })
-        .to(subRef.current,  { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.35")
-        .to(formRef.current, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, "-=0.3");
-    }, sectionRef);
+        .to(subRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.35");
 
-    return () => ctx.revert();
-  }, []);
+      if (formRef.current) {
+        tl.to(formRef.current, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, "-=0.3");
+      }
+    },
+    { scope: sectionRef, dependencies: [status] }
+  );
 
   const toggleInterest = (option) => {
     setForm((prev) => {
@@ -104,7 +111,7 @@ const Join = () => {
 
     setStatus("submitting");
     try {
-      await new Promise((res) => setTimeout(res, 700)); 
+      await new Promise((res) => setTimeout(res, 700));
       setStatus("done");
     } catch (err) {
       setError("Something went wrong — please try again.");
@@ -116,8 +123,6 @@ const Join = () => {
     <section
       ref={sectionRef}
       style={{
-        /* CSS sticky does the pinning; the 250 vh parent wrapper in App.jsx
-           provides the scroll distance for the "hold" effect. */
         position: "sticky",
         top: 0,
         zIndex: 1,
@@ -225,7 +230,7 @@ const Join = () => {
               <div style={{ flex: "1 1 240px" }}>
                 <label style={labelStyle}>Phone</label>
                 <input
-                  type="tel"
+                  type="teal"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
@@ -362,9 +367,7 @@ const Join = () => {
                 e.currentTarget.style.color = "#fff";
               }}
             >
-              {status === "submitting"
-                ? "Submitting..."
-                : "Apply to Join RealXR"}
+              {status === "submitting" ? "Submitting..." : "Apply to Join RealXR"}
             </button>
           </form>
         )}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -6,21 +6,20 @@ import { domainsData } from "../../data/domainsData";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const defaultContent = domainsData
+const defaultContent = domainsData;
 
 const Domains = ({ content = defaultContent }) => {
-  useGSAP();
   const wrapperRef = useRef(null);
   const sliderSectionRef = useRef(null);
   const trackRef = useRef(null);
   const strip1Ref = useRef(null);
   const strip2Ref = useRef(null);
 
-  useEffect(() => {
-    // If there are no slides, skip the GSAP logic entirely
-    if (!content.slides || content.slides.length === 0) return;
+  useGSAP(
+    () => {
+      // If there are no slides, skip the GSAP logic entirely
+      if (!content.slides || content.slides.length === 0) return;
 
-    let ctx = gsap.context(() => {
       const panels = gsap.utils.toArray(".slider-panel");
       const total = panels.length;
 
@@ -51,12 +50,12 @@ const Domains = ({ content = defaultContent }) => {
       tl.to(
         strip1Ref.current,
         { x: "-33.333%", ease: "none", duration: totalDuration },
-        0
+        0,
       );
       tl.to(
         strip2Ref.current,
         { x: "-100%", ease: "none", duration: totalDuration },
-        0
+        0,
       );
 
       let cursor = 0;
@@ -78,19 +77,19 @@ const Domains = ({ content = defaultContent }) => {
             title,
             { y: 60, opacity: 0, skewY: 2 },
             { y: 0, opacity: 1, skewY: 0, ease: "power3.out", duration: inDur },
-            holdStart
+            holdStart,
           );
           tl.fromTo(
             desc,
             { y: 24, opacity: 0 },
             { y: 0, opacity: 1, ease: "power2.out", duration: inDur },
-            holdStart + 0.05
+            holdStart + 0.05,
           );
           tl.fromTo(
             num,
             { x: -16, opacity: 0 },
             { x: 0, opacity: 1, ease: "power2.out", duration: inDur },
-            holdStart
+            holdStart,
           );
 
           if (i < total - 1) {
@@ -98,18 +97,24 @@ const Domains = ({ content = defaultContent }) => {
 
             tl.to(
               title,
-              { y: -50, opacity: 0, skewY: -1.5, ease: "power2.in", duration: outDur },
-              exitStart
+              {
+                y: -50,
+                opacity: 0,
+                skewY: -1.5,
+                ease: "power2.in",
+                duration: outDur,
+              },
+              exitStart,
             );
             tl.to(
               desc,
               { y: -20, opacity: 0, ease: "power2.in", duration: outDur },
-              exitStart
+              exitStart,
             );
             tl.to(
               num,
               { x: 16, opacity: 0, ease: "power2.in", duration: outDur },
-              exitStart
+              exitStart,
             );
 
             const moveStart = holdStart + holdDur;
@@ -121,7 +126,7 @@ const Domains = ({ content = defaultContent }) => {
                 ease: "power1.inOut",
                 duration: moveDur,
               },
-              moveStart
+              moveStart,
             );
 
             cursor = moveStart + moveDur;
@@ -130,16 +135,9 @@ const Domains = ({ content = defaultContent }) => {
           }
         }
       });
-    }, wrapperRef);
-
-    const onResize = () => ScrollTrigger.refresh();
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      window.removeEventListener("resize", onResize);
-      ctx.revert();
-    };
-  }, [content.slides]); // Re-run GSAP if the slides array changes
+    },
+    { scope: wrapperRef, dependencies: [content.slides] },
+  );
 
   return (
     <div ref={wrapperRef} className="-mt-24" style={{ position: "relative" }}>
@@ -243,10 +241,12 @@ const Domains = ({ content = defaultContent }) => {
                     flexShrink: 0,
                   }}
                 >
-                  {content.marqueeStrip2Items.map((item, idx) => (
+                  {content.marqueeStrip2Items?.map((item, idx) => (
                     <React.Fragment key={idx}>
                       {item}{" "}
-                      <span style={{ opacity: 0.4, margin: "0 0.8rem" }}>·</span>
+                      <span style={{ opacity: 0.4, margin: "0 0.8rem" }}>
+                        ·
+                      </span>
                     </React.Fragment>
                   ))}
                 </span>
@@ -364,7 +364,6 @@ const Domains = ({ content = defaultContent }) => {
                     textShadow: "0 2px 24px rgba(0,0,0,0.25)",
                   }}
                 >
-                  {/* Safely split dynamic title by newline if provided */}
                   {(slide.title || "").split("\n").map((line, j, arr) => (
                     <React.Fragment key={j}>
                       {line}

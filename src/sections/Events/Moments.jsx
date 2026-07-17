@@ -1,23 +1,26 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { rainImages } from "../../data/data.js"; 
+import { rainImages } from "../../data/data.js";
 
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
-const Moments = ({ images = [] , title , subTitle }) => {
-  useGSAP();
+const Moments = ({ images = [], title, subTitle }) => {
   const containerRef = useRef(null);
   const itemsRef = useRef([]);
   const imageList = images?.length ? images : rainImages;
 
-  useEffect(() => {
-    // Clear out stale references
-    itemsRef.current = itemsRef.current.slice(0, imageList.length);
+  // Consolidate everything inside the useGSAP hook
+  useGSAP(
+    () => {
+      // Clear out stale references and match the current image array boundaries
+      itemsRef.current = itemsRef.current.slice(0, imageList.length);
 
-    const ctx = gsap.context(() => {
+      // Safety check: skip GSAP logic if there are no images to animate
+      if (!imageList || imageList.length === 0) return;
+
       // Master function to manage a single image's lifecycle
       const startRainCycle = (el, isInitialSpawn = false) => {
         if (!el || !containerRef.current) return;
@@ -65,15 +68,14 @@ const Moments = ({ images = [] , title , subTitle }) => {
       ScrollTrigger.create({
         trigger: containerRef.current,
         start: "top top", // Locks section to viewport frame when top reaches top
-        end: "+=1200", // Amount of scroll distance the text/rain stays pinned (increase for a longer hold)
+        end: "+=1200", // Amount of scroll distance the text/rain stays pinned
         pin: true, // Activates pinning mechanics
         pinSpacing: true, // Pushes lower components down cleanly
         anticipatePin: 1, // Eliminates visual snapping during fast scrolls
       });
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
+    },
+    { scope: containerRef, dependencies: [imageList] },
+  );
 
   return (
     <section
