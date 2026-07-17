@@ -15,8 +15,10 @@ import React, {
 } from "react";
 import { useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 
 const Lightbox = memo(function Lightbox({ items, accent = "#00F5D4" }) {
+  useGSAP();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeId   = searchParams.get("media");
   const activeIdx  = items.findIndex((m) => m.id === activeId);

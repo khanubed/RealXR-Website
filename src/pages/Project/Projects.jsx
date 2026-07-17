@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { Search, ExternalLink, Users, Activity, Layers, Code2, ChevronDown } from "lucide-react";
 import { fetchProjects, PROJECT_CATEGORIES, PROJECT_STATUS } from "../../data/projectsPageData";
 import { Github } from "../../assets/icons/icon.jsx";
@@ -20,6 +21,7 @@ const statusStyles = {
 
 // ── Project Card Component ────────────────────────────────────────
 const ProjectCard = React.memo(function ProjectCard({ project, index }) {
+  useGSAP();
   const [open, setOpen] = useState(false);
   const dropRef = useRef(null);
   const cardRef = useRef(null);
@@ -145,6 +147,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, index }) {
 
 // ── Main Projects Page ────────────────────────────────────────────
 export default function Projects() {
+  useGSAP();
   const [projects, setProjects]    = useState([]);
   const [total, setTotal]          = useState(0);
   const [totalPages, setTotalPages]= useState(1);

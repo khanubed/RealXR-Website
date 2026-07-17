@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { teams } from "../../data/teamsData";
 
@@ -306,67 +307,66 @@ const TeamSlide = ({ team, slideIndex }) => {
     const tray = trayRef.current;
     const title = titleRef.current;
 
-    // Title reveal
-    gsap.fromTo(
-      title,
-      { opacity: 0, y: 50 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.9,
-        ease: "power3.out",
-        scrollTrigger: { trigger: slide, start: "top 80%", once: true },
-      },
-    );
-
-    // Push effect — cards start compressed to the right,
-    // come close as you scroll in, then push apart as you scroll out
-    const pairs = tray.querySelectorAll(".member-pair");
-
-    pairs.forEach((pair, i) => {
-      // Each pair enters from right with slight stagger
+    const ctx = gsap.context(() => {
+      // Title reveal
       gsap.fromTo(
-        pair,
-        { x: 120 + i * 60, opacity: 0 },
+        title,
+        { opacity: 0, y: 50 },
         {
-          x: 0,
           opacity: 1,
-          duration: 0.8,
+          y: 0,
+          duration: 0.9,
           ease: "power3.out",
-          scrollTrigger: {
-            trigger: slide,
-            start: "top 75%",
-            once: true,
-          },
-          delay: 0.1 + i * 0.12,
+          scrollTrigger: { trigger: slide, start: "top 80%", once: true },
         },
       );
-    });
 
-    // Horizontal tray scroll — push effect
-    // Cards travel right as section scrolls through
-    const trayTravel = tray.scrollWidth - tray.parentElement.offsetWidth;
+      // Push effect — cards start compressed to the right,
+      // come close as you scroll in, then push apart as you scroll out
+      const pairs = tray.querySelectorAll(".member-pair");
 
-    if (trayTravel > 0) {
-      gsap.to(tray, {
-        x: -trayTravel,
-        ease: "none",
-        scrollTrigger: {
-          trigger: slide,
-          start: "top top",
-          end: () => `+=${trayTravel + window.innerHeight * 0.5}`,
-          pin: true,
-          scrub: 1.2,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
+      pairs.forEach((pair, i) => {
+        // Each pair enters from right with slight stagger
+        gsap.fromTo(
+          pair,
+          { x: 120 + i * 60, opacity: 0 },
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: slide,
+              start: "top 75%",
+              once: true,
+            },
+            delay: 0.1 + i * 0.12,
+          },
+        );
       });
-    }
 
-    return () =>
-      ScrollTrigger.getAll()
-        .filter((t) => t.vars.trigger === slide)
-        .forEach((t) => t.kill());
+      // Horizontal tray scroll — push effect
+      // Cards travel right as section scrolls through
+      const trayTravel = tray.scrollWidth - tray.parentElement.offsetWidth;
+
+      if (trayTravel > 0) {
+        gsap.to(tray, {
+          x: -trayTravel,
+          ease: "none",
+          scrollTrigger: {
+            trigger: slide,
+            start: "top top",
+            end: () => `+=${trayTravel + window.innerHeight * 0.5}`,
+            pin: true,
+            scrub: 1.2,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        });
+      }
+    }, slideRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
@@ -486,25 +486,30 @@ const TeamSlide = ({ team, slideIndex }) => {
 
 // ── Main Section ──────────────────────────────────────────────────
 const Team = () => {
+  useGSAP();
   const sectionRef = useRef(null);
 
   useEffect(() => {
-    // Section heading parallax
-    gsap.fromTo(
-      ".team-section-heading",
-      { opacity: 0, y: 40 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          once: true,
+    const ctx = gsap.context(() => {
+      // Section heading parallax
+      gsap.fromTo(
+        ".team-section-heading",
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            once: true,
+          },
         },
-      },
-    );
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (

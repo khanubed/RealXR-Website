@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap"; 
+import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { aboutData } from "../../data/aboutData";
 
@@ -9,6 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 const defaultContent = aboutData;
 
 const About = ({ content = defaultContent }) => {
+  useGSAP();
   const sectionRef = useRef(null);
   // This will hold an array of ALL our dynamic highlight spans
   const highlightRefs = useRef([]);
@@ -19,42 +21,41 @@ const About = ({ content = defaultContent }) => {
 
     if (spans.length === 0) return;
 
-    // 2. Set initial states uniformly for ALL highlights
-    gsap.set(spans, {
-      backgroundColor: "rgba(255,255,255,0.08)",
-      color: "rgba(255,255,255,0.3)",
-      padding: "0 0.5rem",
-      borderRadius: "2px",
-    });
-
-    // 3. Create a master timeline with pinning
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top top",
-        end: "+=1500", 
-        scrub: 1, 
-        pin: true, 
-        anticipatePin: 1,
-      },
-    });
-
-    // 4. Dynamically loop through however many spans exist and add them to the timeline
-    spans.forEach((span) => {
-      tl.to(span, { 
-        backgroundColor: "#00F5D4", 
-        color: "#000", 
-        ease: "power1.out" 
+    const ctx = gsap.context(() => {
+      // 2. Set initial states uniformly for ALL highlights
+      gsap.set(spans, {
+        backgroundColor: "rgba(255,255,255,0.08)",
+        color: "rgba(255,255,255,0.3)",
+        padding: "0 0.5rem",
+        borderRadius: "2px",
       });
-    });
 
-    // 5. Empty layout pad at the end
-    tl.to({}, { duration: 0.6 }); 
+      // 3. Create a master timeline with pinning
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "+=1500", 
+          scrub: 1, 
+          pin: true, 
+          anticipatePin: 1,
+        },
+      });
 
-    return () => {
-      tl.kill();
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
+      // 4. Dynamically loop through however many spans exist and add them to the timeline
+      spans.forEach((span) => {
+        tl.to(span, { 
+          backgroundColor: "#00F5D4", 
+          color: "#000", 
+          ease: "power1.out" 
+        });
+      });
+
+      // 5. Empty layout pad at the end
+      tl.to({}, { duration: 0.6 });
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, [content]); // re-run if content changes
 
   return (

@@ -2,6 +2,7 @@ import React, { Suspense, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { MeshReflectorMaterial, Text, Center } from "@react-three/drei";
 import gsap from "gsap"; // 1. Import GSAP
+import { useGSAP } from "@gsap/react";
 
 const VRHeadset = () => {
   const groupRef = useRef();
@@ -109,6 +110,7 @@ const ReflectiveFloor = () => {
 };
 
 export default function HeroScene() {
+  useGSAP();
   return (
     <div
     className="orbitron-400"

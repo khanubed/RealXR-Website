@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 
 // Keep this as a local fallback just in case the API doesn't return a video URL
 import heroVideoFallback from "../../assets/video/hero.mp4";
@@ -12,6 +13,7 @@ gsap.registerPlugin(ScrollTrigger);
 const defaultContent = heroData
 
 const HeroVideo = ({ content = defaultContent }) => {
+  useGSAP();
   const wrapperRef = useRef(null);
   const fixedRef = useRef(null);
   const videoRef = useRef(null);
@@ -27,6 +29,7 @@ const HeroVideo = ({ content = defaultContent }) => {
     const bigText = bigTextRef.current;
     const h1Element = h1Ref.current;
 
+    let ctx;
     let scrubST;
 
     const init = () => {
@@ -48,78 +51,80 @@ const HeroVideo = ({ content = defaultContent }) => {
 
       wrapper.style.height = `${window.innerHeight + totalPx}px`;
 
-      gsap.set(videoInner, { opacity: 1 });
-      gsap.set(bigText, { x: vw, opacity: 0 });
+      ctx = gsap.context(() => {
+        gsap.set(videoInner, { opacity: 1 });
+        gsap.set(bigText, { x: vw, opacity: 0 });
 
-      scrubST = ScrollTrigger.create({
-        trigger: wrapper,
-        start: "top 20%",
-        end: "bottom bottom",
-        scrub: true,
-        invalidateOnRefresh: true,
+        scrubST = ScrollTrigger.create({
+          trigger: wrapper,
+          start: "top 20%",
+          end: "bottom bottom",
+          scrub: true,
+          invalidateOnRefresh: true,
 
-        onEnter: () => {
-          fixedEl.style.visibility = "visible";
-          fixedEl.style.opacity = 1;
-        },
-        onEnterBack: () => {
-          fixedEl.style.visibility = "visible";
-          fixedEl.style.opacity = 1;
-        },
-        onLeave: (self) => {
-          fixedEl.style.opacity = 0;
-          setTimeout(() => {
-            if (!self.isActive) fixedEl.style.visibility = "hidden";
-          }, 300);
-        },
-        onLeaveBack: (self) => {
-          fixedEl.style.opacity = 0;
-          setTimeout(() => {
-            if (!self.isActive) fixedEl.style.visibility = "hidden";
-          }, 300);
-        },
+          onEnter: () => {
+            fixedEl.style.visibility = "visible";
+            fixedEl.style.opacity = 1;
+          },
+          onEnterBack: () => {
+            fixedEl.style.visibility = "visible";
+            fixedEl.style.opacity = 1;
+          },
+          onLeave: (self) => {
+            fixedEl.style.opacity = 0;
+            setTimeout(() => {
+              if (!self.isActive) fixedEl.style.visibility = "hidden";
+            }, 300);
+          },
+          onLeaveBack: (self) => {
+            fixedEl.style.opacity = 0;
+            setTimeout(() => {
+              if (!self.isActive) fixedEl.style.visibility = "hidden";
+            }, 300);
+          },
 
-        onUpdate: (self) => {
-          // Calculate the percentage of total scroll each phase takes
-          const scrubRatio = scrubPx / totalPx;
-          const fadeRatio = fadePx / totalPx;
+          onUpdate: (self) => {
+            // Calculate the percentage of total scroll each phase takes
+            const scrubRatio = scrubPx / totalPx;
+            const fadeRatio = fadePx / totalPx;
 
-          if (self.progress <= scrubRatio) {
-            // PHASE 1: Video Scrubbing
-            const videoProgress = self.progress / scrubRatio;
-            video.currentTime = videoProgress * duration;
+            if (self.progress <= scrubRatio) {
+              // PHASE 1: Video Scrubbing
+              const videoProgress = self.progress / scrubRatio;
+              video.currentTime = videoProgress * duration;
 
-            gsap.set(videoInner, { opacity: 1 });
-            gsap.set(bigText, { x: vw, opacity: 0 }); // Text waits offscreen
-          } else if (self.progress <= scrubRatio + fadeRatio) {
-            // PHASE 2: Video Fades to 0 (Text still waits offscreen)
-            video.currentTime = duration; // Keep video at last frame
+              gsap.set(videoInner, { opacity: 1 });
+              gsap.set(bigText, { x: vw, opacity: 0 }); // Text waits offscreen
+            } else if (self.progress <= scrubRatio + fadeRatio) {
+              // PHASE 2: Video Fades to 0 (Text still waits offscreen)
+              video.currentTime = duration; // Keep video at last frame
 
-            // Normalize progress for just this fade phase (0 -> 1)
-            const fadeProgress = (self.progress - scrubRatio) / fadeRatio;
+              // Normalize progress for just this fade phase (0 -> 1)
+              const fadeProgress = (self.progress - scrubRatio) / fadeRatio;
 
-            gsap.set(videoInner, { opacity: 1 - fadeProgress });
-            gsap.set(bigText, { x: vw, opacity: 0 });
-          } else {
-            // PHASE 3: Text Marquee comes from right (Video stays fully hidden)
-            video.currentTime = duration;
-            gsap.set(videoInner, { opacity: 0 });
+              gsap.set(videoInner, { opacity: 1 - fadeProgress });
+              gsap.set(bigText, { x: vw, opacity: 0 });
+            } else {
+              // PHASE 3: Text Marquee comes from right (Video stays fully hidden)
+              video.currentTime = duration;
+              gsap.set(videoInner, { opacity: 0 });
 
-            // Normalize progress for the slide phase (0 -> 1)
-            const slideStart = scrubRatio + fadeRatio;
-            const slideProgress =
-              (self.progress - slideStart) / (1 - slideStart);
+              // Normalize progress for the slide phase (0 -> 1)
+              const slideStart = scrubRatio + fadeRatio;
+              const slideProgress =
+                (self.progress - slideStart) / (1 - slideStart);
 
-            // Animate from off-screen Right (vw) to fully off-screen Left (-textWidth)
-            const textX = vw - slideProgress * totalScrollDistance;
+              // Animate from off-screen Right (vw) to fully off-screen Left (-textWidth)
+              const textX = vw - slideProgress * totalScrollDistance;
 
-            gsap.set(bigText, {
-              x: textX,
-              opacity: Math.min(1, slideProgress * 8), // Fade in quickly right at the start of slide
-            });
-          }
-        },
-      });
+              gsap.set(bigText, {
+                x: textX,
+                opacity: Math.min(1, slideProgress * 8), // Fade in quickly right at the start of slide
+              });
+            }
+          },
+        });
+      }, wrapper);
 
       ScrollTrigger.refresh();
     };
@@ -139,17 +144,27 @@ const HeroVideo = ({ content = defaultContent }) => {
       ScrollTrigger.refresh();
     };
 
-    if (video.readyState >= 1) {
+    let isDestroyed = false;
+
+    const safeInit = () => {
+      if (isDestroyed) return;
       init();
+    };
+
+    if (video.readyState >= 1) {
+      safeInit();
     } else {
-      video.addEventListener("loadedmetadata", init, { once: true });
+      video.addEventListener("loadedmetadata", safeInit, { once: true });
     }
 
     window.addEventListener("resize", handleResize);
 
     return () => {
-      if (scrubST) scrubST.kill();
+      isDestroyed = true;
+      video.removeEventListener("loadedmetadata", safeInit);
       window.removeEventListener("resize", handleResize);
+      if (ctx) ctx.revert();
+      if (scrubST) scrubST.kill();
     };
   }, []);
 

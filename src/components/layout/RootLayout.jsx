@@ -15,6 +15,7 @@ import Preloader from "../ui/Preloader";
 gsap.registerPlugin(ScrollTrigger);
 
 const RootLayout = () => {
+  useGSAP();
   const [isLoading, setIsLoading] = useState(true);
   const lenisRef = useRef(null);
   const eventRootRef = useRef(null);
@@ -58,6 +59,20 @@ const RootLayout = () => {
     }
   }, [location.pathname]);
 
+  // 3. Ensure any ScrollTrigger instances referencing route-specific DOM
+  // are killed before React unmounts those nodes. This prevents GSAP from
+  // removing/altering DOM children while React is performing deletion.
+  useEffect(() => {
+    return () => {
+      try {
+        gsap.globalTimeline.clear();
+        ScrollTrigger.getAll().forEach((st) => st.kill());
+      } catch (e) {
+        // swallow — defensive: avoid breaking navigation if something throws
+      }
+    };
+  }, [location.pathname]);
+
   return (
     <>
       {/* Website Preloader Layer */}
@@ -85,8 +100,8 @@ const RootLayout = () => {
 
         {/* COMPONENT ROUTER VIEWPORTS */}
         <div className="relative w-full z-0">
-          {/* Outlet is where child routes (Home, Gallery) inject their UI */}
-          <Outlet />
+          {/* Remount route content on each pathname change to avoid stale animation state during navigation */}
+          <Outlet key={location.pathname} />
           <Footer />
         </div>
       </div>

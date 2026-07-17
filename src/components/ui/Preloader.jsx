@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useLayoutEffect, useCallback, memo } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 
 // Responsive word splitter with flex-wrapping support to prevent mobile clipping
 const SplitWords = memo(function SplitWords({ text }) {
@@ -24,6 +25,7 @@ const SplitWords = memo(function SplitWords({ text }) {
 });
 
 const Preloader = ({ onComplete }) => {
+  useGSAP();
   const preloaderRef   = useRef(null);
   const curtainRef     = useRef(null);
   const counterRef     = useRef(null);

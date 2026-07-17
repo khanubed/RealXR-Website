@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { domainsData } from "../../data/domainsData";
 
@@ -8,6 +9,7 @@ gsap.registerPlugin(ScrollTrigger);
 const defaultContent = domainsData
 
 const Domains = ({ content = defaultContent }) => {
+  useGSAP();
   const wrapperRef = useRef(null);
   const sliderSectionRef = useRef(null);
   const trackRef = useRef(null);

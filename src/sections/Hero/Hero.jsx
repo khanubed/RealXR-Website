@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import Navbar from "../../components/layout/Navbar"; // Ensure path is correct
 
 // You can keep a local fallback image here just in case the API fails
@@ -37,6 +38,7 @@ const reflectionWrapperStyle = {
 const defaultContent = heroData
 
 const Hero = ({ content = defaultContent }) => {
+  useGSAP();
   const containerRef    = useRef(null);
   const sceneRef        = useRef(null); 
   const textNormalRef   = useRef(null);
@@ -47,6 +49,9 @@ const Hero = ({ content = defaultContent }) => {
   const scrollIndRef    = useRef(null);
 
   useEffect(() => {
+    let floatNormal = null;
+    let floatReflect = null;
+    let onMouseMove = null;
     const ctx = gsap.context(() => {
       // ── Initial states ───────────────────────────────────
       gsap.set(textNormalRef.current,  { opacity: 0, y: 70 });
@@ -69,17 +74,17 @@ const Hero = ({ content = defaultContent }) => {
         .to(scrollIndRef.current, { opacity: 1, duration: 0.4 }, "-=0.1");
 
       // ── Ambient float ────────────────────────────────────
-      const floatNormal = gsap.to(imgNormalRef.current, {
+      floatNormal = gsap.to(imgNormalRef.current, {
         y: -12, duration: 3, ease: "sine.inOut",
         yoyo: true, repeat: -1, delay: 1.4,
       });
-      const floatReflect = gsap.to(imgReflectRef.current, {
+      floatReflect = gsap.to(imgReflectRef.current, {
         y: 12, duration: 3, ease: "sine.inOut",
         yoyo: true, repeat: -1, delay: 1.4,
       });
 
       // ── Mouse parallax ───────────────────────────────────
-      const onMouseMove = (e) => {
+      onMouseMove = (e) => {
         const dx = (e.clientX / window.innerWidth - 0.5) * 2;
         gsap.to([imgNormalRef.current, imgReflectRef.current], {
           x: dx * 12, duration: 1.1, ease: "power2.out", overwrite: "auto",
@@ -104,8 +109,8 @@ const Hero = ({ content = defaultContent }) => {
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             if (self.progress > 0) {
-              if (floatNormal.isActive()) floatNormal.kill();
-              if (floatReflect.isActive()) floatReflect.kill();
+              if (floatNormal?.isActive()) floatNormal.kill();
+              if (floatReflect?.isActive()) floatReflect.kill();
             }
           },
         },
@@ -137,15 +142,14 @@ const Hero = ({ content = defaultContent }) => {
           ease: "power2.inOut",
           duration: 0.6,
         }, 0.55);
-
-      return () => {
-        window.removeEventListener("mousemove", onMouseMove);
-        floatNormal.kill();
-        floatReflect.kill();
-      };
     }, containerRef);
 
-    return () => ctx.revert();
+    return () => {
+      if (onMouseMove) window.removeEventListener("mousemove", onMouseMove);
+      floatNormal?.kill();
+      floatReflect?.kill();
+      ctx.revert();
+    };
   }, []);
 
   return (

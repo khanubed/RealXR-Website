@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, memo } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { 
   Play, GraduationCap, Wrench, FileText, BookOpen, PenTool, 
   ChevronDown, Star, Calendar, Clock, Folder, Heart, ExternalLink 
@@ -32,6 +33,7 @@ const TypeIcon = ({ type, color }) => {
 };
 
 export const ResourceCard = memo(function ResourceCard({ item, index }) {
+  useGSAP();
   const [open, setOpen] = useState(false);
   const dropRef = useRef(null);
   const cardRef = useRef(null);

@@ -12,9 +12,11 @@
 import React, { useRef, useEffect, useCallback, memo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import MediaCard from "./MediaCard";
 
 const MediaGrid = memo(function MediaGrid({ items, accent, eventId }) {
+  useGSAP();
   const gridRef        = useRef(null);
   const [, setSearch]  = useSearchParams();
 

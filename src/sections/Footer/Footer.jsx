@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Footer() {
+  useGSAP();
   const footerRef = useRef(null);
   const redPanelRef = useRef(null);
   const redContentRef = useRef(null);

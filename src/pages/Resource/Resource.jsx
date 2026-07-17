@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { Search } from "lucide-react";
 import { fetchResources, CATEGORIES, RESOURCE_TYPES } from "../../data/resourceData";
 
@@ -13,6 +14,7 @@ import { SkeletonCard } from "../../components/ui/SkeletonCard";
 const PER_PAGE = 10;
 
 export default function Resources() {
+  useGSAP();
   const [resources, setResources]  = useState([]);
   const [total, setTotal]          = useState(0);
   const [totalPages, setTotalPages]= useState(1);

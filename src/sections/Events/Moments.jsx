@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { rainImages } from "../../data/data.js"; 
 
@@ -7,6 +8,7 @@ import { rainImages } from "../../data/data.js";
 gsap.registerPlugin(ScrollTrigger);
 
 const Moments = ({ images = [] , title , subTitle }) => {
+  useGSAP();
   const containerRef = useRef(null);
   const itemsRef = useRef([]);
   const imageList = images?.length ? images : rainImages;
@@ -15,66 +17,62 @@ const Moments = ({ images = [] , title , subTitle }) => {
     // Clear out stale references
     itemsRef.current = itemsRef.current.slice(0, imageList.length);
 
-    // Master function to manage a single image's lifecycle
-    const startRainCycle = (el, isInitialSpawn = false) => {
-      if (!el || !containerRef.current) return;
+    const ctx = gsap.context(() => {
+      // Master function to manage a single image's lifecycle
+      const startRainCycle = (el, isInitialSpawn = false) => {
+        if (!el || !containerRef.current) return;
 
-      // 1. Generate wide-variance properties for deep 3D-like layering
-      const randomScale = gsap.utils.random(0.3, 1.0); // Extreme size differences
-      const randomDuration = gsap.utils.random(8, 16); // High speed variation
-      const startX = gsap.utils.random(2, 98); // Screen distribution width
-      const randomRotation = gsap.utils.random(-35, 35);
+        // 1. Generate wide-variance properties for deep 3D-like layering
+        const randomScale = gsap.utils.random(0.3, 1.0); // Extreme size differences
+        const randomDuration = gsap.utils.random(8, 16); // High speed variation
+        const startX = gsap.utils.random(2, 98); // Screen distribution width
+        const randomRotation = gsap.utils.random(-35, 35);
 
-      // 2. Handle position on initial page load vs normal respawn
-      const containerHeight = containerRef.current.offsetHeight;
-      const startY = isInitialSpawn
-        ? gsap.utils.random(-150, containerHeight)
-        : -200;
+        // 2. Handle position on initial page load vs normal respawn
+        const containerHeight = containerRef.current.offsetHeight;
+        const startY = isInitialSpawn
+          ? gsap.utils.random(-150, containerHeight)
+          : -200;
 
-      // 3. Apply the random properties
-      gsap.set(el, {
-        xPercent: -50,
-        yPercent: -50,
-        left: `${startX}%`,
-        y: startY,
-        scale: randomScale,
-        rotation: randomRotation,
-        opacity: gsap.utils.mapRange(0.3, 1.0, 0.3, 0.85, randomScale),
-        zIndex: Math.round(randomScale * 10),
+        // 3. Apply the random properties
+        gsap.set(el, {
+          xPercent: -50,
+          yPercent: -50,
+          left: `${startX}%`,
+          y: startY,
+          scale: randomScale,
+          rotation: randomRotation,
+          opacity: gsap.utils.mapRange(0.3, 1.0, 0.3, 0.85, randomScale),
+          zIndex: Math.round(randomScale * 10),
+        });
+
+        // 4. Animate the fall
+        gsap.to(el, {
+          y: containerHeight + 200,
+          rotation: randomRotation + gsap.utils.random(-30, 30),
+          duration: randomDuration,
+          ease: "none",
+          onComplete: () => startRainCycle(el, false),
+        });
+      };
+
+      // Kick off the rain for all elements simultaneously
+      itemsRef.current.forEach((el) => {
+        startRainCycle(el, true);
       });
 
-      // 4. Animate the fall
-      gsap.to(el, {
-        y: containerHeight + 200,
-        rotation: randomRotation + gsap.utils.random(-30, 30),
-        duration: randomDuration,
-        ease: "none",
-        onComplete: () => startRainCycle(el, false),
+      // 5. Create Pinning ScrollTrigger to hold the section on screen
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: "top top", // Locks section to viewport frame when top reaches top
+        end: "+=1200", // Amount of scroll distance the text/rain stays pinned (increase for a longer hold)
+        pin: true, // Activates pinning mechanics
+        pinSpacing: true, // Pushes lower components down cleanly
+        anticipatePin: 1, // Eliminates visual snapping during fast scrolls
       });
-    };
+    }, containerRef);
 
-    // Kick off the rain for all elements simultaneously
-    itemsRef.current.forEach((el) => {
-      startRainCycle(el, true);
-    });
-
-    // 5. Create Pinning ScrollTrigger to hold the section on screen
-    const pinTrigger = ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: "top top", // Locks section to viewport frame when top reaches top
-      end: "+=1200", // Amount of scroll distance the text/rain stays pinned (increase for a longer hold)
-      pin: true, // Activates pinning mechanics
-      pinSpacing: true, // Pushes lower components down cleanly
-      anticipatePin: 1, // Eliminates visual snapping during fast scrolls
-    });
-
-    return () => {
-      // Clean up all active triggers and animations on unmount
-      if (pinTrigger) pinTrigger.kill();
-      if (itemsRef.current.length > 0) {
-        gsap.killTweensOf(itemsRef.current);
-      }
-    };
+    return () => ctx.revert();
   }, []);
 
   return (

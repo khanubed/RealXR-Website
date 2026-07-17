@@ -24,6 +24,7 @@ import React, {
 } from "react";
 import { useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { EVENTS, getEventBySlug } from "../../data/galleryData";
 import MediaGrid from "./MediaGrid.jsx";
 import Lightbox  from "./Lightbox";
@@ -189,6 +190,7 @@ function CustomCursor({ accent }) {
 
 // ── Main Dashboard ────────────────────────────────────────────────
 export default function GalleryDashboard() {
+  useGSAP();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeSlug  = searchParams.get("event");
   const activeEvent = useMemo(

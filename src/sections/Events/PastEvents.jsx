@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -250,6 +251,7 @@ const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
 
 // ── 3. Past Events Section ─────────────────────────────────────────
 const PastEvents = ({ events }) => {
+  useGSAP();
   const sectionRef = useRef(null);
   const cardRefs = useRef([]);
 

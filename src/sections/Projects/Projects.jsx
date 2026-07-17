@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { projectsData } from "../../data/projectData";
 
@@ -10,6 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 const defaultContent = projectsData
 
 const Projects = ({ content = defaultContent }) => {
+  useGSAP();
   const componentRef = useRef(null);
   const revealBoxRef = useRef(null);
   const marqueeRef = useRef(null);
@@ -32,7 +34,13 @@ const Projects = ({ content = defaultContent }) => {
     // Safety check: skip GSAP if there are no projects to render
     if (!content.projects || content.projects.length === 0) return;
 
-    let ctx = gsap.context(() => {
+    let ctx = null;
+    let marqueeTween = null;
+    let pinTimeline = null;
+    let velocityTrigger = null;
+    let dynamicVelocityTracker = null;
+
+    ctx = gsap.context(() => {
       // 1. Setup high-speed cursor target tracking
       xTo.current = gsap.quickTo(revealBoxRef.current, "x", { duration: 0.4, ease: "power3.out" });
       yTo.current = gsap.quickTo(revealBoxRef.current, "y", { duration: 0.4, ease: "power3.out" });
@@ -41,7 +49,7 @@ const Projects = ({ content = defaultContent }) => {
       gsap.set(revealBoxRef.current, { scale: 0, xPercent: -50, yPercent: -50 });
 
       // 2. Infinite Marquee Base Loop
-      const marqueeTween = gsap.to(marqueeRef.current, {
+      marqueeTween = gsap.to(marqueeRef.current, {
         xPercent: -50,
         repeat: -1,
         duration: 25, 
@@ -49,7 +57,7 @@ const Projects = ({ content = defaultContent }) => {
       });
 
       // 3. Section Pinning & Intro Sequence Timeline
-      const pinTimeline = gsap.timeline({
+      pinTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: componentRef.current,
           start: "top top",      
@@ -68,7 +76,7 @@ const Projects = ({ content = defaultContent }) => {
       .to({}, { duration: 1.5 }); // Dedicated "hold" frame
 
       // 4. ScrollTrigger to monitor page scroll velocity
-      const velocityTrigger = ScrollTrigger.create({
+      velocityTrigger = ScrollTrigger.create({
         trigger: componentRef.current,
         start: "top bottom",
         end: "bottom top",
@@ -77,7 +85,7 @@ const Projects = ({ content = defaultContent }) => {
       // 5. Smoothly map scroll speed to animation timeScale
       let currentScale = 1;
       
-      const dynamicVelocityTracker = () => {
+      dynamicVelocityTracker = () => {
         const scrollVelocity = velocityTrigger ? Math.abs(velocityTrigger.getVelocity()) : 0;
         const targetScale = 1 + scrollVelocity * 0.002; 
         
@@ -86,17 +94,15 @@ const Projects = ({ content = defaultContent }) => {
       };
 
       gsap.ticker.add(dynamicVelocityTracker);
-
-      // Cleanup internal logic
-      return () => {
-        if (velocityTrigger) velocityTrigger.kill();
-        pinTimeline.kill();
-        marqueeTween.kill();
-        gsap.ticker.remove(dynamicVelocityTracker);
-      };
     }, componentRef); // Scope GSAP selector to this component
 
-    return () => ctx.revert();
+    return () => {
+      if (velocityTrigger) velocityTrigger.kill();
+      if (pinTimeline) pinTimeline.kill();
+      if (marqueeTween) marqueeTween.kill();
+      if (dynamicVelocityTracker) gsap.ticker.remove(dynamicVelocityTracker);
+      if (ctx) ctx.revert();
+    };
   }, [content.projects]); // Re-run if the projects array changes
 
   const handleMouseMove = (e) => {

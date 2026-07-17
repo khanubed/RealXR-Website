@@ -23,8 +23,7 @@ const ErrorPage = () => {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <RootLayout />,
-    errorElement: <ErrorPage />, // <-- Added here to catch anything in the children
+    element: <RootLayout />,// <-- Added here to catch anything in the children
     children: [
       {
         index: true,
