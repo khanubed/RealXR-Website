@@ -85,7 +85,7 @@ const CursorPreview = ({ images, accent, visible, x, y }) => {
   );
 };
 
-// ── 2. Event Card Component (Now Responsive) ────────────────────────
+// ── 2. Event Card Component ─────────────────────────────────────────
 const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
   const [hovered, setHovered] = useState(false);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
@@ -118,7 +118,6 @@ const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
       onMouseMove={onMouseMove}
       style={{
         position: "sticky",
-        // Switch to auto height on mobile, keep 80vh on desktop
         height: isMobile ? "auto" : isTablet ? "60vh" : "80vh",
         minHeight: isMobile ? "480px" : "auto",
         top: `${60 + index * 18}px`,
@@ -137,12 +136,12 @@ const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
         boxSizing: "border-box",
       }}
     >
-      <div 
-        style={{ 
-          display: "flex", 
+      <div
+        style={{
+          display: "flex",
           flexDirection: isMobile ? "column" : "row",
-          gap: isMobile ? "20px" : "32px", 
-          height: "100%" 
+          gap: isMobile ? "20px" : "32px",
+          height: "100%",
         }}
       >
         <div
@@ -169,7 +168,7 @@ const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
             }}
           />
         </div>
-        
+
         <div
           style={{
             height: isMobile ? "auto" : "100%",
@@ -177,7 +176,7 @@ const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
             padding: isMobile ? "0" : "12px 12px 12px 0",
             display: "flex",
             flexDirection: "column",
-            alignItems: isMobile ? "flex-start" : "end", // Left align on mobile, Right align on desktop
+            alignItems: isMobile ? "flex-start" : "end",
             justifyContent: isMobile ? "flex-start" : "space-between",
           }}
         >
@@ -219,7 +218,7 @@ const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
               </span>
             </div>
           </div>
-          
+
           <p
             style={{
               fontFamily: "Syne, sans-serif",
@@ -234,8 +233,7 @@ const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
           </p>
         </div>
       </div>
-      
-      {/* Hide Custom Cursor completely on Mobile & Tablet devices */}
+
       {showCursor && (
         <CursorPreview
           images={event.images}
@@ -251,15 +249,19 @@ const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
 
 // ── 3. Past Events Section ─────────────────────────────────────────
 const PastEvents = ({ events }) => {
-  useGSAP();
   const sectionRef = useRef(null);
   const cardRefs = useRef([]);
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
+  // Setup animations and ScrollTriggers smoothly inside useGSAP
+  useGSAP(
+    () => {
+      // Clamp structural ref layout to active elements boundaries
+      cardRefs.current = cardRefs.current.slice(0, events.length);
+
       cardRefs.current.forEach((card, i) => {
         if (!card) return;
 
+        // Card entrance animation setup
         gsap.fromTo(
           card,
           { y: 120, opacity: 0, rotateX: 8, scale: 0.96 },
@@ -270,12 +272,16 @@ const PastEvents = ({ events }) => {
             scale: 1,
             duration: 0.85,
             ease: "power3.out",
-            scrollTrigger: { trigger: card, start: "top 90%", once: true },
+            scrollTrigger: {
+              trigger: card,
+              start: "top 90%",
+              once: true,
+            },
             delay: i * 0.06,
           },
         );
 
-        // Scale down as they stack
+        // Card scale-down timeline as items scroll higher into the sticky stack
         gsap.to(card, {
           scale: 1 - (events.length - 1 - i) * 0.018,
           ease: "none",
@@ -287,10 +293,9 @@ const PastEvents = ({ events }) => {
           },
         });
       });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, [events]);
+    },
+    { scope: sectionRef, dependencies: [events] },
+  );
 
   return (
     <section

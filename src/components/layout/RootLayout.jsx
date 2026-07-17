@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
 import { gsap } from "gsap";
@@ -15,80 +15,97 @@ import Preloader from "../ui/Preloader";
 gsap.registerPlugin(ScrollTrigger);
 
 const RootLayout = () => {
-  useGSAP();
   const [isLoading, setIsLoading] = useState(true);
   const lenisRef = useRef(null);
   const eventRootRef = useRef(null);
   const location = useLocation();
 
-  // 1. Lenis & ScrollTrigger Initialization
-  useEffect(() => {
-    // Keep Lenis from scrolling during the preload phase
-    if (isLoading) return;
+  // Unified Scroll Architecture via useGSAP
+  useGSAP(
+    () => {
+      // 1. Gated Execution: Delay initialization until preloader completes
+      if (isLoading) return;
 
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
+      // 2. Initialize Lenis Smooth Scroll
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+      });
 
-    lenisRef.current = lenis;
-    lenis.on("scroll", ScrollTrigger.update);
+      lenisRef.current = lenis;
+      
+      // Keep ScrollTrigger sync'd with smooth scroll steps
+      lenis.on("scroll", ScrollTrigger.update);
 
-    const tickerFn = (time) => lenis.raf(time * 1000);
-    gsap.ticker.add(tickerFn);
-    gsap.ticker.lagSmoothing(0);
+      // Link GSAP's high-performance animation ticker to Lenis frames
+      const tickerFn = (time) => lenis.raf(time * 1000);
+      gsap.ticker.add(tickerFn);
+      gsap.ticker.lagSmoothing(0);
 
-    ScrollTrigger.defaults({ scroller: window });
-    const t = setTimeout(() => ScrollTrigger.refresh(), 400);
+      ScrollTrigger.defaults({ scroller: window });
 
-    return () => {
-      clearTimeout(t);
-      gsap.ticker.remove(tickerFn);
-      lenis.destroy();
-      ScrollTrigger.getAll().forEach((st) => st.kill());
-    };
-  }, [isLoading]);
+      // Handle structural geometry refresh on a brief delay to account for asset loading layout shifts
+      const refreshTimeout = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 400);
 
-  // 2. Route Change Scroll-To-Top handling
-  useEffect(() => {
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(0, { immediate: true });
-    } else {
-      window.scrollTo(0, 0);
-    }
-  }, [location.pathname]);
-
-  // 3. Ensure any ScrollTrigger instances referencing route-specific DOM
-  // are killed before React unmounts those nodes. This prevents GSAP from
-  // removing/altering DOM children while React is performing deletion.
-  useEffect(() => {
-    return () => {
-      try {
+      // 3. Precise Component Cleanup Sequence
+      return () => {
+        clearTimeout(refreshTimeout);
+        gsap.ticker.remove(tickerFn);
+        lenis.destroy();
+        lenisRef.current = null;
+        
+        // Wipe active timelines cleanly to prevent React node-removal collisions
         gsap.globalTimeline.clear();
         ScrollTrigger.getAll().forEach((st) => st.kill());
-      } catch (e) {
-        // swallow — defensive: avoid breaking navigation if something throws
+      };
+    },
+    { dependencies: [isLoading] } // Only fires up when loading finishes
+  );
+
+  // Separate, safe route change handler for scroll resetting
+  useGSAP(
+    () => {
+      if (isLoading) return;
+
+      // Smoothly snap or instantly jump the view to the top on page swaps
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { immediate: true });
+      } else {
+        window.scrollTo(0, 0);
       }
-    };
-  }, [location.pathname]);
+
+      // Allow DOM rendering thread to finalize before mapping scroll limits
+      const routeRefresh = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 100);
+
+      return () => clearTimeout(routeRefresh);
+    },
+    { dependencies: [location.pathname, isLoading] } // Triggers immediately on every route pivot
+  );
 
   return (
     <>
       {/* Website Preloader Layer */}
       {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
 
-      <div 
-        ref={eventRootRef} 
-        className={`w-full relative bg-[#0a0a0a] text-white min-h-screen ${isLoading ? 'h-screen overflow-hidden' : ''}`}
+      <div
+        ref={eventRootRef}
+        className={`w-full relative bg-[#0a0a0a] text-white min-h-screen ${
+          isLoading ? "h-screen overflow-hidden" : ""
+        }`}
       >
-        <CustomCursor/>
+        <CustomCursor />
+        
         {/* FIXED 3D WEBGL ENGINE BACKGROUND LAYER */}
         <div
           className="fixed top-0 left-0 w-full h-full pointer-events-none"
           style={{ zIndex: 0 }}
         >
-          <Canvas eventSource={eventRootRef.current} camera={{ position: [0, 0, 1] }}>
+          <Canvas eventSource={eventRootRef} camera={{ position: [0, 0, 1] }}>
             <FluidCanvas />
           </Canvas>
         </div>

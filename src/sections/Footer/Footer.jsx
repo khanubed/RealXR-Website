@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -6,10 +6,7 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Footer() {
-  useGSAP();
   const footerRef = useRef(null);
-  const redPanelRef = useRef(null);
-  const redContentRef = useRef(null);
   const blackWrapRef = useRef(null);
 
   const navigateLinks = [
@@ -43,36 +40,9 @@ export default function Footer() {
     { name: "Discord", href: "#", dynamicId: "Join Server" },
   ];
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // ── LAYER 2: GSAP-pin the red panel so it stays at the top
-      //    while the black curtain (layer 3) rises over it.
-      //    pinSpacing:false is critical — it lets the black panel
-      //    climb straight up without an extra spacer pushing it down.
-      ScrollTrigger.create({
-        trigger: redPanelRef.current,
-        start: "top top",
-        end: "bottom top",
-        pin: true,
-        pinSpacing: false,
-        anticipatePin: 1,
-      });
-
-      // ── Parallax + fade on red content as the black curtain covers it.
-      gsap.to(redContentRef.current, {
-        yPercent: -15,
-        opacity: 0.3,
-        scale: 0.96,
-        ease: "none",
-        scrollTrigger: {
-          trigger: redPanelRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
-
-      // ── Cloth-feel inertia on the black curtain as it rises.
+  useGSAP(
+    () => {
+      // Natural cloth-feel visual entry speed adjust offset
       gsap.fromTo(
         blackWrapRef.current,
         { yPercent: 6 },
@@ -80,17 +50,17 @@ export default function Footer() {
           yPercent: 0,
           ease: "none",
           scrollTrigger: {
-            trigger: redPanelRef.current,
-            start: "top top",
-            end: "bottom top",
+            trigger: blackWrapRef.current,
+            start: "top bottom",
+            end: "top top",
             scrub: true,
           },
         },
       );
 
-      // ── Staggered reveal of the black panel's content.
+      // Link grid list presentation fade staging
       gsap.fromTo(
-        blackWrapRef.current.querySelectorAll(".reveal-item"),
+        gsap.utils.toArray(".reveal-item"),
         { y: 36, opacity: 0 },
         {
           y: 0,
@@ -107,51 +77,22 @@ export default function Footer() {
       );
 
       ScrollTrigger.refresh();
-    }, footerRef);
-
-    return () => ctx.revert();
-  }, []);
+    },
+    { scope: footerRef }
+  );
 
   return (
     <footer
       ref={footerRef}
-      style={{ position: "static" }}
-      className="w-full flex flex-col bg-[#0A0A0C] text-white select-none"
+      style={{ position: "absolute", zIndex: 50 }}
+      className="w-full flex flex-col bg-black text-white select-none"
     >
-      {/* LAYER 2 — RED PANEL: GSAP-pinned at viewport top while black rises.
-             z-10 ensures it overlaps the Join section (z-1) below it. */}
-      <div
-        ref={redPanelRef}
-        className="relative z-10 w-full h-screen bg-[#FF5A60] text-white"
-      >
-        <div
-          ref={redContentRef}
-          className="w-full h-full flex flex-col md:flex-row md:justify-between md:items-center gap-8 px-6 py-12 md:px-32 md:py-20"
-        >
-          <div>
-            <h2 className="syne-800 text-4xl sm:text-6xl md:text-8xl lg:text-8xl tracking-tight leading-28 uppercase ">
-              Built At <br />
-              IES IPS <br />
-              Academy
-            </h2>
-          </div>
-          <div className="md:text-right max-w-xs md:max-w-md">
-            <p className="orbitron-600 text-sm sm:text-base md:text-lg lg:text-xl tracking-wider uppercase leading-10 text-white/95">
-              Where Imagination <br /> Meets Engineering
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. BLACK CURTAIN — LAYER 3 (top). Rises from below and rounds
-             over the red panel, the final reveal in the stack. */}
       <div
         ref={blackWrapRef}
-        className="relative z-20 w-full rounded-t-[2.5rem] md:rounded-t-[4rem] overflow-hidden shadow-[0_-60px_100px_-20px_rgba(0,0,0,0.65)] bg-black"
+        className="w-full rounded-t-[2.5rem] md:rounded-t-[4rem] overflow-hidden shadow-[0_-60px_100px_-20px_rgba(0,0,0,0.65)] bg-black"
       >
-        {/* Middle Navigation Section */}
         <div className="w-full bg-black px-6 pt-16 pb-8 md:px-16 md:pt-24 grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-          {/* Brand / Logo & Operational Info Column */}
+          {/* Logo & Info Column */}
           <div className="reveal-item md:col-span-4 lg:col-span-4 flex flex-col space-y-6">
             <div className="relative w-44 h-auto opacity-90 hover:opacity-100 transition-opacity">
               <img src="/realXr.PNG" alt="RealXR logo" />
@@ -181,7 +122,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Link Columns */}
+          {/* Links Columns */}
           <div className="md:col-span-8 lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8 md:gap-12">
             <div className="reveal-item flex flex-col space-y-4">
               <h4 className="orbitron-700 text-xs md:text-sm uppercase tracking-widest text-white border-b border-white/10 pb-2">
@@ -240,7 +181,7 @@ export default function Footer() {
 
           <div className="col-span-1 md:col-span-12 border-t border-white/[0.08] my-4" />
 
-          {/* Social Media Grid */}
+          {/* Social Links */}
           <div className="reveal-item col-span-1 md:col-span-12 grid grid-cols-2 sm:grid-cols-4 gap-4">
             {socialLinks.map((social) => (
               <a
@@ -258,7 +199,7 @@ export default function Footer() {
             ))}
           </div>
 
-          {/* Fine Print */}
+          {/* Credits footer panel */}
           <div className="reveal-item col-span-1 md:col-span-12 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-mono text-zinc-600 mt-4 border-t border-white/[0.05] pt-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
               <span>© 2026 REALXR CLUB. ALL CORE SYSTEMS OPERATIONAL.</span>
@@ -287,7 +228,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* 3. Bottom Marquee Panel (white) — rides along inside the curtain */}
+        {/* Marquee Container */}
         <div className="w-full bg-white text-black pt-8 pb-12 flex flex-col items-center justify-center overflow-hidden">
           <div className="w-full flex whitespace-nowrap overflow-hidden group select-none">
             <div className="flex flex-row space-x-8 animate-marquee inline-block py-2">
@@ -307,7 +248,6 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Custom Styles Injector */}
       <style
         dangerouslySetInnerHTML={{
           __html: `

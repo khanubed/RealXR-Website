@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -10,10 +10,9 @@ import { heroData } from "../../data/heroData";
 gsap.registerPlugin(ScrollTrigger);
 
 // Define fallback content so the UI never breaks during loading/errors
-const defaultContent = heroData
+const defaultContent = heroData;
 
 const HeroVideo = ({ content = defaultContent }) => {
-  useGSAP();
   const wrapperRef = useRef(null);
   const fixedRef = useRef(null);
   const videoRef = useRef(null);
@@ -21,37 +20,36 @@ const HeroVideo = ({ content = defaultContent }) => {
   const bigTextRef = useRef(null);
   const h1Ref = useRef(null);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    const wrapper = wrapperRef.current;
-    const fixedEl = fixedRef.current;
-    const videoInner = videoInnerRef.current;
-    const bigText = bigTextRef.current;
-    const h1Element = h1Ref.current;
+  useGSAP(
+    () => {
+      const video = videoRef.current;
+      const wrapper = wrapperRef.current;
+      const fixedEl = fixedRef.current;
+      const videoInner = videoInnerRef.current;
+      const bigText = bigTextRef.current;
+      const h1Element = h1Ref.current;
 
-    let ctx;
-    let scrubST;
+      let scrubST;
 
-    const init = () => {
-      video.pause();
-      video.currentTime = 0;
+      const init = () => {
+        video.pause();
+        video.currentTime = 0;
 
-      const duration = video.duration || 1;
-      const vw = window.innerWidth;
+        const duration = video.duration || 1;
+        const vw = window.innerWidth;
 
-      const textWidth = h1Element.offsetWidth;
-      const totalScrollDistance = textWidth;
+        const textWidth = h1Element.offsetWidth;
+        const totalScrollDistance = textWidth;
 
-      // Define the scroll distance for each of the 3 phases
-      const scrubPx = duration * 500; // Phase 1: Video scrubbing
-      const fadePx = window.innerHeight * 0.8; // Phase 2: Fading the video to 0
-      const slidePx = totalScrollDistance * 1.2; // Phase 3: Text scrolling across
+        // Define the scroll distance for each of the 3 phases
+        const scrubPx = duration * 500; // Phase 1: Video scrubbing
+        const fadePx = window.innerHeight * 0.8; // Phase 2: Fading the video to 0
+        const slidePx = totalScrollDistance * 1.2; // Phase 3: Text scrolling across
 
-      const totalPx = scrubPx + fadePx + slidePx;
+        const totalPx = scrubPx + fadePx + slidePx;
 
-      wrapper.style.height = `${window.innerHeight + totalPx}px`;
+        wrapper.style.height = `${window.innerHeight + totalPx}px`;
 
-      ctx = gsap.context(() => {
         gsap.set(videoInner, { opacity: 1 });
         gsap.set(bigText, { x: vw, opacity: 0 });
 
@@ -124,49 +122,48 @@ const HeroVideo = ({ content = defaultContent }) => {
             }
           },
         });
-      }, wrapper);
 
-      ScrollTrigger.refresh();
-    };
+        ScrollTrigger.refresh();
+      };
 
-    const handleResize = () => {
-      if (!video.duration || !h1Element) return;
-      const vw = window.innerWidth;
+      const handleResize = () => {
+        if (!video.duration || !h1Element) return;
+        const vw = window.innerWidth;
 
-      const textWidth = h1Element.offsetWidth;
-      const scrubPx = video.duration * 500;
-      const fadePx = window.innerHeight * 0.8;
-      const slidePx = (vw + textWidth) * 1.2;
+        const textWidth = h1Element.offsetWidth;
+        const scrubPx = video.duration * 500;
+        const fadePx = window.innerHeight * 0.8;
+        const slidePx = (vw + textWidth) * 1.2;
 
-      const totalPx = scrubPx + fadePx + slidePx;
-      wrapper.style.height = `${window.innerHeight + totalPx}px`;
+        const totalPx = scrubPx + fadePx + slidePx;
+        wrapper.style.height = `${window.innerHeight + totalPx}px`;
 
-      ScrollTrigger.refresh();
-    };
+        ScrollTrigger.refresh();
+      };
 
-    let isDestroyed = false;
+      let isDestroyed = false;
 
-    const safeInit = () => {
-      if (isDestroyed) return;
-      init();
-    };
+      const safeInit = () => {
+        if (isDestroyed) return;
+        init();
+      };
 
-    if (video.readyState >= 1) {
-      safeInit();
-    } else {
-      video.addEventListener("loadedmetadata", safeInit, { once: true });
-    }
+      if (video.readyState >= 1) {
+        safeInit();
+      } else {
+        video.addEventListener("loadedmetadata", safeInit, { once: true });
+      }
 
-    window.addEventListener("resize", handleResize);
+      window.addEventListener("resize", handleResize);
 
-    return () => {
-      isDestroyed = true;
-      video.removeEventListener("loadedmetadata", safeInit);
-      window.removeEventListener("resize", handleResize);
-      if (ctx) ctx.revert();
-      if (scrubST) scrubST.kill();
-    };
-  }, []);
+      return () => {
+        isDestroyed = true;
+        video.removeEventListener("loadedmetadata", safeInit);
+        window.removeEventListener("resize", handleResize);
+      };
+    },
+    { scope: wrapperRef },
+  ); // Cleans up timelines and scroll triggers smoothly on unmount
 
   return (
     <>

@@ -1,41 +1,38 @@
 /**
  * MediaCard.jsx
  * ─────────────────────────────────────────────────────────────────
- * Individual media tile. Handles:
+ * Individual media tile — RealXR gallery. Handles:
  *  • Aspect-ratio containment before load (zero CLS)
  *  • Intersection Observer lazy loading
  *  • Video: buffers only when visible, auto-pauses when hidden
- *  • Hover micro-interactions (scale, overlay fade, video preview)
- *  • Custom cursor state via callback
+ *  • Hover micro-interactions: scale, tilt, overlay fade, video preview
+ *  • Light-glass skeleton + frame so cards read correctly against
+ *    the soft white/pink liquid background behind the page
  * ─────────────────────────────────────────────────────────────────
  */
 
 import React, {
   useRef, useEffect, useState, useCallback, memo,
 } from "react";
+import { gsap } from "gsap";
 
-// ── Span → Tailwind class map ──────────────────────────────────────
-// "2"   → spans 2 cols (wide landscape)
-// "tall"→ spans 2 rows (portrait)
-// "1"   → default single cell
 const SPAN_CLASS = {
   "2":    "col-span-2",
   "tall": "row-span-2",
   "1":    "col-span-1",
 };
 
-// Compute padding-bottom % from width/height to lock aspect ratio
-// This reserves exact space before the image loads → no layout shift
 const aspectPadding = (w, h) => `${((h / w) * 100).toFixed(4)}%`;
 
 const MediaCard = memo(function MediaCard({
   item,
-  accent = "#00F5D4",
-  onClick,          // (item) => void — opens lightbox
-  onCursorEnter,    // () => void
-  onCursorLeave,    // () => void
+  accent = "#00BFAE",
+  onClick,
+  onCursorEnter,
+  onCursorLeave,
 }) {
   const cardRef    = useRef(null);
+  const tiltRef    = useRef(null);
   const videoRef   = useRef(null);
   const imgRef     = useRef(null);
 
@@ -44,7 +41,6 @@ const MediaCard = memo(function MediaCard({
   const [inView,   setInView]   = useState(false);
 
   // ── Intersection Observer ─────────────────────────────────────
-  // Single observer instance per card — triggers lazy load + video play/pause
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
@@ -52,19 +48,13 @@ const MediaCard = memo(function MediaCard({
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setInView(true); // start loading src
-          // Video: start buffering only when visible
-          if (videoRef.current) {
-            videoRef.current.load();
-          }
-        } else {
-          // Video: pause + release memory pressure when off-screen
-          if (videoRef.current) {
-            videoRef.current.pause();
-          }
+          setInView(true);
+          if (videoRef.current) videoRef.current.load();
+        } else if (videoRef.current) {
+          videoRef.current.pause();
         }
       },
-      { rootMargin: "200px 0px" } // preload 200px before entering viewport
+      { rootMargin: "200px 0px" }
     );
 
     io.observe(el);
@@ -76,12 +66,33 @@ const MediaCard = memo(function MediaCard({
     const v = videoRef.current;
     if (!v || !inView) return;
     if (hovered) {
-      v.play().catch(() => {}); // catch auto-play policy blocks silently
+      v.play().catch(() => {});
     } else {
       v.pause();
       v.currentTime = 0;
     }
   }, [hovered, inView]);
+
+  // ── Subtle 3D tilt toward the cursor — a quiet, premium touch ──
+  useEffect(() => {
+    if (!hovered || !tiltRef.current) return;
+    const el = tiltRef.current;
+    const quickRX = gsap.quickTo(el, "rotateX", { duration: 0.4, ease: "power3.out" });
+    const quickRY = gsap.quickTo(el, "rotateY", { duration: 0.4, ease: "power3.out" });
+
+    const handle = (e) => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      quickRY(px * 6);
+      quickRX(-py * 6);
+    };
+    cardRef.current.addEventListener("mousemove", handle);
+    return () => {
+      cardRef.current?.removeEventListener("mousemove", handle);
+      gsap.to(el, { rotateX: 0, rotateY: 0, duration: 0.5, ease: "power3.out" });
+    };
+  }, [hovered]);
 
   const handleClick = useCallback(() => onClick(item), [onClick, item]);
   const handleEnter = useCallback(() => {
@@ -94,38 +105,37 @@ const MediaCard = memo(function MediaCard({
   }, [onCursorLeave]);
 
   const spanClass = SPAN_CLASS[item.span] ?? "col-span-1";
-  // For tall cards use the image's own aspect on mobile, lock on desktop
   const padBottom = aspectPadding(item.width, item.height);
 
   return (
     <div
       ref={cardRef}
-      className={`${spanClass} relative overflow-hidden rounded-xl cursor-none group`}
+      className={`${spanClass} relative overflow-hidden rounded-2xl group`}
       style={{
-        // GPU layer promotion — keeps transforms off the main thread
         willChange: "transform",
-        background: "#111",
+        background: "rgba(255,255,255,0.45)",
+        backdropFilter: "blur(6px)",
+        border: "1px solid rgba(255,255,255,0.6)",
+        boxShadow: hovered
+          ? `0 24px 60px -24px rgba(21,20,26,0.28), 0 0 0 1px ${accent}33`
+          : "0 10px 32px -18px rgba(21,20,26,0.16)",
+        transition: "box-shadow 0.35s ease, border-color 0.35s ease",
       }}
       onClick={handleClick}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
     >
-      {/*
-        ── Aspect ratio box ───────────────────────────────────────
-        Padding-bottom trick reserves exact pixel space BEFORE the
-        image/video loads, preventing any cumulative layout shift.
-        All children are absolute-positioned inside.
-      */}
       <div
+        ref={tiltRef}
         className="relative w-full"
-        style={{ paddingBottom: padBottom }}
+        style={{ paddingBottom: padBottom, transformStyle: "preserve-3d" }}
       >
 
-        {/* ── Skeleton shimmer (shown while loading) ── */}
+        {/* ── Skeleton shimmer — light glass tone, not dark ── */}
         {!loaded && (
           <div
             className="absolute inset-0 animate-pulse"
-            style={{ background: "linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }}
+            style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.35) 25%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.35) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }}
           />
         )}
 
@@ -133,9 +143,7 @@ const MediaCard = memo(function MediaCard({
         {item.type === "image" && (
           <img
             ref={imgRef}
-            // Only set src when in viewport — true lazy load
             src={inView ? item.src : undefined}
-            // Low-res thumb as placeholder so the box isn't blank
             style={{
               position: "absolute", inset: 0,
               width: "100%", height: "100%",
@@ -154,7 +162,6 @@ const MediaCard = memo(function MediaCard({
         {/* ── VIDEO ─────────────────────────────────────────────── */}
         {item.type === "video" && (
           <>
-            {/* Poster image shown before video loads/plays */}
             {!hovered && (
               <img
                 src={item.thumb}
@@ -171,13 +178,12 @@ const MediaCard = memo(function MediaCard({
             )}
             <video
               ref={videoRef}
-              // src only set when in viewport — no premature buffering
               src={inView ? item.videoMp4 : undefined}
               poster={item.thumb}
               muted
               loop
               playsInline
-              preload="none" // let our IO handle buffering
+              preload="none"
               style={{
                 position: "absolute", inset: 0,
                 width: "100%", height: "100%",
@@ -190,11 +196,12 @@ const MediaCard = memo(function MediaCard({
           </>
         )}
 
-        {/* ── Hover overlay ─────────────────────────────────────── */}
+        {/* ── Hover overlay — dark scrim on the media itself only,
+             for caption legibility; unrelated to the page's light theme ── */}
         <div
           style={{
             position: "absolute", inset: 0,
-            background: `linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)`,
+            background: `linear-gradient(to top, rgba(10,10,12,0.78) 0%, rgba(10,10,12,0.12) 55%, transparent 100%)`,
             opacity: hovered ? 1 : 0,
             transition: "opacity 0.35s ease",
           }}
@@ -207,14 +214,14 @@ const MediaCard = memo(function MediaCard({
             display: "flex", alignItems: "center", gap: 5,
             padding: "4px 10px",
             borderRadius: 999,
-            background: "rgba(0,0,0,0.65)",
+            background: "rgba(255,255,255,0.75)",
             backdropFilter: "blur(6px)",
             border: `1px solid ${accent}44`,
           }}>
             <svg width="10" height="10" viewBox="0 0 10 10" fill={accent}>
               <polygon points="2,1 9,5 2,9" />
             </svg>
-            <span style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: "0.62rem", letterSpacing: "0.1em", color: accent }}>VIDEO</span>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.08em", color: "#15141A" }}>VIDEO</span>
           </div>
         )}
 
@@ -228,7 +235,7 @@ const MediaCard = memo(function MediaCard({
         }}>
           <p style={{
             fontFamily: "Space Grotesk, sans-serif",
-            fontSize: "0.78rem", color: "rgba(255,255,255,0.85)",
+            fontSize: "0.78rem", color: "rgba(255,255,255,0.92)",
             lineHeight: 1.5,
           }}>{item.caption}</p>
         </div>
@@ -237,9 +244,9 @@ const MediaCard = memo(function MediaCard({
         <div style={{
           position: "absolute", top: 12, right: 12,
           width: 32, height: 32, borderRadius: "50%",
-          background: "rgba(0,0,0,0.6)",
+          background: "rgba(255,255,255,0.85)",
           backdropFilter: "blur(8px)",
-          border: `1px solid ${accent}33`,
+          border: `1px solid ${accent}44`,
           display: "flex", alignItems: "center", justifyContent: "center",
           opacity: hovered ? 1 : 0,
           transform: hovered ? "scale(1)" : "scale(0.7)",

@@ -8,16 +8,17 @@ import { projectsData } from "../../data/projectData";
 gsap.registerPlugin(ScrollTrigger);
 
 // Fallback content to keep the UI intact if CMS data is missing
-const defaultContent = projectsData
+const defaultContent = projectsData;
 
 const Projects = ({ content = defaultContent }) => {
-  useGSAP();
   const componentRef = useRef(null);
   const revealBoxRef = useRef(null);
   const marqueeRef = useRef(null);
-  
+
   // Safely initialize the active image
-  const [activeImage, setActiveImage] = useState(content.projects?.[0]?.img || "");
+  const [activeImage, setActiveImage] = useState(
+    content.projects?.[0]?.img || "",
+  );
 
   // Update active image if the CMS injects new data
   useEffect(() => {
@@ -30,53 +31,60 @@ const Projects = ({ content = defaultContent }) => {
   const xTo = useRef(null);
   const yTo = useRef(null);
 
-  useEffect(() => {
-    // Safety check: skip GSAP if there are no projects to render
-    if (!content.projects || content.projects.length === 0) return;
+  // Consolidate all initialization, pinning, and marquee tracking inside useGSAP
+  useGSAP(
+    () => {
+      // Safety check: skip GSAP if there are no projects to render
+      if (!content.projects || content.projects.length === 0) return;
 
-    let ctx = null;
-    let marqueeTween = null;
-    let pinTimeline = null;
-    let velocityTrigger = null;
-    let dynamicVelocityTracker = null;
-
-    ctx = gsap.context(() => {
       // 1. Setup high-speed cursor target tracking
-      xTo.current = gsap.quickTo(revealBoxRef.current, "x", { duration: 0.4, ease: "power3.out" });
-      yTo.current = gsap.quickTo(revealBoxRef.current, "y", { duration: 0.4, ease: "power3.out" });
+      xTo.current = gsap.quickTo(revealBoxRef.current, "x", {
+        duration: 0.4,
+        ease: "power3.out",
+      });
+      yTo.current = gsap.quickTo(revealBoxRef.current, "y", {
+        duration: 0.4,
+        ease: "power3.out",
+      });
 
       // Initial cursor box setup state
-      gsap.set(revealBoxRef.current, { scale: 0, xPercent: -50, yPercent: -50 });
+      gsap.set(revealBoxRef.current, {
+        scale: 0,
+        xPercent: -50,
+        yPercent: -50,
+      });
 
       // 2. Infinite Marquee Base Loop
-      marqueeTween = gsap.to(marqueeRef.current, {
+      const marqueeTween = gsap.to(marqueeRef.current, {
         xPercent: -50,
         repeat: -1,
-        duration: 25, 
+        duration: 25,
         ease: "none",
       });
 
       // 3. Section Pinning & Intro Sequence Timeline
-      pinTimeline = gsap.timeline({
+      const pinTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: componentRef.current,
-          start: "top top",      
-          end: "+=1200",         
-          pin: true,             
-          scrub: 1,              
-          anticipatePin: 1,      
-        }
+          start: "top top",
+          end: "+=1200",
+          pin: true,
+          scrub: 1,
+          anticipatePin: 1,
+        },
       });
 
       // Stagger reveal the project rows
-      pinTimeline.fromTo(".project-row", 
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, stagger: 0.15, ease: "power2.out" }
-      )
-      .to({}, { duration: 1.5 }); // Dedicated "hold" frame
+      pinTimeline
+        .fromTo(
+          ".project-row",
+          { opacity: 0, y: 40 },
+          { opacity: 1, y: 0, stagger: 0.15, ease: "power2.out" },
+        )
+        .to({}, { duration: 1.5 }); // Dedicated "hold" frame
 
       // 4. ScrollTrigger to monitor page scroll velocity
-      velocityTrigger = ScrollTrigger.create({
+      const velocityTrigger = ScrollTrigger.create({
         trigger: componentRef.current,
         start: "top bottom",
         end: "bottom top",
@@ -84,30 +92,31 @@ const Projects = ({ content = defaultContent }) => {
 
       // 5. Smoothly map scroll speed to animation timeScale
       let currentScale = 1;
-      
-      dynamicVelocityTracker = () => {
-        const scrollVelocity = velocityTrigger ? Math.abs(velocityTrigger.getVelocity()) : 0;
-        const targetScale = 1 + scrollVelocity * 0.002; 
-        
+
+      const dynamicVelocityTracker = () => {
+        const scrollVelocity = velocityTrigger
+          ? Math.abs(velocityTrigger.getVelocity())
+          : 0;
+        const targetScale = 1 + scrollVelocity * 0.002;
+
         currentScale += (targetScale - currentScale) * 0.08;
         marqueeTween.timeScale(currentScale);
       };
 
       gsap.ticker.add(dynamicVelocityTracker);
-    }, componentRef); // Scope GSAP selector to this component
 
-    return () => {
-      if (velocityTrigger) velocityTrigger.kill();
-      if (pinTimeline) pinTimeline.kill();
-      if (marqueeTween) marqueeTween.kill();
-      if (dynamicVelocityTracker) gsap.ticker.remove(dynamicVelocityTracker);
-      if (ctx) ctx.revert();
-    };
-  }, [content.projects]); // Re-run if the projects array changes
+      // useGSAP handles killing components automatically,
+      // but the custom ticker loop needs manual removal on unmount
+      return () => {
+        gsap.ticker.remove(dynamicVelocityTracker);
+      };
+    },
+    { scope: componentRef, dependencies: [content.projects] },
+  );
 
   const handleMouseMove = (e) => {
     if (!componentRef.current || !revealBoxRef.current) return;
-    
+
     const bounds = componentRef.current.getBoundingClientRect();
     const mouseX = e.clientX - bounds.left;
     const mouseY = e.clientY - bounds.top;
@@ -120,13 +129,13 @@ const Projects = ({ content = defaultContent }) => {
 
   const handleMouseEnterRow = (imgUrl) => {
     setActiveImage(imgUrl);
-    
+
     gsap.to(revealBoxRef.current, {
       scale: 1,
       rotation: 2,
       opacity: 1,
       duration: 0.35,
-      ease: "back.out(1.4)"
+      ease: "back.out(1.4)",
     });
   };
 
@@ -136,23 +145,27 @@ const Projects = ({ content = defaultContent }) => {
       rotation: -2,
       opacity: 0,
       duration: 0.25,
-      ease: "power2.in"
+      ease: "power2.in",
     });
   };
 
   return (
-    <section 
-      ref={componentRef} 
+    <section
+      ref={componentRef}
       onMouseMove={handleMouseMove}
       className="relative w-full min-h-screen py-10 px-4 md:px-12 overflow-hidden select-none text-black flex flex-col justify-center "
     >
       {/* Dynamic Velocity Marquee Tracker Wrapper */}
       <div className="w-full overflow-hidden whitespace-nowrap border-b border-black/10">
-        <div ref={marqueeRef} className="inline-block whitespace-nowrap will-change-transform">
-          {/* Loop the dynamic string twice to ensure it overflows the viewport for GSAP to scroll */}
+        <div
+          ref={marqueeRef}
+          className="inline-block whitespace-nowrap will-change-transform"
+        >
           {[1, 2].map((key) => (
-            <h2 key={key} className="inline-block text-[6vw] md:text-[4.5vw] font-black syne-800 tracking-tighter uppercase font-sans">
-              {/* Repeat the phrase 4 times per block just to be safe on ultra-wide monitors */}
+            <h2
+              key={key}
+              className="inline-block text-[6vw] md:text-[4.5vw] font-black syne-800 tracking-tighter uppercase font-sans"
+            >
               {Array(4).fill(content.marqueeText).join(" ")}&nbsp;
             </h2>
           ))}

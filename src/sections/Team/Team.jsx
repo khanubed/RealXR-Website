@@ -1,13 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { teams } from "../../data/teamsData";
 
 gsap.registerPlugin(ScrollTrigger);
-
-// ── Team Data ─────────────────────────────────────────────────────
-
 
 // ── Social Icons ──────────────────────────────────────────────────
 const InstagramIcon = () => (
@@ -69,7 +66,7 @@ const MemberPair = ({ member, accent, bg }) => {
         display: "flex",
         gap: "1rem",
         flexShrink: 0,
-        width: "clamp(480px, 52vw, 640px)",
+        width: "clamp(400px, 46vw, 600px)",
       }}
     >
       {/* Card A — Photo */}
@@ -94,7 +91,6 @@ const MemberPair = ({ member, accent, bg }) => {
             display: "block",
           }}
         />
-        {/* Bottom gradient */}
         <div
           style={{
             position: "absolute",
@@ -103,7 +99,6 @@ const MemberPair = ({ member, accent, bg }) => {
               "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%)",
           }}
         />
-        {/* Name on photo */}
         <div
           style={{
             position: "absolute",
@@ -143,7 +138,7 @@ const MemberPair = ({ member, accent, bg }) => {
           </div>
           <p
             style={{
-              fontFamily: "Space Grotesk, sans-serif",
+              fontFamily: "Syne , sans-serif",
               fontSize: "0.7rem",
               color: "rgba(255,255,255,0.5)",
               marginTop: 4,
@@ -170,11 +165,10 @@ const MemberPair = ({ member, accent, bg }) => {
           backdropFilter: "blur(8px)",
         }}
       >
-        {/* Description */}
         <p
           style={{
-            fontFamily: "Space Grotesk, sans-serif",
-            fontSize: "clamp(0.82rem, 1.1vw, 0.95rem)",
+            fontFamily: "Syne, sans-serif",
+            fontSize: "clamp(0.82rem, 1.1vw, 0.rem)",
             color: "rgba(255,255,255,0.65)",
             lineHeight: 1.75,
             flex: 1,
@@ -183,7 +177,6 @@ const MemberPair = ({ member, accent, bg }) => {
           {member.desc}
         </p>
 
-        {/* Bottom — avatar + name + socials */}
         <div>
           <div
             style={{
@@ -236,7 +229,6 @@ const MemberPair = ({ member, accent, bg }) => {
             </div>
           </div>
 
-          {/* Socials */}
           <div style={{ display: "flex", gap: 10 }}>
             {member.socials.instagram && (
               <a
@@ -302,12 +294,14 @@ const TeamSlide = ({ team, slideIndex }) => {
   const titleRef = useRef(null);
   const trayRef = useRef(null);
 
-  useEffect(() => {
-    const slide = slideRef.current;
-    const tray = trayRef.current;
-    const title = titleRef.current;
+  useGSAP(
+    () => {
+      const slide = slideRef.current;
+      const tray = trayRef.current;
+      const title = titleRef.current;
 
-    const ctx = gsap.context(() => {
+      if (!slide || !tray) return;
+
       // Title reveal
       gsap.fromTo(
         title,
@@ -321,12 +315,10 @@ const TeamSlide = ({ team, slideIndex }) => {
         },
       );
 
-      // Push effect — cards start compressed to the right,
-      // come close as you scroll in, then push apart as you scroll out
-      const pairs = tray.querySelectorAll(".member-pair");
+      // Push effect — cards enter from right with slight stagger
+      const pairs = gsap.utils.toArray(".member-pair", tray);
 
       pairs.forEach((pair, i) => {
-        // Each pair enters from right with slight stagger
         gsap.fromTo(
           pair,
           { x: 120 + i * 60, opacity: 0 },
@@ -345,8 +337,7 @@ const TeamSlide = ({ team, slideIndex }) => {
         );
       });
 
-      // Horizontal tray scroll — push effect
-      // Cards travel right as section scrolls through
+      // Horizontal tray scroll
       const trayTravel = tray.scrollWidth - tray.parentElement.offsetWidth;
 
       if (trayTravel > 0) {
@@ -364,10 +355,9 @@ const TeamSlide = ({ team, slideIndex }) => {
           },
         });
       }
-    }, slideRef);
-
-    return () => ctx.revert();
-  }, []);
+    },
+    { scope: slideRef, dependencies: [team] },
+  ); // Adding dependency array preserves data switches if your teams state changes updates dynamically
 
   return (
     <div
@@ -381,7 +371,6 @@ const TeamSlide = ({ team, slideIndex }) => {
         overflow: "hidden",
       }}
     >
-      {/* Background section number */}
       <div
         style={{
           position: "absolute",
@@ -401,7 +390,6 @@ const TeamSlide = ({ team, slideIndex }) => {
         {String(slideIndex + 1).padStart(2, "0")}
       </div>
 
-      {/* Label */}
       <p
         style={{
           fontFamily: "Space Grotesk, sans-serif",
@@ -426,7 +414,6 @@ const TeamSlide = ({ team, slideIndex }) => {
         {team.label}
       </p>
 
-      {/* Big title */}
       <h2
         ref={titleRef}
         style={{
@@ -443,7 +430,6 @@ const TeamSlide = ({ team, slideIndex }) => {
         {team.title}
       </h2>
 
-      {/* Horizontal tray */}
       <div style={{ overflow: "visible", position: "relative" }}>
         <div
           ref={trayRef}
@@ -464,12 +450,10 @@ const TeamSlide = ({ team, slideIndex }) => {
             />
           ))}
 
-          {/* End spacer */}
           <div style={{ width: "4rem", flexShrink: 0 }} />
         </div>
       </div>
 
-      {/* Bottom accent line */}
       <div
         style={{
           position: "absolute",
@@ -486,11 +470,10 @@ const TeamSlide = ({ team, slideIndex }) => {
 
 // ── Main Section ──────────────────────────────────────────────────
 const Team = () => {
-  useGSAP();
   const sectionRef = useRef(null);
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
+  useGSAP(
+    () => {
       // Section heading parallax
       gsap.fromTo(
         ".team-section-heading",
@@ -507,18 +490,15 @@ const Team = () => {
           },
         },
       );
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
+    },
+    { scope: sectionRef },
+  );
 
   return (
     <div
       ref={sectionRef}
       style={{ background: "#000", position: "relative", zIndex: "0" }}
     >
-
-      {/* Team slides */}
       {teams.map((team, i) => (
         <TeamSlide key={team.id} team={team} slideIndex={i} />
       ))}
