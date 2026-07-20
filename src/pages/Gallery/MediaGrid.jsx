@@ -9,7 +9,7 @@
  * ─────────────────────────────────────────────────────────────────
  */
 
-import React, { useRef, useEffect, useCallback, memo } from "react";
+import React, { useRef, useCallback, memo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -19,45 +19,62 @@ import MediaCard from "./MediaCard";
 gsap.registerPlugin(ScrollTrigger);
 
 const MediaGrid = memo(function MediaGrid({ items, accent, eventId }) {
-  useGSAP();
-  const gridRef        = useRef(null);
-  const [, setSearch]  = useSearchParams();
+  const gridRef = useRef(null);
+  const [, setSearch] = useSearchParams();
 
   // ── Stagger entry on mount or when event switches ─────────────
-  useEffect(() => {
-    const cards = gridRef.current?.querySelectorAll(".media-card-wrap");
-    if (!cards?.length) return;
+  useGSAP(
+    () => {
+      const cards = gridRef.current?.querySelectorAll(".media-card-wrap");
+      if (!cards?.length) return;
 
-    gsap.killTweensOf(cards);
+      gsap.killTweensOf(cards);
 
-    gsap.fromTo(
-      cards,
-      { opacity: 0, y: 46, scale: 0.94, rotateX: -6, transformPerspective: 800 },
-      {
-        opacity: 1, y: 0, scale: 1, rotateX: 0,
-        duration: 0.75,
-        ease: "expo.out",
-        stagger: { each: 0.055, from: "start" },
-        clearProps: "transform",
-      }
-    );
+      gsap.fromTo(
+        cards,
+        // Change rotateX to rotationX
+        {
+          opacity: 0,
+          y: 46,
+          scale: 0.94,
+          rotationX: -6,
+          transformPerspective: 800,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotationX: 0, // Change rotateX to rotationX
+          duration: 0.75,
+          ease: "expo.out",
+          stagger: { each: 0.055, from: "start" },
+          clearProps: "transform", // This is fine now that properties are consistent
+        },
+      );
 
-    // Cards below the fold get a lighter scroll-triggered reveal too,
-    // so long galleries don't dump everything in on page load.
-    const st = ScrollTrigger.batch(cards, {
-      start: "top 88%",
-      onEnter: (batch) => gsap.to(batch, {
-        opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.06,
-        overwrite: true,
-      }),
-    });
+      // Cards below the fold get a lighter scroll-triggered reveal too,
+      // so long galleries don't dump everything in on page load.
+      const st = ScrollTrigger.batch(cards, {
+        start: "top 88%",
+        onEnter: (batch) =>
+          gsap.to(batch, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: "power3.out",
+            stagger: 0.06,
+            overwrite: true,
+          }),
+      });
 
-    return () => st.forEach((t) => t.kill());
-  }, [eventId]);
+      return () => st.forEach((t) => t.kill());
+    },
+    { dependencies: [eventId], scope: gridRef },
+  );
 
   const openLightbox = useCallback(
     (item) => setSearch({ media: item.id }),
-    [setSearch]
+    [setSearch],
   );
 
   const onCursorEnter = useCallback(() => {}, []);
@@ -81,7 +98,7 @@ const MediaGrid = memo(function MediaGrid({ items, accent, eventId }) {
           data-cursor="view"
           style={{
             gridColumn: item.span === "2" ? "span 2" : "span 1",
-            gridRow:    item.span === "tall" ? "span 2" : "span 1",
+            gridRow: item.span === "tall" ? "span 2" : "span 1",
           }}
         >
           <MediaCard

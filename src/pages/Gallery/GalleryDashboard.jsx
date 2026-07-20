@@ -18,8 +18,8 @@
  *   <Route path="/gallery" element={<GalleryDashboard />} />
  *
  * Deep-link examples:
- *   /gallery                        → shows all events dashboard
- *   /gallery?event=hackathon-3      → opens that event's grid
+ *   /gallery                         → shows all events dashboard
+ *   /gallery?event=hackathon-3       → opens that event's grid
  *   /gallery?event=hackathon-3&media=h3-02 → opens lightbox for that item
  * ─────────────────────────────────────────────────────────────────
  */
@@ -64,11 +64,12 @@ const EventCard = memo(function EventCard({ event, onClick }) {
   const quickX  = useRef(null);
   const quickY  = useRef(null);
 
-  useEffect(() => {
+  // Swapped useEffect for useGSAP with scoping
+  useGSAP(() => {
     if (!cardRef.current) return;
     quickX.current = gsap.quickTo(cardRef.current, "x", { duration: 0.6, ease: "power3.out" });
     quickY.current = gsap.quickTo(cardRef.current, "y", { duration: 0.6, ease: "power3.out" });
-  }, []);
+  }, { scope: cardRef });
 
   // Magnetic pull — subtle, capped so it never feels gimmicky
   const handleMove = useCallback((e) => {
@@ -216,6 +217,7 @@ function ARCursor({ accent }) {
   const wrapRef = useRef(null);
   const [mode, setMode] = useState("default"); // default | view
 
+  // Kept as useEffect since this drives a raw requestAnimationFrame loop, not GSAP
   useEffect(() => {
     const el = wrapRef.current;
     let mx = 0, my = 0, rx = 0, ry = 0, raf;
@@ -267,7 +269,6 @@ function ARCursor({ accent }) {
 
 // ── Main Dashboard ────────────────────────────────────────────────
 export default function GalleryDashboard() {
-  useGSAP();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeSlug  = searchParams.get("event");
   const activeEvent = useMemo(
@@ -280,11 +281,10 @@ export default function GalleryDashboard() {
   const tabBarRef    = useRef(null);
   const indicatorRef = useRef(null);
 
-  // ── Header char-reveal on mount ──────────────────────────────
+  // ── Header char-reveal on mount (Scoped to headerRef) ─────────
   useGSAP(() => {
-    const chars = headerRef.current?.querySelectorAll(".char-unit");
-    if (!chars?.length) return;
-    gsap.fromTo(chars,
+    // With scope defined, we can safely select using string selectors
+    gsap.fromTo(".char-unit",
       { opacity: 0, yPercent: 120, rotateZ: 6 },
       {
         opacity: 1, yPercent: 0, rotateZ: 0,
@@ -297,24 +297,25 @@ export default function GalleryDashboard() {
       { opacity: 0, x: -12 },
       { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", delay: 0.05 }
     );
-  }, [activeSlug]);
+  }, { dependencies: [activeSlug], scope: headerRef });
 
-  // ── Event switch transition ────────────────────────────────────
+  // ── Event switch transition (Scoped config) ────────────────────
   useGSAP(() => {
     if (!gridWrapRef.current) return;
     gsap.fromTo(gridWrapRef.current,
       { opacity: 0, y: 24 },
       { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }
     );
-  }, [activeSlug]);
+  }, { dependencies: [activeSlug] });
 
-  // ── Sliding glass tab indicator ────────────────────────────────
+  // ── Sliding glass tab indicator (Scoped to tabBarRef) ──────────
   useGSAP(() => {
     if (!activeEvent || !tabBarRef.current || !indicatorRef.current) return;
     const activeBtn = tabBarRef.current.querySelector(`[data-slug="${activeSlug}"]`);
     if (!activeBtn) return;
     const barRect = tabBarRef.current.getBoundingClientRect();
     const btnRect = activeBtn.getBoundingClientRect();
+    
     gsap.to(indicatorRef.current, {
       x: btnRect.left - barRect.left + tabBarRef.current.scrollLeft,
       width: btnRect.width,
@@ -322,7 +323,7 @@ export default function GalleryDashboard() {
       borderColor: `${activeEvent.accent}55`,
       duration: 0.5, ease: "power3.out",
     });
-  }, [activeSlug, activeEvent]);
+  }, { dependencies: [activeSlug, activeEvent], scope: tabBarRef });
 
   const openEvent  = useCallback((slug) => setSearchParams({ event: slug }), [setSearchParams]);
   const clearEvent = useCallback(() => setSearchParams({}), [setSearchParams]);
@@ -542,8 +543,6 @@ export default function GalleryDashboard() {
           * { cursor: none !important; }
         }
       `}</style>
-
-      <div className="h-screen w-full" />
     </div>
   );
 }

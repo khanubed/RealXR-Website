@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Aperture } from "lucide-react";
@@ -12,7 +12,6 @@ import { FeaturedSpotlight } from "./components/FeaturedSpotlight";
 import { ProjectCard } from "./components/ProjectCard";
 
 export default function Projects() {
-  useGSAP();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
 
@@ -36,7 +35,7 @@ export default function Projects() {
   }, [query, category]);
 
   // Headline reveal — split into words, stagger them up into place
-  useEffect(() => {
+  useGSAP(() => {
     if (!headlineRef.current) return;
     const words = headlineRef.current.querySelectorAll(".word-inner");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

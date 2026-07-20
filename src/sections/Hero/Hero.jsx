@@ -7,6 +7,7 @@ import Navbar from "../../components/layout/Navbar"; // Ensure path is correct
 // You can keep a local fallback image here just in case the API fails
 import FallbackHeroImg from "../../assets/images/Hero/headset.png";
 import { heroData } from "../../data/heroData";
+import DistortText from "../../components/three/DistortText";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,6 +24,9 @@ const wordmarkStyle = {
   display: "flex",
   gap: HEADSET_SIZE,
   textAlign: "center",
+  whiteSpace : 'nowrap'
+  
+  
 };
 
 const reflectionWrapperStyle = {
@@ -255,10 +259,16 @@ const Hero = ({ content = defaultContent }) => {
           }}
         >
           <div style={{ overflow: "visible" }}>
+            <DistortText
+              ref={textNormalRef}
+              text={content.title}
+              style={wordmarkStyle}
+              nowrap={true}
+            />
             {/* Dynamic Title */}
-            <h1 ref={textNormalRef} style={wordmarkStyle}>
+            {/* <h1 ref={textNormalRef} style={wordmarkStyle}>
               {content.title}
-            </h1>
+            </h1> */}
           </div>
           <div style={reflectionWrapperStyle}>
             {/* Dynamic Title Reflection */}

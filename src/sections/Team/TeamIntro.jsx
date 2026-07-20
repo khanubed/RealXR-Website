@@ -3,6 +3,12 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { teamImages } from "../../data/teamsData.js";
+import DistortText from "../../components/three/DistortText.jsx";
+
+const TeamIntroData = {
+  title: "MEET THE MINDS BEHIND REALXR",
+  description: "The creators, builders, and spatial visionaries pushing the absolute boundaries of reality."
+}
 
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -94,12 +100,10 @@ const TeamIntro = () => {
       </div>
 
       {/* FOREGROUND: Heavy Typography Header Layer */}
-      <div className="relative z-20 text-center max-w-7xl px-6 pointer-events-none mix-blend-difference md:mix-blend-normal">
-        <h2 className="text-black syne-800 font-black tracking-tighter uppercase text-5xl sm:text-7xl md:text-[5.5vw] leading-[0.85] mb-6">
-          Meet the Minds <br /> Behind RealXR
-        </h2>
-        <p className="text-black font-medium tracking-tight syne-600 text-sm sm:text-base md:text-lg max-w-xl mx-auto opacity-80">
-          The creators, builders, and spatial visionaries pushing the absolute boundaries of reality.
+      <div className="relative z-20 text-center max-w-6xl px-6 pointer-events-none mix-blend-difference md:mix-blend-normal">
+        <DistortText className = {"text-black syne-800 font-black tracking-tighter uppercase text-5xl sm:text-7xl md:text-[5vw] leading-[0.88] mb-6 "} text={TeamIntroData.title} />
+        <p className="text-black font-medium tracking-tight syne-600 text-sm sm:text-base md:text-lg max-w-4xl mx-auto opacity-90">
+          {TeamIntroData.description}
         </p>
       </div>
     </section>
