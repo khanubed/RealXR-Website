@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from "react";
+import React, { useState, useRef, memo } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { 
@@ -17,8 +17,6 @@ const diffStyles = {
   "Research Paper": "bg-rose-100 text-rose-700 border border-rose-200",
 };
 
-
-
 const TypeIcon = ({ type, color }) => {
   const props = { size: 20, color };
   switch (type) {
@@ -33,20 +31,21 @@ const TypeIcon = ({ type, color }) => {
 };
 
 export const ResourceCard = memo(function ResourceCard({ item, index }) {
-  useGSAP();
   const [open, setOpen] = useState(false);
   const dropRef = useRef(null);
   const cardRef = useRef(null);
 
-  useEffect(() => {
+  // Card entrance animation
+  useGSAP(() => {
     if (!cardRef.current) return;
     gsap.fromTo(cardRef.current,
       { opacity: 0, y: 24 },
       { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", delay: index * 0.045 }
     );
-  }, [index]);
+  }, { dependencies: [index], scope: cardRef });
 
-  useEffect(() => {
+  // Dropdown expand/collapse animation
+  useGSAP(() => {
     const el = dropRef.current;
     if (!el) return;
     if (open) {
@@ -57,7 +56,7 @@ export const ResourceCard = memo(function ResourceCard({ item, index }) {
     } else {
       gsap.to(el, { height: 0, opacity: 0, duration: 0.28, ease: "power3.in" });
     }
-  }, [open]);
+  }, { dependencies: [open], scope: cardRef });
 
   const typeData = RESOURCE_TYPES[item.type] ?? { label: item.type, color: "#6b7280" };
 

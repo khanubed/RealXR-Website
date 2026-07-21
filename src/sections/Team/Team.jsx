@@ -56,94 +56,36 @@ const GithubIcon = () => (
 
 // ── Member Card Pair ──────────────────────────────────────────────
 const MemberPair = ({ member, accent, bg }) => {
-  const pairRef = useRef(null);
-
   return (
     <div
-      ref={pairRef}
-      className="member-pair"
-      style={{
-        display: "flex",
-        gap: "1rem",
-        flexShrink: 0,
-        width: "clamp(400px, 46vw, 600px)",
-      }}
+      className="flex gap-4 flex-shrink-0 syne-500 w-xl"
     >
       {/* Card A — Photo */}
       <div
-        style={{
-          flex: "0 0 48%",
-          borderRadius: 16,
-          overflow: "hidden",
-          position: "relative",
-          aspectRatio: "3/4",
-          background: "#111",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
-        }}
+        className="flex-[0_0_48%] rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#111] shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
       >
         <img
           src={member.img}
           alt={member.name}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block",
-          }}
+          className="w-full h-full object-cover block"
         />
         <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%)",
-          }}
+          className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.7)] to-transparent to-[55%]"
         />
-        <div
-          style={{
-            position: "absolute",
-            bottom: 16,
-            left: 16,
-            right: 16,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
+        <div className="absolute bottom-4 left-4 right-4">
+          <div className="flex items-center gap-2">
             <div
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: accent,
-                flexShrink: 0,
-              }}
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ background: accent }}
             />
             <span
-              style={{
-                fontFamily: "Syne, sans-serif",
-                fontWeight: 700,
-                fontSize: "0.8rem",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "#fff",
-              }}
+              className="font-syne font-bold text-[0.8rem] tracking-[0.1em] uppercase text-white"
             >
               {member.name}
             </span>
           </div>
           <p
-            style={{
-              fontFamily: "Syne , sans-serif",
-              fontSize: "0.7rem",
-              color: "rgba(255,255,255,0.5)",
-              marginTop: 4,
-              paddingLeft: 16,
-            }}
+            className="font-syne text-[0.7rem] text-[rgba(255,255,255,0.5)] mt-1 pl-4"
           >
             {member.role}
           </p>
@@ -152,97 +94,45 @@ const MemberPair = ({ member, accent, bg }) => {
 
       {/* Card B — Info */}
       <div
-        style={{
-          flex: "0 0 48%",
-          borderRadius: 16,
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          padding: "1.6rem 1.4rem",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          aspectRatio: "3/4",
-          backdropFilter: "blur(8px)",
-        }}
+        className="flex-[0_0_48%] rounded-2xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.07)] p-[1.6rem_1.4rem] flex flex-col justify-between aspect-[3/4] backdrop-blur-[8px]"
       >
         <p
-          style={{
-            fontFamily: "Syne, sans-serif",
-            fontSize: "clamp(0.82rem, 1.1vw, 0.rem)",
-            color: "rgba(255,255,255,0.65)",
-            lineHeight: 1.75,
-            flex: 1,
-          }}
+          className="syne-500 text-sm text-[rgba(255,255,255,0.65)] leading-[1.75] flex-1"
         >
           {member.desc}
         </p>
 
         <div>
-          <div
-            style={{
-              width: "100%",
-              height: "1px",
-              background: "rgba(255,255,255,0.06)",
-              marginBottom: "1rem",
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              marginBottom: "1rem",
-            }}
-          >
+          <div className="w-full h-[1px] bg-[rgba(255,255,255,0.06)] mb-4" />
+          <div className="flex items-center gap-[10px] mb-4">
             <img
               src={member.img}
               alt=""
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: `1.5px solid ${accent}66`,
-              }}
+              className="w-9 h-9 rounded-full object-cover"
+              style={{ border: `1.5px solid ${accent}66` }}
             />
             <div>
               <div
-                style={{
-                  fontFamily: "Syne, sans-serif",
-                  fontWeight: 700,
-                  fontSize: "0.82rem",
-                  color: "#fff",
-                  letterSpacing: "0.04em",
-                }}
+                className="font-syne font-bold text-[0.82rem] text-white tracking-[0.04em]"
               >
                 {member.name}
               </div>
               <div
-                style={{
-                  fontFamily: "Space Grotesk, sans-serif",
-                  fontSize: "0.68rem",
-                  color: "rgba(255,255,255,0.4)",
-                }}
+                className="font-space-grotesk text-[0.68rem] text-[rgba(255,255,255,0.4)]"
               >
                 {member.role}
               </div>
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 10 }}>
+          <div className="flex gap-[10px]">
             {member.socials.instagram && (
               <a
                 href={member.socials.instagram}
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  color: "rgba(255,255,255,0.35)",
-                  transition: "color 0.2s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = accent)}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "rgba(255,255,255,0.35)")
-                }
+                className="text-[rgba(255,255,255,0.35)] transition-colors duration-200 hover:text-[--accent-color]"
+                style={{ "--accent-color": accent }}
               >
                 <InstagramIcon />
               </a>
@@ -252,14 +142,8 @@ const MemberPair = ({ member, accent, bg }) => {
                 href={member.socials.linkedin}
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  color: "rgba(255,255,255,0.35)",
-                  transition: "color 0.2s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = accent)}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "rgba(255,255,255,0.35)")
-                }
+                className="text-[rgba(255,255,255,0.35)] transition-colors duration-200 hover:text-[--accent-color]"
+                style={{ "--accent-color": accent }}
               >
                 <LinkedInIcon />
               </a>
@@ -269,14 +153,8 @@ const MemberPair = ({ member, accent, bg }) => {
                 href={member.socials.github}
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  color: "rgba(255,255,255,0.35)",
-                  transition: "color 0.2s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = accent)}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "rgba(255,255,255,0.35)")
-                }
+                className="text-[rgba(255,255,255,0.35)] transition-colors duration-200 hover:text-[--accent-color]"
+                style={{ "--accent-color": accent }}
               >
                 <GithubIcon />
               </a>

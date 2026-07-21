@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, memo } from "react";
+import React, { useState, useRef, memo } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import {
   Glasses, ScanEye, Boxes, Globe, Gamepad2, Wrench,
-   ExternalLink, ChevronDown, Users,
+  ExternalLink, ChevronDown, Users,
 } from "lucide-react";
 import { CATEGORIES, STATUS } from "../../../data/projectsPageData";
 import { MagneticLink } from "./MagneticLink";
@@ -19,7 +19,6 @@ const CATEGORY_ICON = {
 };
 
 export const ProjectCard = memo(function ProjectCard({ project, index }) {
-  useGSAP();
   const [open, setOpen] = useState(false);
   const cardRef = useRef(null);
   const dropRef = useRef(null);
@@ -27,16 +26,18 @@ export const ProjectCard = memo(function ProjectCard({ project, index }) {
   const status = STATUS[project.status];
   const categoryLabel = CATEGORIES.find((c) => c.id === project.category)?.label ?? project.category;
 
-  useEffect(() => {
+  // Card entrance animation
+  useGSAP(() => {
     if (!cardRef.current) return;
     gsap.fromTo(
       cardRef.current,
       { opacity: 0, y: 28 },
       { opacity: 1, y: 0, duration: 0.55, ease: "power3.out", delay: index * 0.06 }
     );
-  }, [index]);
+  }, { dependencies: [index], scope: cardRef });
 
-  useEffect(() => {
+  // Dropdown expand/collapse animation
+  useGSAP(() => {
     const el = dropRef.current;
     if (!el) return;
     if (open) {
@@ -44,7 +45,7 @@ export const ProjectCard = memo(function ProjectCard({ project, index }) {
     } else {
       gsap.to(el, { height: 0, opacity: 0, duration: 0.28, ease: "power3.in" });
     }
-  }, [open]);
+  }, { dependencies: [open], scope: cardRef });
 
   return (
     <div

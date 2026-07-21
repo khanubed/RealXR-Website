@@ -14,19 +14,18 @@ import { SkeletonCard } from "../../components/ui/SkeletonCard";
 const PER_PAGE = 10;
 
 export default function Resources() {
-  useGSAP();
-  const [resources, setResources]  = useState([]);
-  const [total, setTotal]          = useState(0);
-  const [totalPages, setTotalPages]= useState(1);
-  const [loading, setLoading]      = useState(true);
-  const [page, setPage]            = useState(1);
-  const [query, setQuery]          = useState("");
-  const [debouncedQ, setDebouncedQ]= useState("");
-  const [category, setCategory]    = useState("all");
-  const [resType, setResType]      = useState("all");
+  const [resources, setResources]   = useState([]);
+  const [total, setTotal]           = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading]       = useState(true);
+  const [page, setPage]             = useState(1);
+  const [query, setQuery]           = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
+  const [category, setCategory]     = useState("all");
+  const [resType, setResType]       = useState("all");
 
-  const pageRef    = useRef(null);
-  const headerRef  = useRef(null);
+  const pageRef   = useRef(null);
+  const headerRef = useRef(null);
 
   // Debounce search
   useEffect(() => {
@@ -61,14 +60,14 @@ export default function Resources() {
     return () => { cancelled = true; };
   }, [debouncedQ, page, category, resType]);
 
-  // Header entrance animation
-  useEffect(() => {
+  // Header entrance animation using useGSAP
+  useGSAP(() => {
     if (!headerRef.current) return;
     gsap.fromTo(headerRef.current,
       { opacity: 0, y: 30 },
       { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", delay: 0.1 }
     );
-  }, []);
+  }, { scope: headerRef });
 
   const typeOptions = useMemo(() => [
     { id: "all", label: "All Types" },

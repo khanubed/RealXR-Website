@@ -66,10 +66,10 @@ export default function RedSection() {
   );
 
   return (
-    <div ref={containerRef} className="w-full bg-[#0A0A0C]">
+    <div ref={containerRef} className="w-full relative  bg-[#0A0A0C]">
       <div
         ref={redPanelRef}
-        className="relative z-10 w-full h-screen bg-[#FF5A60] text-white overflow-hidden"
+        className="sticky bottom-0 z-10 w-full h-screen bg-[#FF5A60] text-white overflow-hidden"
       >
         {/* Kinetic Abstract Watermark Layer */}
         <div 

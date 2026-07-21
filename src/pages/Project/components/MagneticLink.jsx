@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 
 /**
  * A link/button that leans gently toward the cursor while hovered.
@@ -9,12 +10,16 @@ export const MagneticLink = ({ href, onClick, className = "", strength = 18, chi
   const ref = useRef(null);
   const quick = useRef(null);
 
+  // Extract contextSafe from useGSAP for event listeners
+  const { contextSafe } = useGSAP({ scope: ref });
+
   const canMagnet = () =>
     typeof window !== "undefined" &&
     window.matchMedia?.("(pointer: fine)")?.matches &&
     !window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
 
-  const handleMove = (e) => {
+  // Wrap the event handler in contextSafe
+  const handleMove = contextSafe((e) => {
     if (!ref.current || !canMagnet()) return;
     const rect = ref.current.getBoundingClientRect();
     const x = e.clientX - (rect.left + rect.width / 2);
@@ -28,13 +33,14 @@ export const MagneticLink = ({ href, onClick, className = "", strength = 18, chi
     }
     quick.current.x((x / rect.width) * strength);
     quick.current.y((y / rect.height) * strength);
-  };
+  });
 
-  const handleLeave = () => {
+  // Wrap the event handler in contextSafe
+  const handleLeave = contextSafe(() => {
     if (!quick.current) return;
     quick.current.x(0);
     quick.current.y(0);
-  };
+  });
 
   const Tag = href ? "a" : "button";
 

@@ -84,8 +84,7 @@ export default function Footer() {
   return (
     <footer
       ref={footerRef}
-      style={{ position: "absolute", zIndex: 50 }}
-      className="w-full flex flex-col bg-black text-white select-none"
+      className="w-full z-50 flex flex-col bg-black text-white select-none"
     >
       <div
         ref={blackWrapRef}

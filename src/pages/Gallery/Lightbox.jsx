@@ -5,7 +5,7 @@
  *  • Deep-linkable via ?media=<id> URL param
  *  • Keyboard navigation (← → Esc)
  *  • Touch swipe navigation
- *  • GSAP entrance/exit transitions
+ *  • GSAP entrance/exit transitions using @gsap/react
  *  • Frosted light-glass overlay (not opaque black) so it reads as
  *    a continuation of the liquid-distort background, not a modal
  *    that stamps out the page
@@ -22,7 +22,6 @@ import { useGSAP } from "@gsap/react";
 const INK = "#15141A";
 
 const Lightbox = memo(function Lightbox({ items, accent = "#00BFAE" }) {
-  useGSAP();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeId   = searchParams.get("media");
   const activeIdx  = items.findIndex((m) => m.id === activeId);
@@ -33,26 +32,32 @@ const Lightbox = memo(function Lightbox({ items, accent = "#00BFAE" }) {
   const videoRef   = useRef(null);
   const touchStart = useRef(0);
 
+  // ── Lock body scroll ──────────────────────────────────────────
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  useEffect(() => {
+  // ── GSAP Entrance Animations ──────────────────────────────────
+  const { contextSafe } = useGSAP(() => {
     if (!isOpen || !overlayRef.current || !contentRef.current) return;
+    
     gsap.fromTo(overlayRef.current,
       { opacity: 0 },
       { opacity: 1, duration: 0.4, ease: "power2.out" }
     );
+    
     gsap.fromTo(contentRef.current,
       { opacity: 0, scale: 0.93, y: 20 },
       { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "expo.out" }
     );
-  }, [isOpen, activeId]);
+  }, { dependencies: [isOpen, activeId] });
 
-  const navigate = useCallback((dir) => {
+  // ── Context-Safe Interactions ─────────────────────────────────
+  const navigate = useCallback(contextSafe((dir) => {
     const next = activeIdx + dir;
     if (next < 0 || next >= items.length) return;
+    
     if (contentRef.current) {
       gsap.to(contentRef.current, {
         opacity: 0, x: dir * -60,
@@ -70,16 +75,20 @@ const Lightbox = memo(function Lightbox({ items, accent = "#00BFAE" }) {
     } else {
       setSearchParams({ media: items[next].id });
     }
-  }, [activeIdx, items, setSearchParams]);
+  }), [activeIdx, items, setSearchParams, contextSafe]);
 
-  const close = useCallback(() => {
-    if (!overlayRef.current) { setSearchParams({}); return; }
+  const close = useCallback(contextSafe(() => {
+    if (!overlayRef.current) { 
+      setSearchParams({}); 
+      return; 
+    }
     gsap.to(overlayRef.current, {
       opacity: 0, duration: 0.28, ease: "power2.in",
       onComplete: () => setSearchParams({}),
     });
-  }, [setSearchParams]);
+  }), [setSearchParams, contextSafe]);
 
+  // ── Keyboard Controls ─────────────────────────────────────────
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
@@ -91,6 +100,7 @@ const Lightbox = memo(function Lightbox({ items, accent = "#00BFAE" }) {
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, navigate, close]);
 
+  // ── Video Autoplay Handling ───────────────────────────────────
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -110,7 +120,7 @@ const Lightbox = memo(function Lightbox({ items, accent = "#00BFAE" }) {
       ref={overlayRef}
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(255,246,248,0.72)", // warm frosted glass, not black
+        background: "rgba(255,246,248,0.72)", // warm frosted glass
         backdropFilter: "blur(28px) saturate(1.2)",
         WebkitBackdropFilter: "blur(28px) saturate(1.2)",
         display: "flex", alignItems: "center", justifyContent: "center",
