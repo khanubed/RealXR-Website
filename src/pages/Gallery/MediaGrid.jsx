@@ -20,7 +20,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const MediaGrid = memo(function MediaGrid({ items, accent, eventId }) {
   const gridRef = useRef(null);
-  const [, setSearch] = useSearchParams();
+  const [search, setSearch] = useSearchParams();
 
   // ── Stagger entry on mount or when event switches ─────────────
   useGSAP(
@@ -73,8 +73,12 @@ const MediaGrid = memo(function MediaGrid({ items, accent, eventId }) {
   );
 
   const openLightbox = useCallback(
-    (item) => setSearch({ media: item.id }),
-    [setSearch],
+    (item) => {
+      const next = new URLSearchParams(search);
+      next.set("media", item.id);
+      setSearch(next);
+    },
+    [search, setSearch],
   );
 
   const onCursorEnter = useCallback(() => {}, []);
@@ -85,9 +89,9 @@ const MediaGrid = memo(function MediaGrid({ items, accent, eventId }) {
       ref={gridRef}
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
-        gridAutoRows: "280px",
-        gap: "14px",
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))",
+        gridAutoRows: "clamp(180px, 23vw, 280px)",
+        gap: "clamp(10px, 1.5vw, 14px)",
         width: "100%",
       }}
     >

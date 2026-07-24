@@ -102,8 +102,8 @@ const Moments = ({ images = [], title, subTitle }) => {
       </div>
 
       {/* FOREGROUND: Typography Section Layer */}
-      <div className="relative z-20 text-center max-w-6xl px-6 pointer-events-none mix-blend-difference md:mix-blend-normal">
-        <DistortText className = {"text-black syne-800 font-black tracking-tighter uppercase text-5xl sm:text-7xl md:text-[5vw] leading-[0.88] mb-6 "} text={title} />
+      <div className="relative z-20 text-center max-w-5xl px-6 pointer-events-none mix-blend-difference md:mix-blend-normal">
+        <DistortText className = {"text-black syne-800 font-black tracking-tighter max uppercase text-4xl sm:text-7xl md:text-[5vw] leading-[0.88] mb-6 "} text={title} />
         <p className="text-black font-medium tracking-tight syne-600 text-sm sm:text-base md:text-lg max-w-4xl mx-auto opacity-90">
           {subTitle}
         </p>

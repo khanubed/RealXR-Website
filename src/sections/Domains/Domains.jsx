@@ -328,22 +328,12 @@ const Domains = ({ content = defaultContent }) => {
                 >
                   {slide.num} — {slide.label}
                 </span>
-
                 <p
-                  className="slide-desc"
+                  className="slide-desc max-w-[420px] font-['Syne',sans-serif] text-sm text-base md:text-lg font-semibold leading-relaxed px-4 py-3 rounded-lg bg-white/10 backdrop-blur-md"
                   style={{
-                    maxWidth: 420,
-                    fontFamily: "Syne, sans-serif",
-                    fontSize: "clamp(0.95rem, 1.15vw, 1.1rem)",
-                    fontWeight: 600,
                     color: slide.textColor
                       ? `${slide.textColor}cc`
                       : "rgba(255,255,255,0.7)",
-                    lineHeight: 1.8,
-                    padding: "0.75rem 1rem",
-                    borderRadius: "0.5rem",
-                    background: "rgba(255,255,255,0.08)",
-                    backdropFilter: "blur(6px)",
                   }}
                 >
                   {slide.description}
@@ -352,16 +342,9 @@ const Domains = ({ content = defaultContent }) => {
 
               <div style={{ zIndex: 5 }}>
                 <h2
-                  className="slide-title"
+                  className="slide-title font-['Syne',sans-serif] font-extrabold text-2xl sm:text-6xl md:text-7xl lg:text-9xl  -tracking-[0.04em] uppercase leading-[0.95] drop-shadow-[0_2px_24px_rgba(0,0,0,0.25)]"
                   style={{
-                    fontFamily: "Syne, sans-serif",
-                    fontWeight: 800,
-                    fontSize: "clamp(2.25rem, 6vw, 6rem)",
-                    letterSpacing: "-0.04em",
-                    textTransform: "uppercase",
-                    lineHeight: 0.95,
                     color: slide.textColor || "#fff",
-                    textShadow: "0 2px 24px rgba(0,0,0,0.25)",
                   }}
                 >
                   {(slide.title || "").split("\n").map((line, j, arr) => (

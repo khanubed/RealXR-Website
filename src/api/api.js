@@ -1,8 +1,9 @@
-import api from "./axios";
 import { heroData } from "../data/heroData";
+import { aboutData } from "../data/aboutData";
 import { domainsData } from "../data/domainsData";
 import { projectsData } from "../data/projectData";
 import { eventsData } from "../data/eventsData";
+import { fetchSanity } from "../sanity/client";
 
 // -----------------------------------------------
 // API Endpoints
@@ -10,70 +11,30 @@ import { eventsData } from "../data/eventsData";
 
 // Hero Section
 export const getHeroData = async () => {
-  try {
-    const response = await api.get("/api/hero");
-    return response.data;
-  } catch (error) {
-    // If API fails, return fallback data
-    console.warn("⚠️ API failed, returning fallback hero data", error);
-    return {
-      heroData: heroData,
-    };
-  }
+  const content = await fetchSanity(`*[_type == "hero"][0]{title, tagline, scrollText, marqueeText, "heroImageUrl": coalesce(heroMedia.image.asset->url, heroMedia.externalUrl), "videoUrl": coalesce(backgroundVideo.video.asset->url, backgroundVideo.externalUrl), "imageAltText": heroMedia.alt}`);
+  console.log(content)
+  return { heroData: content || heroData };
+  
 };
 
 // About Section
 export const getAboutData = async () => {
-  try {
-    const response = await api.get("/api/about");
-    return response.data;
-  } catch (error) {
-    console.warn("⚠️ API failed, returning fallback about data", error);
-    return {
-      
-    };
-  }
+  const content = await fetchSanity(`*[_type == "about"][0]{heading, textBlocks[]{text, isHighlight}}`);
+  return { aboutData: content || aboutData };
 };
 
 export const getDomainsData = async () => {
-    try {
-        const response = await api.get("/api/domains")
-        return response.data;
-    } catch (error) {
-        console.warn("⚠️ API failed, returning fallback domains data", error);
-        return {
-            domainsData: domainsData,
-        }
-    }
+    const content = await fetchSanity(`*[_type == "domain"] | order(order asc){"id": slug.current, "num": number, label, title, description, "bgColor": backgroundColor, textColor, tagColor}`);
+    return { domainsData: content?.length ? { ...domainsData, slides: content } : domainsData };
 }
 
 export const getProjectsData = async () => {
-    try {
-        const response = await api.get("/api/projects")
-        return response.data;
-    } catch (error) {
-        console.warn("⚠️ API failed, returning fallback projects data", error);
-        return {
-            projectsData: projectsData,
-        }
-    }
+    const content = await fetchSanity(`*[_type == "project"] | order(year desc){"id": slug.current, title, tag: category, "img": coalesce(cover.image.asset->url, cover.externalUrl)}`);
+    return { projectsData: content?.length ? { ...projectsData, projects: content } : projectsData };
 }
 
 export const getEventsData = async () => {
-    try {
-        const response = await api.get("/api/events")
-        return response.data;
-    } catch (error) {
-        console.warn("⚠️ API failed, returning fallback events data", error);
-        return {
-            eventsData: eventsData,
-        }
-    }
+    const content = await fetchSanity(`*[_type == "event"] | order(order asc, date desc){"id": slug.current, title, "date": dateLabel, "desc": description, tags, accent, coverGradient, "images": media[].externalUrl}`);
+    return { eventsData: content?.length ? { ...eventsData, events: content } : eventsData };
 }
-
-
-
-// Add more functions for other sections as needed:
-// export const getDomainsData = async () => { ... };
-// export const getProjectsData = async () => { ... };
 

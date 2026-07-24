@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import Hero from "../../sections/Hero/Hero";
 import HeroVideo from "../../sections/Hero/HeroVideo";
