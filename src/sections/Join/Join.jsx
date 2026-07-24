@@ -1,11 +1,11 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const INTEREST_OPTIONS = [
+const DEFAULT_INTEREST_OPTIONS = [
   "Web Development",
   "AR / VR Development",
   "Game Development",
@@ -51,6 +51,22 @@ const Join = () => {
   });
   const [status, setStatus] = useState("idle"); // idle | submitting | done
   const [error, setError] = useState("");
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const { fetchSanity } = await import("../../sanity/client");
+        const value = await fetchSanity(`*[_type == "joinFormSettings"][0]{heading, subheading, interests, submitLabel, successMessage}`);
+        if (value) setSettings(value);
+      } catch {
+        // The local defaults keep the form usable before Sanity is configured.
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const interestOptions = settings?.interests?.length ? settings.interests : DEFAULT_INTEREST_OPTIONS;
 
   // Context-safe animation hook
   useGSAP(
@@ -111,10 +127,18 @@ const Join = () => {
 
     setStatus("submitting");
     try {
-      await new Promise((res) => setTimeout(res, 700));
+      const response = await fetch(import.meta.env.VITE_JOIN_ENDPOINT || "/api/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.message || "Could not submit your application.");
+      }
       setStatus("done");
     } catch (err) {
-      setError("Something went wrong — please try again.");
+      setError(err.message || "Something went wrong — please try again.");
       setStatus("idle");
     }
   };
@@ -127,7 +151,7 @@ const Join = () => {
         top: 0,
         zIndex: 1,
         width: "100%",
-        height: "100vh",
+        minHeight: "100vh",
         background: "#0a0a0a",
         display: "flex",
         flexDirection: "column",
@@ -152,7 +176,7 @@ const Join = () => {
               lineHeight: 1.2,
             }}
           >
-            Ready to Build Something Real?
+            {settings?.heading || "Ready to Build Something Real?"}
           </h2>
           <p
             ref={subRef}
@@ -164,8 +188,7 @@ const Join = () => {
               margin: 0,
             }}
           >
-            No experience required. No prerequisites. Just show up with
-            curiosity and the willingness to learn — we'll handle the rest.
+            {settings?.subheading || "No experience required. No prerequisites. Just show up with curiosity and the willingness to learn — we'll handle the rest."}
           </p>
         </div>
 
@@ -180,7 +203,7 @@ const Join = () => {
               color: "#00F5D4",
             }}
           >
-            Thanks for applying! We'll be in touch soon.
+            {settings?.successMessage || "Thanks for applying! We'll be in touch soon."}
           </div>
         ) : (
           <form
@@ -253,7 +276,7 @@ const Join = () => {
                   columnGap: "1rem",
                 }}
               >
-                {INTEREST_OPTIONS.map((option) => {
+                {interestOptions.map((option) => {
                   const checked = form.interests.includes(option);
                   return (
                     <label
@@ -367,7 +390,7 @@ const Join = () => {
                 e.currentTarget.style.color = "#fff";
               }}
             >
-              {status === "submitting" ? "Submitting..." : "Apply to Join RealXR"}
+              {status === "submitting" ? "Submitting..." : (settings?.submitLabel || "Apply to Join RealXR")}
             </button>
           </form>
         )}

@@ -59,7 +59,7 @@ export const teams = [
     bg: "#050810",
     members: [
       {
-        name: "Ubed Kkhan",
+        name: "Ubed Khan",
         role: "Fullstack Developer and UI/UX Designer",
         desc: "Hybrid builder mapping high-fidelity visuals to production-grade architecture. Obsessed with modern interactive animations, custom UI/UX design, and engineering clean, scalable server structures.",
         img: Ubed,
@@ -251,7 +251,7 @@ export const teamImages = [
   },
   {
     id: 4,
-    name: "Ubed Kkhan",
+    name: "Ubed Khan",
     role: "Fullstack Developer and UI/UX Designer",
     url: Ubed,
   },

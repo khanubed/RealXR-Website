@@ -1,0 +1,7 @@
+.yarl__root { --yarl__color_backdrop: rgba(10, 12, 19, 0.96); --yarl__color_button: #00bfae; }
+.yarl__toolbar, .yarl__thumbnails_container { background: linear-gradient(180deg, rgba(14, 17, 27, 0.84), rgba(14, 17, 27, 0.35)); backdrop-filter: blur(18px); }
+.yarl__button { border-radius: 999px; transition: background-color 180ms ease, transform 180ms ease; }
+.yarl__button:hover { background: rgba(255, 255, 255, 0.14); transform: scale(1.06); }
+.yarl__thumbnails_thumbnail { opacity: 0.62; transition: opacity 180ms ease, transform 180ms ease; }
+.yarl__thumbnails_thumbnail_active, .yarl__thumbnails_thumbnail:hover { opacity: 1; transform: translateY(-2px); }
+@media (max-width: 640px) { .yarl__toolbar { padding: 0.65rem; } .yarl__thumbnails_container { padding-bottom: env(safe-area-inset-bottom); } }
