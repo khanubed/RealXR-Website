@@ -206,7 +206,7 @@ export default function Footer() {
               <span>
                 DESIGNED & ANIMATED BY{" "}
                 <a
-                  href="https://instagram.com/your_handle_here"
+                  href="https://www.instagram.com/ubyd_.pathan?igsh=MXJoaWd0NDV5aGFjMw=="
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-zinc-400 hover:text-[#00F5D4] tracking-wider transition-colors duration-200 font-bold underline decoration-zinc-700 hover:decoration-[#00F5D4]"

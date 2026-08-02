@@ -297,7 +297,7 @@ const TeamSlide = ({ team, slideIndex }) => {
         style={{
           fontFamily: "Syne, sans-serif",
           fontWeight: 800,
-          fontSize: "clamp(2.3rem, 6vw, 7rem)",
+          fontSize: "clamp(1.8rem, 5vw, 7rem)",
           letterSpacing: "-0.05em",
           color: "#fff",
           lineHeight: 0.88,

@@ -64,17 +64,17 @@ export const ResourceCard = memo(function ResourceCard({ item, index }) {
     <div
       ref={cardRef}
       onClick={() => setOpen((o) => !o)}
-      className={`group relative overflow-hidden backdrop-blur-xl border rounded-2xl p-5 cursor-pointer transition-all duration-300
+      className={`group relative overflow-hidden border-l-2 p-5 sm:p-6 cursor-pointer transition-all duration-300
         ${open 
-          ? "bg-white/80 border-cyan-400/40 shadow-[0_8px_32px_rgba(6,182,212,0.1),0_2px_8px_rgba(236,72,153,0.06)]" 
-          : "bg-white/60 border-pink-500/10 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:bg-white/90 hover:shadow-[0_8px_28px_rgba(6,182,212,0.12),0_2px_8px_rgba(236,72,153,0.08)]"
+          ? "bg-white/70 border-cyan-400 shadow-[0_16px_38px_-26px_rgba(0,191,174,.55)]" 
+          : "bg-white/35 border-[#15141a]/15 hover:bg-white/80 hover:border-pink-500 hover:shadow-[0_16px_38px_-26px_rgba(255,61,143,.5)]"
         }`}
     >
       {/* Header section */}
       <div className="flex items-start gap-4">
         {/* Icon Container */}
         <div 
-          className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center border"
+          className="shrink-0 w-11 h-11 rounded-none flex items-center justify-center border"
           style={{ background: `${typeData.color}14`, borderColor: `${typeData.color}28` }}
         >
           <TypeIcon type={item.type} color={typeData.color} />
@@ -84,17 +84,17 @@ export const ResourceCard = memo(function ResourceCard({ item, index }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center flex-wrap gap-2 mb-1.5">
             {item.featured && (
-              <span className="text-[0.6rem] font-bold tracking-widest uppercase text-pink-500 bg-pink-50 border border-pink-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <span className="text-[0.6rem] font-bold tracking-widest uppercase text-pink-500 bg-pink-50 border border-pink-500/20 px-2 py-0.5 rounded-none flex items-center gap-1">
                 <Star size={10} className="fill-pink-500" /> Featured
               </span>
             )}
             <span 
-              className="text-[0.65rem] font-semibold tracking-wider uppercase px-2.5 py-0.5 rounded-full border"
+              className="text-[0.65rem] font-semibold tracking-wider uppercase px-2.5 py-0.5 rounded-none border"
               style={{ color: typeData.color, background: `${typeData.color}10`, borderColor: `${typeData.color}30` }}
             >
               {typeData.label}
             </span>
-            <span className={`text-[0.65rem] font-semibold px-2 py-0.5 rounded-full ${diffStyles[item.difficulty] || diffStyles["Beginner"]}`}>
+            <span className={`text-[0.65rem] font-semibold px-2 py-0.5 rounded-none ${diffStyles[item.difficulty] || diffStyles["Beginner"]}`}>
               {item.difficulty}
             </span>
           </div>
@@ -128,7 +128,7 @@ export const ResourceCard = memo(function ResourceCard({ item, index }) {
       {/* Tags */}
       <div className="flex flex-wrap gap-1.5 mt-3 pl-15">
         {item.tags.map(tag => (
-          <span key={tag} className="text-[0.65rem] px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 font-medium">
+          <span key={tag} className="text-[0.65rem] px-2.5 py-0.5 rounded-none bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 font-medium">
             #{tag}
           </span>
         ))}

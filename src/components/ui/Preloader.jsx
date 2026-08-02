@@ -2,18 +2,17 @@ import React, { useEffect, useRef, useCallback, memo } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 
-// Responsive word splitter with flex-wrapping support to prevent mobile clipping
-const SplitWords = memo(function SplitWords({ text }) {
+const SplitWords = memo(function SplitWords({ text, innerRef }) {
   const words = text.split(" ");
   return (
-    <span className="flex flex-wrap justify-center gap-x-[0.2em] w-full">
+    <span
+      ref={innerRef}
+      className="flex flex-wrap justify-center gap-x-[0.2em] w-full"
+    >
       {words.map((word, i) => (
-        <span
-          key={i}
-          className="inline-block overflow-hidden align-bottom"
-        >
-          <span 
-            data-word="true" 
+        <span key={i} className="inline-block overflow-hidden align-bottom">
+          <span
+            data-word="true"
             className="inline-block translate-y-[110%] will-change-transform"
           >
             {word}
@@ -24,132 +23,201 @@ const SplitWords = memo(function SplitWords({ text }) {
   );
 });
 
+// Boxy, angular front-view headset — sharp/near-square corners instead of
+// the earlier rounded-pill shape. Color cycles via a native SVG <animate>
+// on the gradient stops, so it keeps running smoothly on its own.
+const BoxyHeadset = memo(function BoxyHeadset({ innerRef, className }) {
+  return (
+    <svg
+      ref={innerRef}
+      viewBox="0 0 200 120"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="headset-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFB13C">
+            <animate
+              attributeName="stop-color"
+              values="#FFB13C;#37F0FF;#FF3D7A;#FFB13C"
+              dur="5s"
+              repeatCount="indefinite"
+            />
+          </stop>
+          <stop offset="100%" stopColor="#FF3D7A">
+            <animate
+              attributeName="stop-color"
+              values="#FF3D7A;#FFB13C;#37F0FF;#FF3D7A"
+              dur="5s"
+              repeatCount="indefinite"
+            />
+          </stop>
+        </linearGradient>
+
+        <filter id="headset-glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3.5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* Side straps */}
+      <rect x="0" y="44" width="16" height="32" rx="3" fill="url(#headset-gradient)" opacity="0.35" />
+      <rect x="184" y="44" width="16" height="32" rx="3" fill="url(#headset-gradient)" opacity="0.35" />
+
+      {/* Main boxy shell */}
+      <rect
+        x="14" y="14" width="172" height="92" rx="10"
+        fill="#0a0a0a" stroke="url(#headset-gradient)" strokeWidth="3"
+        filter="url(#headset-glow)"
+      />
+
+      {/* Lenses — square-cornered, not circular */}
+      <rect x="34" y="32" width="54" height="56" rx="6" fill="#050505" stroke="url(#headset-gradient)" strokeWidth="2.5" />
+      <rect x="112" y="32" width="54" height="56" rx="6" fill="#050505" stroke="url(#headset-gradient)" strokeWidth="2.5" />
+
+      {/* Lens reflections */}
+      <rect x="42" y="40" width="12" height="9" rx="2" fill="url(#headset-gradient)" opacity="0.55" />
+      <rect x="120" y="40" width="12" height="9" rx="2" fill="url(#headset-gradient)" opacity="0.55" />
+
+      {/* Bridge */}
+      <rect x="94" y="52" width="12" height="16" rx="3" fill="url(#headset-gradient)" opacity="0.5" />
+
+      {/* Sensor marks */}
+      <rect x="20" y="20" width="4" height="4" fill="url(#headset-gradient)" />
+      <rect x="176" y="20" width="4" height="4" fill="url(#headset-gradient)" />
+      <rect x="20" y="92" width="4" height="4" fill="url(#headset-gradient)" />
+      <rect x="176" y="92" width="4" height="4" fill="url(#headset-gradient)" />
+    </svg>
+  );
+});
+
 const Preloader = ({ onComplete }) => {
-  const preloaderRef   = useRef(null);
-  const curtainRef     = useRef(null);
-  const counterRef     = useRef(null);
-  const line1Ref       = useRef(null);
-  const line2Ref       = useRef(null);
-  const taglineRef     = useRef(null);
-  const progressBarRef = useRef(null);
+  const preloaderRef  = useRef(null);
+  const curtainRef    = useRef(null);
+  const gridRef       = useRef(null);
+  const headsetRef    = useRef(null);
+  const percentRef    = useRef(null);
+  const progressRef   = useRef(null);
+  const line1Ref      = useRef(null);
+  const idleFloatRef  = useRef(null);
 
-  // Modern hook context handling lifecycle, scope, and cleanups automatically
-  const { contextSafe } = useGSAP(
+  const buildTimeline = useCallback(
     () => {
-      const words1   = line1Ref.current?.querySelectorAll("[data-word]") ?? [];
-      const words2   = line2Ref.current?.querySelectorAll("[data-word]") ?? [];
-      const allWords = [...words1, ...words2];
+      const words1 = line1Ref.current?.querySelectorAll("[data-word]") ?? [];
 
-      // GSAP Initial State Registry
-      gsap.set(counterRef.current,      { y: 40,  opacity: 0 });
-      gsap.set(taglineRef.current,      { y: 20,  opacity: 0 });
-      gsap.set(progressBarRef.current,  { scaleX: 0, transformOrigin: "left center", opacity: 0 });
-      gsap.set(allWords,                { y: "110%" });
-      gsap.set(curtainRef.current,      { clipPath: "inset(0% 0% 0% 0%)" });
+      gsap.killTweensOf([
+        gridRef.current,
+        headsetRef.current,
+        percentRef.current,
+        progressRef.current,
+        curtainRef.current,
+        words1,
+      ]);
+      idleFloatRef.current?.kill();
+
+      gsap.set(gridRef.current,     { opacity: 0, y: 24 });
+      gsap.set(headsetRef.current,  { opacity: 0, scale: 0.6, y: 10 });
+      gsap.set(percentRef.current,  { opacity: 0, y: 12 });
+      gsap.set(progressRef.current, { scaleX: 0, transformOrigin: "left center" });
+      gsap.set(words1,              { y: "110%" });
+      gsap.set(curtainRef.current,  { clipPath: "circle(150% at 50% 50%)" });
+      if (line1Ref.current) line1Ref.current.style.textShadow = "none";
       if (preloaderRef.current) preloaderRef.current.style.display = "flex";
+
+      const idleFloat = gsap.to(headsetRef.current, {
+        y: "+=8",
+        duration: 1.7,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        paused: true,
+      });
+      idleFloatRef.current = idleFloat;
 
       const masterTL = gsap.timeline({ onComplete: () => onComplete?.() });
 
-      // Phase 1: Interactive elements emerge
-      masterTL.to(counterRef.current, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" });
-      masterTL.to(progressBarRef.current, { opacity: 1, duration: 0.4 }, "-=0.4");
+      // Phase 1: environment + headset emerge
+      masterTL.to(gridRef.current, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" });
+      masterTL.to(
+        headsetRef.current,
+        { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: "back.out(1.7)", onComplete: () => idleFloat.play() },
+        "-=0.5",
+      );
+      masterTL.to(percentRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.3");
+      masterTL.to(progressRef.current, { opacity: 1, duration: 0.3 }, "-=0.3");
 
-      // Counter engine setup (Direct DOM manipulation to bypass React render bottleneck)
+      // Percentage engine — direct DOM writes
       const obj = { val: 0 };
-      const updateCounter = () => {
-        if (counterRef.current)
-          counterRef.current.textContent = String(Math.floor(obj.val)).padStart(2, "0");
-        if (progressBarRef.current)
-          gsap.set(progressBarRef.current, { scaleX: obj.val / 100 });
+      const updatePercent = () => {
+        if (percentRef.current) percentRef.current.textContent = `${Math.floor(obj.val)}%`;
+        if (progressRef.current) gsap.set(progressRef.current, { scaleX: obj.val / 100 });
       };
 
-      // Organic loading increments
-      masterTL.to(obj, { val: 28, duration: 0.65, ease: "power2.out", onUpdate: updateCounter });
-      masterTL.to(obj, { val: 32, duration: 0.85, ease: "power1.in",  onUpdate: updateCounter });
-      masterTL.to(obj, { val: 74, duration: 0.9,  ease: "expo.out",   onUpdate: updateCounter });
-      masterTL.to(obj, { val: 78, duration: 0.9,  ease: "power1.inOut", onUpdate: updateCounter });
+      masterTL.to(obj, { val: 28, duration: 0.65, ease: "power2.out", onUpdate: updatePercent });
+      masterTL.to(obj, { val: 32, duration: 0.85, ease: "power1.in",  onUpdate: updatePercent });
+      masterTL.to(obj, { val: 74, duration: 0.9,  ease: "expo.out",   onUpdate: updatePercent });
+      masterTL.to(obj, { val: 78, duration: 0.9,  ease: "power1.inOut", onUpdate: updatePercent });
 
-      // Phase 2: Words reveal staggered during organic pause
-      masterTL.to(allWords, {
-        y: "0%", duration: 1.1, ease: "power4.out", stagger: 0.08,
+      // Phase 2: wordmark converges from chromatic-aberration ghosting
+      const chroma = { offset: 6 };
+      const updateChroma = () => {
+        if (line1Ref.current)
+          line1Ref.current.style.textShadow = `${-chroma.offset}px 0 #37F0FF, ${chroma.offset}px 0 #FF3D7A`;
+      };
+      masterTL.to(words1, {
+        y: "0%", duration: 1, ease: "power4.out", stagger: 0.06,
       }, "-=1.6");
+      masterTL.to(chroma, {
+        offset: 0, duration: 1, ease: "power3.out", onUpdate: updateChroma,
+      }, "<");
 
-      // Tagline reveal
-      masterTL.to(taglineRef.current, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, "-=0.6");
-
-      // Phase 3: Final speed-burst to completion
+      // Phase 3: final speed-burst + lock pulse on the headset
       masterTL.to(obj, {
-        val: 100, duration: 0.65, ease: "power4.in",
-        onUpdate: updateCounter,
-        onComplete: () => { if (counterRef.current) counterRef.current.textContent = "100"; },
+        val: 100, duration: 0.6, ease: "power4.in",
+        onUpdate: updatePercent,
+        onComplete: () => { if (percentRef.current) percentRef.current.textContent = "100%"; },
       });
+      masterTL.to(headsetRef.current, { scale: 1.08, duration: 0.2, ease: "power2.out" }, "-=0.1");
+      masterTL.to(headsetRef.current, { scale: 1, duration: 0.3, ease: "power2.inOut" });
 
-      // Phase 4: Seamless Exit Choreography
-      masterTL.to([counterRef.current, taglineRef.current], {
-        y: -40, opacity: 0, duration: 0.55, ease: "power3.in", stagger: 0.06,
-      }, "+=0.15");
+      // Phase 4: exit
+      masterTL.call(() => idleFloat.pause());
 
-      masterTL.to(allWords, {
-        y: "-110%", duration: 0.5, ease: "power3.in",
+      masterTL.to(percentRef.current, { y: -14, opacity: 0, duration: 0.4, ease: "power3.in" }, "+=0.1");
+      masterTL.to(headsetRef.current, { scale: 0.5, opacity: 0, duration: 0.4, ease: "power3.in" }, "<");
+      masterTL.to(gridRef.current, { opacity: 0, y: 20, duration: 0.4, ease: "power2.in" }, "<");
+      masterTL.to(words1, {
+        y: "-110%", duration: 0.45, ease: "power3.in",
         stagger: { each: 0.04, from: "end" },
-      }, "-=0.45");
+      }, "-=0.3");
 
-      // Premium upward clip-path reveal wipe
       masterTL.to(curtainRef.current, {
-        clipPath: "inset(100% 0% 0% 0%)",
-        duration: 1.1,
+        clipPath: "circle(0% at 50% 50%)",
+        duration: 1.0,
         ease: "power4.inOut",
-      }, "-=0.15");
+      }, "-=0.1");
 
       masterTL.set(preloaderRef.current, { display: "none" });
+
+      return masterTL;
     },
-    { scope: preloaderRef, dependencies: [onComplete] }
+    [onComplete],
   );
 
-  // Wrap the interaction retrigger safely inside contextSafe to prevent execution on orphaned scopes
+  const { contextSafe } = useGSAP(
+    () => {
+      buildTimeline();
+    },
+    { scope: preloaderRef, dependencies: [buildTimeline] },
+  );
+
   const runAnimation = contextSafe(() => {
-    // Re-firing the initial timeline setup sequence safely
-    const words1   = line1Ref.current?.querySelectorAll("[data-word]") ?? [];
-    const words2   = line2Ref.current?.querySelectorAll("[data-word]") ?? [];
-    const allWords = [...words1, ...words2];
-
-    gsap.killTweensOf([counterRef.current, taglineRef.current, progressBarRef.current, curtainRef.current, allWords]);
-
-    gsap.set(counterRef.current,      { y: 40,  opacity: 0 });
-    gsap.set(taglineRef.current,      { y: 20,  opacity: 0 });
-    gsap.set(progressBarRef.current,  { scaleX: 0, transformOrigin: "left center", opacity: 0 });
-    gsap.set(allWords,                { y: "110%" });
-    gsap.set(curtainRef.current,      { clipPath: "inset(0% 0% 0% 0%)" });
-    if (preloaderRef.current) preloaderRef.current.style.display = "flex";
-
-    const masterTL = gsap.timeline({ onComplete: () => onComplete?.() });
-    masterTL.to(counterRef.current, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" });
-    masterTL.to(progressBarRef.current, { opacity: 1, duration: 0.4 }, "-=0.4");
-
-    const obj = { val: 0 };
-    const updateCounter = () => {
-      if (counterRef.current) counterRef.current.textContent = String(Math.floor(obj.val)).padStart(2, "0");
-      if (progressBarRef.current) gsap.set(progressBarRef.current, { scaleX: obj.val / 100 });
-    };
-
-    masterTL.to(obj, { val: 28, duration: 0.65, ease: "power2.out", onUpdate: updateCounter });
-    masterTL.to(obj, { val: 32, duration: 0.85, ease: "power1.in",  onUpdate: updateCounter });
-    masterTL.to(obj, { val: 74, duration: 0.9,  ease: "expo.out",   onUpdate: updateCounter });
-    masterTL.to(obj, { val: 78, duration: 0.9,  ease: "power1.inOut", onUpdate: updateCounter });
-    masterTL.to(allWords, { y: "0%", duration: 1.1, ease: "power4.out", stagger: 0.08 }, "-=1.6");
-    masterTL.to(taglineRef.current, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, "-=0.6");
-    masterTL.to(obj, {
-      val: 100, duration: 0.65, ease: "power4.in",
-      onUpdate: updateCounter,
-      onComplete: () => { if (counterRef.current) counterRef.current.textContent = "100"; },
-    });
-    masterTL.to([counterRef.current, taglineRef.current], { y: -40, opacity: 0, duration: 0.55, ease: "power3.in", stagger: 0.06 }, "+=0.15");
-    masterTL.to(allWords, { y: "-110%", duration: 0.5, ease: "power3.in", stagger: { each: 0.04, from: "end" } }, "-=0.45");
-    masterTL.to(curtainRef.current, { clipPath: "inset(100% 0% 0% 0%)", duration: 1.1, ease: "power4.inOut" }, "-=0.15");
-    masterTL.set(preloaderRef.current, { display: "none" });
+    buildTimeline();
   });
 
-  // Dev mode debugger (Tap "R" to trigger visual replay)
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
     const handler = (e) => {
@@ -163,61 +231,78 @@ const Preloader = ({ onComplete }) => {
     <div
       ref={preloaderRef}
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden select-none pointer-events-auto"
+      style={{ "--void": "#06070A", "--wire": "#26304A", "--signal": "#FFB13C" }}
     >
-      {/* Background Curtain */}
       <div
         ref={curtainRef}
-        className="absolute inset-0 bg-[#0a0a0a]"
-        style={{ clipPath: "inset(0% 0% 0% 0%)", zIndex: 0 }}
+        className="absolute inset-0"
+        style={{ background: "var(--void)", clipPath: "circle(150% at 50% 50%)", zIndex: 0 }}
       />
 
-      {/* Top Edge Progress Bar Accent */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/5 z-10">
+      {/* Perspective scan-grid floor */}
+      <div
+        ref={gridRef}
+        className="absolute inset-x-0 bottom-0 h-[42%] overflow-hidden pointer-events-none z-[1]"
+        style={{ perspective: "560px" }}
+      >
         <div
-          ref={progressBarRef}
-          className="absolute inset-0 bg-[#00F5D4]"
+          className="absolute inset-0 origin-bottom [animation:grid-drift_1.6s_linear_infinite]"
+          style={{
+            transform: "rotateX(62deg)",
+            backgroundImage:
+              "linear-gradient(var(--wire) 1px, transparent 1px), linear-gradient(90deg, var(--wire) 1px, transparent 1px)",
+            backgroundSize: "46px 46px",
+            opacity: 0.5,
+          }}
+        />
+        <div
+          className="absolute inset-x-0 bottom-0 h-24"
+          style={{ background: "linear-gradient(to top, var(--void), transparent)" }}
         />
       </div>
 
-      {/* Dynamic Digital Counter */}
-      <div
-        ref={counterRef}
-        className="absolute bottom-6 left-6 md:bottom-10 md:left-12 font-mono font-bold text-xs sm:text-sm md:text-base tracking-widest text-white/30 z-10"
-      >
-        00
-      </div>
+      {/* Core: headset, percentage, wordmark */}
+      <div className="relative z-10 text-center w-full px-4 max-w-5xl flex flex-col items-center justify-center gap-3 sm:gap-4">
+        <BoxyHeadset
+          innerRef={headsetRef}
+          className="w-28 sm:w-32 md:w-40 h-auto mb-1 will-change-transform"
+        />
 
-      {/* Main Core Typography Stack */}
-      <div className="relative z-10 text-center w-full px-4 max-w-5xl flex flex-col items-center justify-center gap-1 sm:gap-2">
         <div
-          ref={line1Ref}
-          className="w-full text-[10vw] sm:text-[7vw] md:text-[6.5vw] lg:text-[6vw] font-['Syne'] font-extrabold text-white tracking-tighter uppercase leading-[0.95]"
+          ref={percentRef}
+          className="font-mono font-bold text-3xl sm:text-4xl md:text-5xl tracking-wide"
+          style={{ color: "var(--signal)" }}
         >
-          <SplitWords text="EXTENDING" />
+          0%
         </div>
-        <div
-          ref={line2Ref}
-          className="w-full text-[10vw] sm:text-[7vw] md:text-[6.5vw] lg:text-[6vw] font-['Syne'] font-extrabold text-[#00F5D4] tracking-tighter uppercase leading-[0.95]"
-        >
-          <SplitWords text="REALITY" />
+
+        <div className="w-full text-[5vw] sm:text-[3vw] md:text-[2.4vw] lg:text-[2vw] font-['Syne'] font-extrabold text-white tracking-tighter uppercase leading-[0.95]">
+          <SplitWords text="ENTERING REALXR" innerRef={line1Ref} />
         </div>
       </div>
 
-      {/* Institutional Metadata Tagline */}
-      <div
-        ref={taglineRef}
-        className="absolute bottom-6 right-6 md:bottom-10 md:right-12 font-['Space_Grotesk'] text-[9px] md:text-xs tracking-widest uppercase text-white/25 z-10 text-right"
-      >
-        RealXR · IPS Academy
+      {/* Progress hairline, top edge */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/5 z-10">
+        <div ref={progressRef} className="absolute inset-0" style={{ background: "var(--signal)" }} />
       </div>
 
       {process.env.NODE_ENV === "development" && (
-        <div className="absolute top-4 right-4 font-mono text-[9px] text-white/10 z-20">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 font-mono text-[9px] text-white/10 z-20">
           press R to replay
         </div>
       )}
+
+      <style>{`
+        @keyframes grid-drift {
+          from { background-position: 0 0; }
+          to   { background-position: 0 46px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [style*="animation"] { animation: none !important; }
+        }
+      `}</style>
     </div>
   );
 };
 
-export default Preloader;
+export default Preloader;   

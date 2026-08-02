@@ -34,7 +34,7 @@ export const Stars = ({ rating }) => {
 export const SearchBar = memo(function SearchBar({ value, onChange }) {
   return (
     <div className="relative  w-full max-w-xl group">
-      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500 w-4 h-4 pointer-events-none transition-colors group-focus-within:text-pink-500" />
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700 w-4 h-4 pointer-events-none transition-colors group-focus-within:text-pink-500" />
       <input
         type="text"
         value={value}

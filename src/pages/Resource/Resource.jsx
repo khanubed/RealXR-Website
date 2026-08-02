@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import { Search } from "lucide-react";
+import { Search, ArrowUpRight } from "lucide-react";
 import { fetchResources, CATEGORIES, RESOURCE_TYPES } from "../../data/resourceData";
-
-// Components
 import { SearchBar } from "../../components/ui/SearchBar";
 import { FilterTabs } from "../../components/ui/FilterTabs";
 import { Pagination } from "../../components/ui/Pagination";
@@ -14,172 +12,79 @@ import { SkeletonCard } from "../../components/ui/SkeletonCard";
 const PER_PAGE = 10;
 
 export default function Resources() {
-  const [resources, setResources]   = useState([]);
-  const [total, setTotal]           = useState(0);
+  const [resources, setResources] = useState([]);
+  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading]       = useState(true);
-  const [page, setPage]             = useState(1);
-  const [query, setQuery]           = useState("");
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
-  const [category, setCategory]     = useState("all");
-  const [resType, setResType]       = useState("all");
-
-  const pageRef   = useRef(null);
+  const [category, setCategory] = useState("all");
+  const [resType, setResType] = useState("all");
+  const pageRef = useRef(null);
   const headerRef = useRef(null);
 
-  // Debounce search
   useEffect(() => {
-    const t = setTimeout(() => {
-      setDebouncedQ(query);
-      setPage(1); 
-    }, 300);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => { setDebouncedQ(query); setPage(1); }, 300);
+    return () => clearTimeout(timer);
   }, [query]);
-
-  // Reset page on filter change
   useEffect(() => { setPage(1); }, [category, resType]);
-
-  // Fetch data
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-
-    fetchResources({ query: debouncedQ, page, perPage: PER_PAGE, category, type: resType })
-      .then(({ data, total, totalPages }) => {
-        if (cancelled) return;
-        setResources(data);
-        setTotal(total);
-        setTotalPages(totalPages);
-        setLoading(false);
-
-        if (pageRef.current) {
-          pageRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      });
-
+    fetchResources({ query: debouncedQ, page, perPage: PER_PAGE, category, type: resType }).then((result) => {
+      if (cancelled) return;
+      setResources(result.data); setTotal(result.total); setTotalPages(result.totalPages); setLoading(false);
+      pageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     return () => { cancelled = true; };
   }, [debouncedQ, page, category, resType]);
 
-  // Header entrance animation using useGSAP
   useGSAP(() => {
-    if (!headerRef.current) return;
-    gsap.fromTo(headerRef.current,
-      { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", delay: 0.1 }
-    );
+    const elements = headerRef.current?.querySelectorAll("[data-reveal]");
+    if (elements?.length) gsap.fromTo(elements, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, ease: "expo.out" });
   }, { scope: headerRef });
 
-  const typeOptions = useMemo(() => [
-    { id: "all", label: "All Types" },
-    ...Object.entries(RESOURCE_TYPES).map(([id, { label }]) => ({ id, label })),
-  ], []);
+  const typeOptions = useMemo(() => [{ id: "all", label: "All Types" }, ...Object.entries(RESOURCE_TYPES).map(([id, { label }]) => ({ id, label }))], []);
+  const filtered = debouncedQ || category !== "all" || resType !== "all";
 
   return (
-    <div className="min-h-screen pt-10 bg-gradient-to-br from-pink-50 via-cyan-50/30 to-white text-slate-900 space-400 relative overflow-hidden">
-      
-      {/* Decorative Ambient Background Blobs */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-[10%] -right-[5%] w-[40vw] h-[40vw] rounded-full bg-cyan-400/10 blur-[80px]" />
-        <div className="absolute bottom-[10%] -left-[8%] w-[50vw] h-[50vw] rounded-full bg-pink-500/5 blur-[100px]" />
-        <div className="absolute top-[40%] left-[30%] w-[30vw] h-[30vw] rounded-full bg-purple-500/5 blur-[80px]" />
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-5 pt-16 pb-20">
-        
-        {/* Header */}
-        <div ref={headerRef} className="text-center mb-12">
-
-          <h1 className="font-['Syne'] font-extrabold text-4xl sm:text-5xl md:text-6xl tracking-tight leading-none mb-4 bg-gradient-to-br from-slate-900 to-slate-600 bg-clip-text text-transparent">
-            Learn. Build. Ship.
-          </h1>
-
-          <p className="text-base sm:text-lg text-slate-500 leading-relaxed max-w-xl mx-auto">
-            Curated XR development resources — tutorials, papers, tools, and courses 
-            handpicked by the RealXR community.
-          </p>
-        </div>
-
-        {/* Search & Filters Container */}
-        <div className="bg-white/60 backdrop-blur-xl border border-pink-500/10 rounded-3xl p-6 sm:p-8 mb-8 shadow-[0_4px_24px_rgba(6,182,212,0.06),0_1px_4px_rgba(0,0,0,0.04)]">
-          <div className="flex justify-center mb-6">
-            <SearchBar value={query} onChange={setQuery} />
+    <div className="min-h-screen pt-10 text-[#15141a] relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(ellipse_at_80%_0%,rgba(0,191,174,.13),transparent_50%),radial-gradient(ellipse_at_12%_15%,rgba(255,61,143,.12),transparent_42%)]" />
+      <div className="relative mx-auto max-w-[1440px] px-4 sm:px-7 lg:px-12 pb-24">
+        <header ref={headerRef} className="grid lg:grid-cols-[minmax(0,1fr)_290px] gap-8 lg:gap-16 pt-16 sm:pt-24 pb-10 border-b border-[#15141a]/10">
+          <div>
+            <p data-reveal className="flex items-center gap-3 text-[.68rem] tracking-[.24em] uppercase font-semibold text-[#00a99a] mb-5"><span className="w-8 h-px bg-current" />Signal library / 01</p>
+            <h1 data-reveal className="font-['Syne'] font-extrabold text-[clamp(3.4rem,8vw,8rem)] leading-[.82] tracking-[-.07em]">MAKE<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff3d8f] to-[#00bfae]">REALITY.</span></h1>
           </div>
+          <div data-reveal className="lg:self-end lg:border-l lg:border-[#15141a]/10 lg:pl-6 text-sm leading-relaxed text-[#15141a]/60">
+            A working index of references, research and tools for people building beyond the flat screen.
+            <span className="block mt-5 font-mono text-[.66rem] tracking-[.14em] text-[#15141a]/40">CURATED / REALXR / 2026</span>
+          </div>
+        </header>
 
-          <div className="space-y-5">
-            <div>
-              <p className="text-[0.68rem] font-bold tracking-widest uppercase text-slate-400 mb-2.5">
-                Category
-              </p>
-              <FilterTabs 
-                options={CATEGORIES} 
-                active={category} 
-                onSelect={setCategory} 
-                accentColor="cyan" 
-              />
-            </div>
-            
-            <div>
-              <p className="text-[0.68rem] font-bold tracking-widest uppercase text-slate-400 mb-2.5">
-                Type
-              </p>
-              <FilterTabs 
-                options={typeOptions} 
-                active={resType} 
-                onSelect={setResType} 
-                accentColor="pink" 
-              />
+        <section className="grid lg:grid-cols-[190px_minmax(0,1fr)] border-b border-[#15141a]/10">
+          <div className="py-6 lg:py-8 text-[.66rem] font-mono tracking-[.14em] text-[#15141a]/45 uppercase">Discover / filter</div>
+          <div className="py-5 lg:py-7 lg:border-l border-[#15141a]/10">
+            <div className="max-w-2xl"><SearchBar value={query} onChange={setQuery} /></div>
+            <div className="grid md:grid-cols-2 gap-5 mt-6 pt-5 border-t border-[#15141a]/8">
+              <div><p className="mb-2 text-[.62rem] tracking-[.16em] uppercase font-semibold text-[#15141a]/40">Discipline</p><FilterTabs options={CATEGORIES} active={category} onSelect={setCategory} accentColor="cyan" /></div>
+              <div><p className="mb-2 text-[.62rem] tracking-[.16em] uppercase font-semibold text-[#15141a]/40">Format</p><FilterTabs options={typeOptions} active={resType} onSelect={setResType} accentColor="pink" /></div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Results Info & Action */}
-        <div ref={pageRef} className="flex items-center justify-between mb-4 px-1">
-          <p className="text-sm font-medium text-slate-500">
-            {loading ? "Searching resources..." : (
-              <>{total} resource{total !== 1 ? "s" : ""} found <span className="text-slate-300 mx-1">•</span> Page {page} of {totalPages}</>
-            )}
-          </p>
-          {!loading && (debouncedQ || category !== "all" || resType !== "all") && (
-            <button
-              onClick={() => { setQuery(""); setCategory("all"); setResType("all"); }}
-              className="text-xs font-semibold text-pink-500 hover:text-pink-600 transition-colors underline underline-offset-2"
-            >
-              Clear filters
-            </button>
-          )}
-        </div>
-
-        {/* Resource List */}
-        <div className="flex flex-col gap-4">
-          {loading ? (
-            Array.from({ length: PER_PAGE }).map((_, i) => <SkeletonCard key={i} />)
-          ) : resources.length === 0 ? (
-            <div className="text-center py-16 px-8 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-900/5">
-              <div className="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-slate-400" />
-              </div>
-              <h3 className="font-['Syne'] text-xl font-bold text-slate-800 mb-2">No resources found</h3>
-              <p className="text-slate-500 text-sm">Try adjusting your search terms or clearing your filters to see more results.</p>
+        <section ref={pageRef} className="grid lg:grid-cols-[190px_minmax(0,1fr)]">
+          <div className="pt-7 lg:pt-10 font-mono text-[.66rem] tracking-[.14em] uppercase text-[#15141a]/45">{loading ? "Indexing..." : `${String(total).padStart(2, "0")} entries`}</div>
+          <div className="lg:border-l border-[#15141a]/10 lg:pl-8 py-7 lg:py-10">
+            <div className="flex items-center justify-between mb-5 pb-4 border-b border-[#15141a]/10 text-sm text-[#15141a]/55"><span>Page {page} / {totalPages}</span>{filtered && <button onClick={() => { setQuery(""); setCategory("all"); setResType("all"); }} className="flex items-center gap-1 text-[#ff3d8f] text-xs font-semibold hover:gap-2 transition-all">Reset index <ArrowUpRight size={13} /></button>}</div>
+            <div className="flex flex-col gap-3">
+              {loading ? Array.from({ length: PER_PAGE }).map((_, i) => <SkeletonCard key={i} />) : resources.length === 0 ? <div className="py-20 border-y border-[#15141a]/10"><Search className="mb-4 text-[#00bfae]" /><h3 className="font-['Syne'] text-3xl font-bold">No signal found.</h3><p className="mt-2 text-[#15141a]/55">Try another term or reset the index.</p></div> : resources.map((item, i) => <ResourceCard key={item.id} item={item} index={i} />)}
             </div>
-          ) : (
-            resources.map((item, i) => (
-              <ResourceCard key={item.id} item={item} index={i} />
-            ))
-          )}
-        </div>
-
-        {/* Pagination */}
-        {!loading && <Pagination page={page} totalPages={totalPages} onChange={setPage} />}
-
-        {/* Footer */}
-        <footer className="text-center mt-16 text-xs text-slate-400 font-medium leading-loose">
-          Curated by the RealXR Web Dev Team • IES IPS Academy, Indore<br />
-          <a href="mailto:realxr@iesipsacademy.ac.in" className="text-cyan-600 hover:text-pink-500 transition-colors group">
-            Suggest a resource <span className="inline-block transition-transform group-hover:translate-x-1">→</span> realxr@iesipsacademy.ac.in
-          </a>
-        </footer>
-
+            {!loading && <Pagination page={page} totalPages={totalPages} onChange={setPage} />}
+          </div>
+        </section>
+        <footer className="border-t border-[#15141a]/10 pt-6 mt-6 flex flex-col sm:flex-row justify-between gap-3 text-[.68rem] font-mono tracking-[.1em] uppercase text-[#15141a]/45"><span>RealXR / IES IPS Academy</span><a href="mailto:realxr@iesipsacademy.ac.in" className="hover:text-[#00a99a]">Suggest a resource ↗</a></footer>
       </div>
     </div>
   );

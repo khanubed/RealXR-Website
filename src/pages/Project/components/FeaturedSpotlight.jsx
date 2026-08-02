@@ -47,7 +47,7 @@ export function FeaturedSpotlight({ project }) {
         </span>
       </div>
 
-      <div className="grid lg:grid-cols-[1.1fr_1fr] gap-0 rounded-[28px] border border-cyan-500/15 bg-white/55 backdrop-blur-xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(6,182,212,0.15)]">
+      <div className="grid lg:grid-cols-[1.1fr_1fr] gap-0 border border-[#15141a]/10 bg-white/45 overflow-hidden shadow-[0_28px_70px_-38px_rgba(0,191,174,.42)]">
         {/* Preview / viewfinder panel */}
         <div className="relative aspect-[4/3] lg:aspect-auto min-h-[320px] overflow-hidden bg-gradient-to-br from-cyan-500/15 via-white to-pink-500/15">
           {/* corner reticle */}
@@ -64,8 +64,8 @@ export function FeaturedSpotlight({ project }) {
             </span>
           </div>
 
-          <div className="absolute top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-slate-900/5 text-[0.65rem] font-semibold text-slate-500 space-500">
-            <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
+          <div className="absolute top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-none bg-white/80 border border-slate-900/5 text-[0.65rem] font-semibold text-slate-500 space-500">
+            <span className="w-1.5 h-1.5 rounded-none bg-pink-500 animate-pulse" />
             OBJ_{project.id.replace(/\D/g, "").padStart(2, "0")} · {project.platform}
           </div>
         </div>
@@ -74,10 +74,10 @@ export function FeaturedSpotlight({ project }) {
         <div className="p-7 sm:p-9 flex flex-col justify-center">
           <div className="flex items-center flex-wrap gap-2 mb-4">
             <span
-              className="text-[0.65rem] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full border flex items-center gap-1.5"
+              className="text-[0.65rem] font-bold tracking-wider uppercase px-2.5 py-1 rounded-none border flex items-center gap-1.5"
               style={{ color: status.color, background: `${status.color}12`, borderColor: `${status.color}35` }}
             >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: status.color }} />
+              <span className="w-1.5 h-1.5 rounded-none" style={{ background: status.color }} />
               {status.label}
             </span>
             <span className="text-[0.65rem] font-semibold text-slate-400 space-500">{project.year}</span>
@@ -90,7 +90,7 @@ export function FeaturedSpotlight({ project }) {
 
           <div className="flex flex-wrap gap-1.5 mb-7">
             {project.stack.map((s) => (
-              <span key={s} className="text-[0.7rem] px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 space-500">
+              <span key={s} className="text-[0.7rem] px-2.5 py-1 rounded-none bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 space-500">
                 {s}
               </span>
             ))}
@@ -99,13 +99,13 @@ export function FeaturedSpotlight({ project }) {
           <div className="flex items-center gap-3">
             <MagneticLink
               href={project.links.demo}
-              className="items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-pink-500 text-white text-sm syne-700 shadow-[0_8px_24px_rgba(6,182,212,0.3)] hover:shadow-[0_10px_30px_rgba(6,182,212,0.4)] transition-shadow"
+              className="items-center gap-2 px-5 py-3 rounded-none bg-gradient-to-r from-cyan-500 to-pink-500 text-white text-sm syne-700 shadow-[0_8px_24px_rgba(6,182,212,0.3)] hover:shadow-[0_10px_30px_rgba(6,182,212,0.4)] transition-shadow"
             >
               <PlayCircle size={16} /> Watch demo
             </MagneticLink>
             <MagneticLink
               href={project.links.github}
-              className="items-center gap-2 px-5 py-3 rounded-xl bg-white border border-slate-900/10 text-slate-700 text-sm syne-700 hover:border-cyan-500/40 transition-colors"
+              className="items-center gap-2 px-5 py-3 rounded-none bg-white border border-slate-900/10 text-slate-700 text-sm syne-700 hover:border-cyan-500/40 transition-colors"
             >
               <Github size={16} /> Source
             </MagneticLink>

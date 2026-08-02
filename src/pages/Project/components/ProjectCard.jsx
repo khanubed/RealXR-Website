@@ -51,10 +51,10 @@ export const ProjectCard = memo(function ProjectCard({ project, index }) {
     <div
       ref={cardRef}
       onClick={() => setOpen((o) => !o)}
-      className={`group relative overflow-hidden rounded-2xl border backdrop-blur-xl cursor-pointer transition-all duration-300
+      className={`group relative overflow-hidden border cursor-pointer transition-all duration-300
         ${open
-          ? "bg-white/85 border-cyan-400/40 shadow-[0_10px_36px_rgba(6,182,212,0.12)]"
-          : "bg-white/60 border-slate-900/5 hover:bg-white/85 hover:border-cyan-400/30 hover:shadow-[0_10px_30px_rgba(6,182,212,0.1)]"
+          ? "bg-white/90 border-cyan-400 shadow-[0_18px_40px_-28px_rgba(0,191,174,.55)]"
+          : "bg-white/35 border-transparent hover:bg-white/85 hover:border-cyan-400 hover:shadow-[0_18px_40px_-28px_rgba(0,191,174,.55)]"
         }`}
     >
       {/* Preview */}
@@ -75,10 +75,10 @@ export const ProjectCard = memo(function ProjectCard({ project, index }) {
 
         <div className="absolute top-3 left-3 flex items-center gap-1.5">
           <span
-            className="text-[0.6rem] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full border flex items-center gap-1"
+            className="text-[0.6rem] font-bold tracking-widest uppercase px-2 py-0.5 rounded-none border flex items-center gap-1"
             style={{ color: status.color, background: `${status.color}14`, borderColor: `${status.color}30` }}
           >
-            {project.status === "live" && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
+            {project.status === "live" && <span className="w-1.5 h-1.5 rounded-none bg-current animate-pulse" />}
             {status.label}
           </span>
         </div>
@@ -102,12 +102,12 @@ export const ProjectCard = memo(function ProjectCard({ project, index }) {
         <div className="flex items-center justify-between">
           <div className="flex flex-wrap gap-1.5">
             {project.stack.slice(0, 2).map((s) => (
-              <span key={s} className="text-[0.65rem] px-2 py-0.5 rounded-full bg-slate-900/5 text-slate-500 space-500">
+              <span key={s} className="text-[0.65rem] px-2 py-0.5 rounded-none bg-slate-900/5 text-slate-500 space-500">
                 {s}
               </span>
             ))}
             {project.stack.length > 2 && (
-              <span className="text-[0.65rem] px-2 py-0.5 rounded-full bg-slate-900/5 text-slate-400 space-500">
+              <span className="text-[0.65rem] px-2 py-0.5 rounded-none bg-slate-900/5 text-slate-400 space-500">
                 +{project.stack.length - 2}
               </span>
             )}
@@ -127,7 +127,7 @@ export const ProjectCard = memo(function ProjectCard({ project, index }) {
 
             <div className="flex flex-wrap gap-1.5 mb-5">
               {project.stack.map((s) => (
-                <span key={s} className="text-[0.65rem] px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 space-500">
+                <span key={s} className="text-[0.65rem] px-2.5 py-0.5 rounded-none bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 space-500">
                   {s}
                 </span>
               ))}
@@ -137,14 +137,14 @@ export const ProjectCard = memo(function ProjectCard({ project, index }) {
               {project.links.live && project.links.live !== "#" && (
                 <MagneticLink
                   href={project.links.live}
-                  className="items-center gap-1.5 px-4 py-2 rounded-lg text-xs syne-700 bg-gradient-to-r from-cyan-500 to-pink-500 text-white shadow-[0_4px_14px_rgba(6,182,212,0.3)]"
+                  className="items-center gap-1.5 px-4 py-2 rounded-none text-xs syne-700 bg-gradient-to-r from-cyan-500 to-pink-500 text-white shadow-[0_4px_14px_rgba(6,182,212,0.3)]"
                 >
                   Live <ExternalLink size={12} />
                 </MagneticLink>
               )}
               <MagneticLink
                 href={project.links.github}
-                className="items-center gap-1.5 px-4 py-2 rounded-lg text-xs syne-700 bg-white text-slate-700 border border-slate-900/10 hover:border-cyan-500/40"
+                className="items-center gap-1.5 px-4 py-2 rounded-none text-xs syne-700 bg-white text-slate-700 border border-slate-900/10 hover:border-cyan-500/40"
               >
                 <Github size={12} /> Code
               </MagneticLink>
