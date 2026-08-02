@@ -4,13 +4,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
 // Keep this as a local fallback just in case the API doesn't return a video URL
-import heroVideoFallback from "../../assets/video/hero.mp4";
+import heroVideoFallback from "../../assets/video/hero.webm";
 import { heroData } from "../../data/heroData";
 
 gsap.registerPlugin(ScrollTrigger);
 
 // Define fallback content so the UI never breaks during loading/errors
 const defaultContent = heroData;
+
+// Adjust this breakpoint to match your actual mobile/tablet cutoff.
+const DESKTOP_QUERY = "(min-width: 769px)";
+const MOBILE_QUERY = "(max-width: 768px)";
 
 const HeroVideo = ({ content = defaultContent }) => {
   const wrapperRef = useRef(null);
@@ -29,141 +33,265 @@ const HeroVideo = ({ content = defaultContent }) => {
       const bigText = bigTextRef.current;
       const h1Element = h1Ref.current;
 
-      let scrubST;
-
-      const init = () => {
-        video.pause();
-        video.currentTime = 0;
-
-        const duration = video.duration || 1;
-        const vw = window.innerWidth;
-
-        const textWidth = h1Element.offsetWidth;
-        const totalScrollDistance = textWidth;
-
-        // Define the scroll distance for each of the 3 phases
-        const scrubPx = duration * 500; // Phase 1: Video scrubbing
-        const fadePx = window.innerHeight * 0.8; // Phase 2: Fading the video to 0
-        const slidePx = totalScrollDistance * 1.2; // Phase 3: Text scrolling across
-
-        const totalPx = scrubPx + fadePx + slidePx;
-
-        wrapper.style.height = `${window.innerHeight + totalPx}px`;
-
-        gsap.set(videoInner, { opacity: 1 });
-        gsap.set(bigText, { x: vw, opacity: 0 });
-
-        scrubST = ScrollTrigger.create({
-          trigger: wrapper,
-          start: "top 20%",
-          end: "bottom bottom",
-          scrub: true,
-          invalidateOnRefresh: true,
-
-          onEnter: () => {
-            fixedEl.style.visibility = "visible";
-            fixedEl.style.opacity = 1;
-          },
-          onEnterBack: () => {
-            fixedEl.style.visibility = "visible";
-            fixedEl.style.opacity = 1;
-          },
-          onLeave: (self) => {
-            fixedEl.style.opacity = 0;
-            setTimeout(() => {
-              if (!self.isActive) fixedEl.style.visibility = "hidden";
-            }, 300);
-          },
-          onLeaveBack: (self) => {
-            fixedEl.style.opacity = 0;
-            setTimeout(() => {
-              if (!self.isActive) fixedEl.style.visibility = "hidden";
-            }, 300);
-          },
-
-          onUpdate: (self) => {
-            // Calculate the percentage of total scroll each phase takes
-            const scrubRatio = scrubPx / totalPx;
-            const fadeRatio = fadePx / totalPx;
-
-            if (self.progress <= scrubRatio) {
-              // PHASE 1: Video Scrubbing
-              const videoProgress = self.progress / scrubRatio;
-              video.currentTime = videoProgress * duration;
-
-              gsap.set(videoInner, { opacity: 1 });
-              gsap.set(bigText, { x: vw, opacity: 0 }); // Text waits offscreen
-            } else if (self.progress <= scrubRatio + fadeRatio) {
-              // PHASE 2: Video Fades to 0 (Text still waits offscreen)
-              video.currentTime = duration; // Keep video at last frame
-
-              // Normalize progress for just this fade phase (0 -> 1)
-              const fadeProgress = (self.progress - scrubRatio) / fadeRatio;
-
-              gsap.set(videoInner, { opacity: 1 - fadeProgress });
-              gsap.set(bigText, { x: vw, opacity: 0 });
-            } else {
-              // PHASE 3: Text Marquee comes from right (Video stays fully hidden)
-              video.currentTime = duration;
-              gsap.set(videoInner, { opacity: 0 });
-
-              // Normalize progress for the slide phase (0 -> 1)
-              const slideStart = scrubRatio + fadeRatio;
-              const slideProgress =
-                (self.progress - slideStart) / (1 - slideStart);
-
-              // Animate from off-screen Right (vw) to fully off-screen Left (-textWidth)
-              const textX = vw - slideProgress * totalScrollDistance;
-
-              gsap.set(bigText, {
-                x: textX,
-                opacity: Math.min(1, slideProgress * 8), // Fade in quickly right at the start of slide
-              });
-            }
-          },
-        });
-
-        ScrollTrigger.refresh();
+      const showFixed = () => {
+        fixedEl.style.visibility = "visible";
+        fixedEl.style.opacity = 1;
+      };
+      const hideFixed = (self) => {
+        fixedEl.style.opacity = 0;
+        setTimeout(() => {
+          if (!self.isActive) fixedEl.style.visibility = "hidden";
+        }, 300);
       };
 
-      const handleResize = () => {
-        if (!video.duration || !h1Element) return;
-        const vw = window.innerWidth;
+      // gsap.matchMedia() automatically tears down the previous branch's
+      // ScrollTriggers/listeners whenever the breakpoint crosses (e.g. on
+      // orientation change or window resize past 768px), and reverts
+      // everything on unmount.
+      const mm = gsap.matchMedia();
 
-        const textWidth = h1Element.offsetWidth;
-        const scrubPx = video.duration * 500;
-        const fadePx = window.innerHeight * 0.8;
-        const slidePx = (vw + textWidth) * 1.2;
+      // ---------------------------------------------------------------
+      // DESKTOP: original scroll-scrubbed video (scrub -> fade -> slide)
+      // ---------------------------------------------------------------
+      mm.add(DESKTOP_QUERY, () => {
+        let isDestroyed = false;
 
-        const totalPx = scrubPx + fadePx + slidePx;
-        wrapper.style.height = `${window.innerHeight + totalPx}px`;
+        const init = () => {
+          video.pause();
+          video.currentTime = 0;
 
-        ScrollTrigger.refresh();
-      };
+          const duration = video.duration || 1;
+          const vw = window.innerWidth;
+          const textWidth = h1Element.offsetWidth;
+          const totalScrollDistance = textWidth;
 
-      let isDestroyed = false;
+          const scrubPx = duration * 500; // Phase 1: video scrubbing
+          const fadePx = window.innerHeight * 0.8; // Phase 2: fade video to 0
+          const slidePx = totalScrollDistance * 1.2; // Phase 3: text slide
 
-      const safeInit = () => {
-        if (isDestroyed) return;
-        init();
-      };
+          const totalPx = scrubPx + fadePx + slidePx;
+          wrapper.style.height = `${window.innerHeight + totalPx}px`;
 
-      if (video.readyState >= 1) {
-        safeInit();
-      } else {
-        video.addEventListener("loadedmetadata", safeInit, { once: true });
-      }
+          gsap.set(videoInner, { opacity: 1 });
+          gsap.set(bigText, { x: vw, opacity: 0 });
 
-      window.addEventListener("resize", handleResize);
+          const st = ScrollTrigger.create({
+            trigger: wrapper,
+            start: "top 20%",
+            end: "bottom bottom",
+            scrub: true,
+            invalidateOnRefresh: true,
+            onEnter: showFixed,
+            onEnterBack: showFixed,
+            onLeave: hideFixed,
+            onLeaveBack: hideFixed,
+            onUpdate: (self) => {
+              const scrubRatio = scrubPx / totalPx;
+              const fadeRatio = fadePx / totalPx;
 
-      return () => {
-        isDestroyed = true;
-        video.removeEventListener("loadedmetadata", safeInit);
-        window.removeEventListener("resize", handleResize);
-      };
+              if (self.progress <= scrubRatio) {
+                // PHASE 1: video scrubbing
+                const videoProgress = self.progress / scrubRatio;
+                video.currentTime = videoProgress * duration;
+
+                gsap.set(videoInner, { opacity: 1 });
+                gsap.set(bigText, { x: vw, opacity: 0 });
+              } else if (self.progress <= scrubRatio + fadeRatio) {
+                // PHASE 2: video fades, held on last frame
+                video.currentTime = duration;
+                const fadeProgress = (self.progress - scrubRatio) / fadeRatio;
+
+                gsap.set(videoInner, { opacity: 1 - fadeProgress });
+                gsap.set(bigText, { x: vw, opacity: 0 });
+              } else {
+                // PHASE 3: text marquee slides in
+                video.currentTime = duration;
+                gsap.set(videoInner, { opacity: 0 });
+
+                const slideStart = scrubRatio + fadeRatio;
+                const slideProgress =
+                  (self.progress - slideStart) / (1 - slideStart);
+                const textX = vw - slideProgress * totalScrollDistance;
+
+                gsap.set(bigText, {
+                  x: textX,
+                  opacity: Math.min(1, slideProgress * 8),
+                });
+              }
+            },
+          });
+
+          ScrollTrigger.refresh();
+          return st;
+        };
+
+        const handleResize = () => {
+          if (!video.duration || !h1Element) return;
+          const vw = window.innerWidth;
+          const textWidth = h1Element.offsetWidth;
+          const scrubPx = video.duration * 500;
+          const fadePx = window.innerHeight * 0.8;
+          const slidePx = (vw + textWidth) * 1.2;
+          const totalPx = scrubPx + fadePx + slidePx;
+          wrapper.style.height = `${window.innerHeight + totalPx}px`;
+          ScrollTrigger.refresh();
+        };
+
+        let st;
+        const safeInit = () => {
+          if (isDestroyed) return;
+          st = init();
+        };
+
+        if (video.readyState >= 1) {
+          safeInit();
+        } else {
+          video.addEventListener("loadedmetadata", safeInit, { once: true });
+        }
+
+        window.addEventListener("resize", handleResize);
+
+        // Runs when this matchMedia branch is torn down (breakpoint
+        // crossed, or component unmounts).
+        return () => {
+          isDestroyed = true;
+          video.removeEventListener("loadedmetadata", safeInit);
+          window.removeEventListener("resize", handleResize);
+          st?.kill();
+        };
+      });
+
+      // ---------------------------------------------------------------
+      // MOBILE: one-time playback on entering view, freeze on last frame,
+      // then fade + text marquee continue with normal scroll.
+      // ---------------------------------------------------------------
+      mm.add(MOBILE_QUERY, () => {
+        let isDestroyed = false;
+        let hasPlayed = false;
+
+        const init = () => {
+          video.pause();
+          video.currentTime = 0;
+          hasPlayed = false;
+
+          const vw = window.innerWidth;
+          const textWidth = h1Element.offsetWidth;
+          const totalScrollDistance = textWidth;
+
+          // "Dead zone" scroll distance reserved while the video free-plays
+          // once, independent of exact scroll position. Tune this to roughly
+          // match how far a typical scroll gesture covers during playback.
+          const playPx = window.innerHeight * 0.6;
+          const fadePx = window.innerHeight * 0.8;
+          const slidePx = totalScrollDistance * 1.2;
+
+          const totalPx = playPx + fadePx + slidePx;
+          wrapper.style.height = `${window.innerHeight + totalPx}px`;
+
+          gsap.set(videoInner, { opacity: 1 });
+          gsap.set(bigText, { x: vw, opacity: 0 });
+
+          const playOnce = () => {
+            if (hasPlayed) return;
+            hasPlayed = true;
+            video.currentTime = 0;
+            video.play().catch(() => {
+              // Autoplay blocked for some reason — just show the last frame.
+              video.currentTime = video.duration || 0;
+            });
+          };
+
+          const st = ScrollTrigger.create({
+            trigger: wrapper,
+            // Fires once the wrapper's top reaches the middle of the screen.
+            start: "top center",
+            end: "bottom bottom",
+            scrub: true,
+            invalidateOnRefresh: true,
+            onEnter: () => {
+              showFixed();
+              playOnce();
+            },
+            onEnterBack: () => {
+              showFixed();
+              playOnce();
+            },
+            onLeave: hideFixed,
+            onLeaveBack: hideFixed,
+            onUpdate: (self) => {
+              const playRatio = playPx / totalPx;
+              const fadeRatio = fadePx / totalPx;
+
+              if (self.progress <= playRatio) {
+                // PHASE 1 (mobile): video plays on its own, not scroll-tied.
+                // Leave it fully visible; playback runs at its own pace and
+                // naturally freezes on its last frame once it ends.
+                gsap.set(videoInner, { opacity: 1 });
+                gsap.set(bigText, { x: vw, opacity: 0 });
+              } else if (self.progress <= playRatio + fadeRatio) {
+                // PHASE 2: fade the (now-frozen) last frame out
+                const fadeProgress = (self.progress - playRatio) / fadeRatio;
+                gsap.set(videoInner, { opacity: 1 - fadeProgress });
+                gsap.set(bigText, { x: vw, opacity: 0 });
+              } else {
+                // PHASE 3: text marquee slides in
+                gsap.set(videoInner, { opacity: 0 });
+
+                const slideStart = playRatio + fadeRatio;
+                const slideProgress =
+                  (self.progress - slideStart) / (1 - slideStart);
+                const textX = vw - slideProgress * totalScrollDistance;
+
+                gsap.set(bigText, {
+                  x: textX,
+                  opacity: Math.min(1, slideProgress * 8),
+                });
+              }
+            },
+          });
+
+          ScrollTrigger.refresh();
+          return st;
+        };
+
+        const handleResize = () => {
+          if (!h1Element) return;
+          const vw = window.innerWidth;
+          const textWidth = h1Element.offsetWidth;
+          const playPx = window.innerHeight * 0.6;
+          const fadePx = window.innerHeight * 0.8;
+          const slidePx = (vw + textWidth) * 1.2;
+          const totalPx = playPx + fadePx + slidePx;
+          wrapper.style.height = `${window.innerHeight + totalPx}px`;
+          ScrollTrigger.refresh();
+        };
+
+        let st;
+        const safeInit = () => {
+          if (isDestroyed) return;
+          st = init();
+        };
+
+        if (video.readyState >= 1) {
+          safeInit();
+        } else {
+          video.addEventListener("loadedmetadata", safeInit, { once: true });
+        }
+
+        window.addEventListener("resize", handleResize);
+
+        return () => {
+          isDestroyed = true;
+          video.removeEventListener("loadedmetadata", safeInit);
+          window.removeEventListener("resize", handleResize);
+          st?.kill();
+        };
+      });
+
+      return () => mm.revert();
     },
     { scope: wrapperRef },
-  ); // Cleans up timelines and scroll triggers smoothly on unmount
+  );
 
   return (
     <>

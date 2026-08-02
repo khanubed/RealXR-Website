@@ -5,7 +5,7 @@ import { useGSAP } from "@gsap/react";
 import Navbar from "../../components/layout/Navbar"; // Ensure path is correct
 
 // You can keep a local fallback image here just in case the API fails
-import FallbackHeroImg from "../../assets/images/Hero/headset.png";
+import FallbackHeroImg from "../../assets/images/Hero/headset.webp";
 import { heroData } from "../../data/heroData";
 import DistortText from "../../components/three/DistortText";
 

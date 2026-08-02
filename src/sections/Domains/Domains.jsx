@@ -329,7 +329,7 @@ const Domains = ({ content = defaultContent }) => {
                   {slide.num} — {slide.label}
                 </span>
                 <p
-                  className="slide-desc max-w-[420px] font-['Syne',sans-serif] text-sm text-base md:text-lg font-semibold leading-relaxed px-4 py-3 rounded-lg bg-white/10 backdrop-blur-md"
+                  className="slide-desc max-w-[420px] font-['Syne',sans-serif] text-xs md:text-lg font-semibold leading-relaxed px-4 py-3 rounded-lg bg-white/10 backdrop-blur-md"
                   style={{
                     color: slide.textColor
                       ? `${slide.textColor}cc`
@@ -342,7 +342,7 @@ const Domains = ({ content = defaultContent }) => {
 
               <div style={{ zIndex: 5 }}>
                 <h2
-                  className="slide-title font-['Syne',sans-serif] font-extrabold text-2xl sm:text-6xl md:text-7xl lg:text-9xl  -tracking-[0.04em] uppercase leading-[0.95] drop-shadow-[0_2px_24px_rgba(0,0,0,0.25)]"
+                  className="slide-title font-['Syne',sans-serif] font-extrabold text-2xl sm:text-4xl md:text-5xl lg:text-7xl  -tracking-[0.04em] uppercase leading-[0.95] drop-shadow-[0_2px_24px_rgba(0,0,0,0.25)]"
                   style={{
                     color: slide.textColor || "#fff",
                   }}
