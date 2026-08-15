@@ -11,6 +11,7 @@ import Sanskar from "./sanskar.webp";
 import Sara from "./Sara.webp";
 import Sourabh from "./Sourabh.webp";
 import Ubed from "./ubed.webp";
+import Ashika from "./ashika.webp"
 
 // Export individually for explicit imports
 export {
@@ -26,5 +27,6 @@ export {
   Sanskar,
   Sara,
   Sourabh,
-  Ubed
+  Ubed,
+  Ashika,
 };

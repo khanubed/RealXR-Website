@@ -1,4 +1,4 @@
-import { Arshan , Maheen , Sanskar , Hiteshi , Ubed , Sara ,Sourabh , Naina , Parag , Ikra , Mahendra , Aakif , Pushpraj } from '../assets/images/Teams/index'
+import { Arshan , Maheen , Ashika , Sanskar , Hiteshi , Ubed , Sara ,Sourabh , Naina , Parag , Ikra , Mahendra , Aakif , Pushpraj } from '../assets/images/Teams/index'
 
 export const teams = [
   {
@@ -186,7 +186,7 @@ export const teams = [
         name: "Ashika Jain",
         role: "Video Producer",
         desc: "Behind every reel, every event highlight, and every cinematic that makes people want to join.",
-        img: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=400&q=80",
+        img: Ashika,
         socials: { instagram: "#", linkedin: null, github: null },
       },
       {

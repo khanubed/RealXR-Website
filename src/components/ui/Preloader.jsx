@@ -277,7 +277,7 @@ const Preloader = ({ onComplete }) => {
         </div>
 
         <div className="w-full text-[5vw] sm:text-[3vw] md:text-[2.4vw] lg:text-[2vw] font-['Syne'] font-extrabold text-white tracking-tighter uppercase leading-[0.95]">
-          <SplitWords text="ENTERING REALXR" innerRef={line1Ref} />
+          <SplitWords text="ENTERING   REALXR" innerRef={line1Ref} />
         </div>
       </div>
 
