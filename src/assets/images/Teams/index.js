@@ -12,6 +12,10 @@ import Sara from "./Sara.webp";
 import Sourabh from "./Sourabh.webp";
 import Ubed from "./ubed.webp";
 import Ashika from "./ashika.webp"
+import Hiteshi1 from "./hiteshi1.webp"
+import Hiteshi2 from "./hiteshi2.webp"
+import Hiteshi3 from "./hiteshi3.webp"
+
 
 // Export individually for explicit imports
 export {
@@ -29,4 +33,7 @@ export {
   Sourabh,
   Ubed,
   Ashika,
+  Hiteshi1,
+  Hiteshi2,
+  Hiteshi3,
 };
