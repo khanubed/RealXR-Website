@@ -1,4 +1,4 @@
-import { Arshan , Maheen , Sanskar , Hiteshi , Ubed , Sara ,Sourabh , Naina , Parag , Ikra , Mahendra , Aakif , Pushpraj } from '../assets/images/Teams/index'
+import { Arshan , Maheen , Ashika , Sanskar , Hiteshi , Ubed , Sara ,Sourabh , Naina , Parag , Ikra , Mahendra , Aakif , Pushpraj, Hiteshi1, Hiteshi2, Hiteshi3 } from '../assets/images/Teams/index'
 
 export const teams = [
   {
@@ -144,21 +144,21 @@ export const teams = [
         name: "Nisha Sharma",
         role: "Design Lead",
         desc: "Crafts the visual identity of RealXR — from event posters to motion graphics that stop your scroll.",
-        img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80",
+        img: Hiteshi1,
         socials: { instagram: "#", linkedin: "#", github: null },
       },
       {
         name: "Amit Verma",
         role: "3D Artist",
         desc: "Blender open 24/7. Responsible for every 3D asset, render, and motion piece the club publishes.",
-        img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        img: Hiteshi2,
         socials: { instagram: "#", linkedin: "#", github: "#" },
       },
       {
         name: "Kavya Nair",
         role: "UI/UX Designer",
         desc: "Designs interfaces before a single line of code. Figma all day, Spline when the brief calls for 3D.",
-        img: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=400&q=80",
+        img: Hiteshi3,
         socials: { instagram: "#", linkedin: "#", github: null },
       },
     ],
@@ -186,7 +186,7 @@ export const teams = [
         name: "Ashika Jain",
         role: "Video Producer",
         desc: "Behind every reel, every event highlight, and every cinematic that makes people want to join.",
-        img: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=400&q=80",
+        img: Ashika,
         socials: { instagram: "#", linkedin: null, github: null },
       },
       {
