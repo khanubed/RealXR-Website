@@ -8,56 +8,70 @@ import Projects from "../../sections/Projects/Projects";
 import TeamIntro from "../../sections/Team/TeamIntro";
 import Team from "../../sections/Team/Team";
 import Join from "../../sections/Join/Join";
-import RedSection from "../../sections/Footer/RedSection"; // <-- Import here
-import { getHeroData, getAboutData , getDomainsData , getProjectsData , getEventsData} from "../../api/api";
+import RedSection from "../../sections/Footer/RedSection";
+import { getHeroData, getAboutData, getDomainsData, getProjectsData, getEventsData, getTeamsData } from "../../api/api";
 import EventsShowcase from "../../sections/Events/EventsShowcase.jsx";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const Home = () => {
-  const [heroData, setHeroData] = useState(null);
-  const [aboutData, setAboutData] = useState(null);
-  const [domainsData, setDomainsData] = useState(null);
-  const [projectData , setProjectsData] = useState(null);
-  const [eventsData , setEventsData] = useState(null);
+  const [homeData, setHomeData] = useState(null);
 
   useEffect(() => {
-    const fetchHeroData = async () => {
-      const data = await getHeroData();
-      setHeroData(data.heroData);
-    };
-    const fetchAboutData = async () => {
-      const data = await getAboutData();
-      setAboutData(data.aboutData);
-    };
-    const fetchDomainsData = async() =>{
-      const data = await getDomainsData();
-      setDomainsData(data.domainsData);
-    };
-    const fetchProjectsData = async() =>{
-      const data = await getProjectsData();
-      setProjectsData(data.projectsData);
-    };
-    const fetchEventsData = async()=>{
-      const data = await getEventsData();
-      setEventsData(data?.eventsData || data || []);
+    let active = true;
+    const fetchAllData = async () => {
+      try {
+        const [hero, about, domains, projects, events, teamsData] = await Promise.all([
+          getHeroData(),
+          getAboutData(),
+          getDomainsData(),
+          getProjectsData(),
+          getEventsData(),
+          getTeamsData(),
+        ]);
+        
+        if (active) {
+          setHomeData({
+            hero: hero?.heroData,
+            about: about?.aboutData,
+            domains: domains?.domainsData,
+            projects: projects?.projectsData,
+            events: events?.eventsData || events || [],
+            teams: teamsData || [],
+          });
+          
+          // Let React render the DOM updates first, then refresh ScrollTrigger
+          setTimeout(() => {
+            ScrollTrigger.refresh();
+          }, 300);
+        }
+      } catch (err) {
+        console.error("Failed to fetch homepage data", err);
+      }
     };
 
-    fetchHeroData();
-    fetchAboutData();
-    fetchDomainsData();
-    fetchProjectsData();
-    fetchEventsData();
+    fetchAllData();
+    return () => {
+      active = false;
+    };
   }, []);
+
+  const heroContent = homeData?.hero || undefined;
+  const aboutContent = homeData?.about || undefined;
+  const domainsContent = homeData?.domains || undefined;
+  const projectsContent = homeData?.projects || undefined;
+  const eventsContent = homeData?.events || undefined;
+  const teamsContent = homeData?.teams || undefined;
 
   return (
     <>
-      <Hero content={heroData || undefined} />
-      <HeroVideo content={heroData || undefined} />
-      <About content={aboutData || undefined} />
-      <Domains content={domainsData || undefined} />
-      <Projects content={projectData || undefined}/>
-      <EventsShowcase content={eventsData || undefined}/>
-      <TeamIntro />
-      <Team />
+      <Hero content={heroContent} />
+      <HeroVideo content={heroContent} />
+      <About content={aboutContent} />
+      <Domains content={domainsContent} />
+      <Projects content={projectsContent} />
+      <EventsShowcase content={eventsContent} />
+      <TeamIntro content={teamsContent} />
+      <Team content={teamsContent} />
       
       {/* Pinned Join Section footprint */}
       <div style={{ position: "relative", height: "250vh" }}>

@@ -1,8 +1,9 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Aperture, ArrowUpRight } from "lucide-react";
 import { PROJECTS, CATEGORIES } from "../../data/projectsPageData";
+import { getProjectsPageData } from "../../api/api";
 import { SearchBar } from "../../components/ui/SearchBar";
 import { FilterTabs } from "../../components/ui/FilterTabs";
 import { FeaturedSpotlight } from "./components/FeaturedSpotlight";
@@ -11,12 +12,22 @@ import { ProjectCard } from "./components/ProjectCard";
 export default function Projects() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
+  const [projects, setProjects] = useState(PROJECTS);
   const headerRef = useRef(null);
-  const featured = useMemo(() => PROJECTS.find((project) => project.featured), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getProjectsPageData().then((list) => {
+      if (!cancelled && list?.length) setProjects(list);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const featured = useMemo(() => projects.find((project) => project.featured), [projects]);
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
-    return PROJECTS.filter((project) => (category === "all" || project.category === category) && (!term || project.title.toLowerCase().includes(term) || project.tagline.toLowerCase().includes(term) || project.stack.some((item) => item.toLowerCase().includes(term)) || project.tags.some((item) => item.toLowerCase().includes(term))));
-  }, [query, category]);
+    return projects.filter((project) => (category === "all" || project.category === category) && (!term || project.title.toLowerCase().includes(term) || project.tagline.toLowerCase().includes(term) || project.stack.some((item) => item.toLowerCase().includes(term)) || project.tags.some((item) => item.toLowerCase().includes(term))));
+  }, [query, category, projects]);
   useGSAP(() => { const items = headerRef.current?.querySelectorAll("[data-reveal]"); if (items?.length) gsap.fromTo(items, { y: 34, opacity: 0 }, { y: 0, opacity: 1, duration: .85, stagger: .09, ease: "expo.out" }); }, { scope: headerRef });
 
   return (

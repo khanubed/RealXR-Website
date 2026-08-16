@@ -1,8 +1,9 @@
-import React, { useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { teamImages } from "../../data/teamsData.js";
+import { teams } from "../../data/teamsData.js";
+import { getTeamsData } from "../../api/api";
 import DistortText from "../../components/three/DistortText.jsx";
 
 const TeamIntroData = {
@@ -10,17 +11,30 @@ const TeamIntroData = {
   description: "The creators, builders, and spatial visionaries pushing the absolute boundaries of reality."
 }
 
+const toRainImages = (list) =>
+  list.flatMap((team) =>
+    team.members.map((member) => ({
+      id: `${team.id}-${member.name}`,
+      name: member.name,
+      role: member.role,
+      url: member.img,
+    }))
+  );
+
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
-const TeamIntro = () => {
+const TeamIntro = ({ content }) => {
   const containerRef = useRef(null);
   const itemsRef = useRef([]);
+
+  const teamList = content && content.length ? content : teams;
+  const rainImages = useMemo(() => toRainImages(teamList), [teamList]);
 
   // Setup animations and ScrollTriggers smoothly inside useGSAP
   useGSAP(() => {
     // Clear out stale references
-    itemsRef.current = itemsRef.current.slice(0, teamImages.length);
+    itemsRef.current = itemsRef.current.slice(0, rainImages.length);
 
     // Master function to manage a single team photo's lifecycle
     const startRainCycle = (el, isInitialSpawn = false) => {
@@ -74,7 +88,7 @@ const TeamIntro = () => {
       pinSpacing: true,       // Pushes subsequent team grids or layouts down cleanly
       anticipatePin: 1,       // Eliminates visual snapping
     });
-  }, { scope: containerRef, dependencies: [teamImages] });
+  }, { scope: containerRef, dependencies: [rainImages] });
 
   return (
     <section
@@ -83,7 +97,7 @@ const TeamIntro = () => {
     >
       {/* BACKGROUND: Falling Team Member Images */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        {teamImages.map((image, index) => (
+        {rainImages.map((image, index) => (
           <div
             key={image.id}
             ref={(el) => (itemsRef.current[index] = el)}
@@ -93,7 +107,8 @@ const TeamIntro = () => {
               src={image.url}
               alt={image.name || "Team Member"}
               className="w-full h-full object-cover pointer-events-none"
-              loading="eager"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         ))}

@@ -47,6 +47,8 @@ const CursorPreview = ({ images, accent, visible, x, y }) => {
           key={i}
           src={src}
           alt=""
+          loading="lazy"
+          decoding="async"
           style={{
             position: "absolute",
             inset: 0,
@@ -157,6 +159,8 @@ const EventCard = React.forwardRef(({ event, index, totalCards }, ref) => {
           <img
             src={event.images[0]}
             alt={event.title}
+            loading="lazy"
+            decoding="async"
             style={{
               position: "absolute",
               inset: 0,

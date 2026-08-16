@@ -94,7 +94,7 @@ export default function Footer() {
           {/* Logo & Info Column */}
           <div className="reveal-item md:col-span-4 lg:col-span-4 flex flex-col space-y-6">
             <div className="relative w-44 h-auto opacity-90 hover:opacity-100 transition-opacity">
-              <img src="/realXr.PNG" alt="RealXR logo" />
+              <img src="/realXr.PNG" alt="RealXR logo" loading="lazy" decoding="async" />
             </div>
 
             <div className="space-y-1">

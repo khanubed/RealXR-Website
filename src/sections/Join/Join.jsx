@@ -1,7 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { postJoinForm } from "../../api/api";
+import { trackEvent } from "../../lib/analytics.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -51,22 +53,8 @@ const Join = () => {
   });
   const [status, setStatus] = useState("idle"); // idle | submitting | done
   const [error, setError] = useState("");
-  const [settings, setSettings] = useState(null);
 
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const { fetchSanity } = await import("../../sanity/client");
-        const value = await fetchSanity(`*[_type == "joinFormSettings"][0]{heading, subheading, interests, submitLabel, successMessage}`);
-        if (value) setSettings(value);
-      } catch {
-        // The local defaults keep the form usable before Sanity is configured.
-      }
-    };
-    loadSettings();
-  }, []);
-
-  const interestOptions = settings?.interests?.length ? settings.interests : DEFAULT_INTEREST_OPTIONS;
+  const interestOptions = DEFAULT_INTEREST_OPTIONS;
 
   // Context-safe animation hook
   useGSAP(
@@ -125,20 +113,24 @@ const Join = () => {
       return;
     }
 
+    if (status === "submitting") return;
+
     setStatus("submitting");
     try {
-      const response = await fetch(import.meta.env.VITE_JOIN_ENDPOINT || "/api/join", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      await postJoinForm({
+        name: form.name.trim(),
+        branch: form.branch.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        interests: form.interests,
+        message: form.message.trim(),
       });
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
-        throw new Error(payload.message || "Could not submit your application.");
-      }
+      trackEvent("join_form_submit", {
+        interests: form.interests.join(", "),
+      });
       setStatus("done");
     } catch (err) {
-      setError(err.message || "Something went wrong — please try again.");
+      setError(err instanceof Error ? err.message : "Could not submit the form. Please try again.");
       setStatus("idle");
     }
   };
@@ -176,7 +168,7 @@ const Join = () => {
               lineHeight: 1.2,
             }}
           >
-            {settings?.heading || "Ready to Build Something Real?"}
+            "Ready to Build Something Real?"
           </h2>
           <p
             ref={subRef}
@@ -188,7 +180,7 @@ const Join = () => {
               margin: 0,
             }}
           >
-            {settings?.subheading || "No experience required. No prerequisites. Just show up with curiosity and the willingness to learn — we'll handle the rest."}
+            "No experience required. No prerequisites. Just show up with curiosity and the willingness to learn — we'll handle the rest."
           </p>
         </div>
 
@@ -203,7 +195,7 @@ const Join = () => {
               color: "#00F5D4",
             }}
           >
-            {settings?.successMessage || "Thanks for applying! We'll be in touch soon."}
+            "Thanks for applying! We'll be in touch soon."
           </div>
         ) : (
           <form
@@ -376,8 +368,8 @@ const Join = () => {
                 fontFamily: "Syne, sans-serif",
                 fontWeight: 700,
                 fontSize: "0.95rem",
-                cursor: status === "submitting" ? "not-allowed" : "pointer",
-                opacity: status === "submitting" ? 0.6 : 1,
+                cursor: status === "submitting" ? "wait" : "pointer",
+                opacity: status === "submitting" ? 0.7 : 1,
                 transition: "background 0.2s, color 0.2s",
               }}
               onMouseEnter={(e) => {
@@ -390,7 +382,7 @@ const Join = () => {
                 e.currentTarget.style.color = "#fff";
               }}
             >
-              {status === "submitting" ? "Submitting..." : (settings?.submitLabel || "Apply to Join RealXR")}
+              {status === "submitting" ? "Submitting…" : "Apply to Join RealXR"}
             </button>
           </form>
         )}

@@ -30,7 +30,8 @@ import React, {
 import { useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import { EVENTS, getEventBySlug } from "../../data/galleryData";
+import { EVENTS } from "../../data/galleryData";
+import { getGalleryEvents } from "../../api/api";
 import MediaGrid from "./MediaGrid.jsx";
 import Lightbox  from "./Lightbox";
 
@@ -270,11 +271,21 @@ function ARCursor({ accent }) {
 // ── Main Dashboard ────────────────────────────────────────────────
 export default function GalleryDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [events, setEvents] = useState(EVENTS);
   const activeSlug  = searchParams.get("event");
   const activeEvent = useMemo(
-    () => activeSlug ? getEventBySlug(activeSlug) : null,
-    [activeSlug]
+    () => activeSlug ? events.find((e) => e.slug === activeSlug) ?? null : null,
+    [activeSlug, events]
   );
+
+  // Backend-first: refresh gallery content when available.
+  useEffect(() => {
+    let cancelled = false;
+    getGalleryEvents().then((list) => {
+      if (!cancelled && list?.length) setEvents(list);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const headerRef    = useRef(null);
   const gridWrapRef  = useRef(null);
@@ -462,7 +473,7 @@ export default function GalleryDashboard() {
               pointerEvents: "none",
             }}
           />
-          {EVENTS.map((ev) => (
+          {events.map((ev) => (
             <button
               key={ev.id}
               data-slug={ev.slug}
@@ -503,7 +514,7 @@ export default function GalleryDashboard() {
               gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
               gap: "1.4rem",
             }}>
-              {EVENTS.map((ev) => (
+              {events.map((ev) => (
                 <EventCard key={ev.id} event={ev} onClick={openEvent} />
               ))}
             </div>

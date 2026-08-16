@@ -95,7 +95,8 @@ const Moments = ({ images = [], title, subTitle }) => {
               src={typeof image === "string" ? image : image.url}
               alt="Captured Moment"
               className="w-full h-full object-cover pointer-events-none"
-              loading="eager"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         ))}

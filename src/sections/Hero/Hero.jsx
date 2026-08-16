@@ -216,7 +216,7 @@ const Hero = ({ content = defaultContent }) => {
         if (onMouseMove) window.removeEventListener("mousemove", onMouseMove);
       };
     },
-    { scope: containerRef },
+    { scope: containerRef, dependencies: [content] },
   ); // Scopes selections and wraps execution in a cleanup-safe container
 
   return (
