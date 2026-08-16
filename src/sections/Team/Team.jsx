@@ -1,8 +1,9 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { teams } from "../../data/teamsData";
+import { getTeamsData } from "../../api/api";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -68,6 +69,8 @@ const MemberPair = ({ member, accent, bg }) => {
           src={member.img}
           alt={member.name}
           className="w-full h-full object-cover block"
+          loading="lazy"
+          decoding="async"
         />
         <div
           className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.7)] to-transparent to-[55%]"
@@ -110,6 +113,8 @@ const MemberPair = ({ member, accent, bg }) => {
               alt=""
               className="w-9 h-9 rounded-full object-cover"
               style={{ border: `1.5px solid ${accent}66` }}
+              loading="lazy"
+              decoding="async"
             />
             <div>
               <div
@@ -347,8 +352,9 @@ const TeamSlide = ({ team, slideIndex }) => {
 };
 
 // ── Main Section ──────────────────────────────────────────────────
-const Team = () => {
+const Team = ({ content }) => {
   const sectionRef = useRef(null);
+  const teamList = content && content.length ? content : teams;
 
   useGSAP(
     () => {
@@ -377,7 +383,7 @@ const Team = () => {
       ref={sectionRef}
       style={{ background: "#000", position: "relative", zIndex: "0" }}
     >
-      {teams.map((team, i) => (
+      {teamList.map((team, i) => (
         <TeamSlide key={team.id} team={team} slideIndex={i} />
       ))}
     </div>

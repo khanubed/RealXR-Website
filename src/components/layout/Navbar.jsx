@@ -76,6 +76,8 @@ const Navbar = () => {
             className="drop-shadow-lg"
             alt="realXrLogo"
             width="90"
+            loading="lazy"
+            decoding="async"
           />
         </Link>
 

@@ -202,6 +202,8 @@ const MediaCard = memo(function MediaCard({
                   transition: "opacity 0.3s ease",
                   opacity: loaded ? 1 : 0,
                 }}
+                loading="lazy"
+                decoding="async"
                 onLoad={() => setLoaded(true)}
               />
             )}

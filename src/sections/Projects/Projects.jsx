@@ -202,6 +202,8 @@ const Projects = ({ content = defaultContent }) => {
             src={activeImage}
             alt="Project Preview"
             className="w-full h-full object-cover transform scale-105"
+            loading="lazy"
+            decoding="async"
           />
         )}
       </div>

@@ -11,6 +11,7 @@ import Footer from "../../sections/Footer/Footer";
 import FluidCanvas from "../three/FluidCanvas";
 import CustomCursor from "../cursor/CustomCursor";
 import Preloader from "../ui/Preloader";
+import { trackPageView } from "../../lib/analytics.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -85,6 +86,14 @@ const RootLayout = () => {
       return () => clearTimeout(routeRefresh);
     },
     { dependencies: [location.pathname, isLoading] } // Triggers immediately on every route pivot
+  );
+
+  // GA4 — track every route change as a page view
+  useGSAP(
+    () => {
+      trackPageView(location.pathname + location.search);
+    },
+    { dependencies: [location.pathname, location.search] }
   );
 
   return (

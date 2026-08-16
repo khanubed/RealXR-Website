@@ -1,4 +1,4 @@
-import { Arshan , Maheen , Ashika , Sanskar , Hiteshi , Ubed , Sara ,Sourabh , Naina , Parag , Ikra , Mahendra , Aakif , Pushpraj } from '../assets/images/Teams/index'
+import { Arshan , Maheen , Ashika , Sanskar , Hiteshi , Ubed , Sara ,Sourabh , Naina , Parag , Ikra , Mahendra , Aakif , Pushpraj, Chandrashekhar } from '../assets/images/Teams/index'
 
 export const teams = [
   {
@@ -43,10 +43,10 @@ export const teams = [
         },
       },
       {
-        name: "Chandra Shekhar",
+        name: "Chandrashekhar Patel",
         role: "Operations & Treasurer",
         desc: "Manages financial allocation, tracks hardware ecosystem requests, and pilots logistics for regional hackathons.",
-        img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=80",
+        img: Chandrashekhar,
         socials: { instagram: "#", linkedin: "#", github: "#" },
       },
     ],
@@ -230,83 +230,4 @@ export const teams = [
   },
 ];
 
-export const teamImages = [
-  {
-    id: 1,
-    name: "Pushpraj Singh Jhala",
-    role: "Founding Lead & XR Architect",
-    url: Pushpraj,
-  },
-  {
-    id: 2,
-    name: "Aakif Makrani",
-    role: "Vice President",
-    url: Aakif,
-  },
-  {
-    id: 3,
-    name: "Parag Malvi",
-    role: "Technical Lead",
-    url: Parag,
-  },
-  {
-    id: 4,
-    name: "Ubed Khan",
-    role: "Fullstack Developer and UI/UX Designer",
-    url: Ubed,
-  },
-  {
-    id: 5,
-    name: "Sourabh Prajapat",
-    role: "Web Developer",
-    url: Sourabh,
-  },
-  {
-    id: 6,
-    name: "Sara Thakur",
-    role: "Web Developer",
-    url: Sara,
-  },
-  {
-    id: 7,
-    name: "Hiteshi Vishwakarma",
-    role: "AR/VR Developer",
-    url: Hiteshi,
-  },
-  {
-    id: 8,
-    name: "Naina Seth",
-    role: "AR/VR Developer",
-    url: Naina,
-  },
-  {
-    id: 9,
-    name: "Mahendra Nayak",
-    role: "AR/VR Developer",
-    url: Mahendra,
-  },
-  {
-    id: 10,
-    name: "Ikra Chhipa",
-    role: "Social Media Manager",
-    url: Ikra,
-  },
-  {
-    id: 11,
-    name: "Sanskar Goyal",
-    role: "Founder · Batch 2025",
-    url: Sanskar,
-  },
-  {
-    id: 12,
-    name: "Arshan Mansoori",
-    role: "Past Tech Lead · Batch 2025-26",
-    url: Arshan,
-  },
-  {
-    id: 13,
-    name: "Maheen Sheikh",
-    role: "Logistics Manager & Printing Engineer · Legend",
-    url: Maheen,
-  },
-];
+

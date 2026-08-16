@@ -439,6 +439,33 @@ export const RESOURCES_DATA = [
   },
 ];
 
+// ── Backend-aware fetch — uses the Content API when reachable,
+//    falling back to the bundled RESOURCES_DATA. Cached after the
+//    first successful response so filtering stays instant. ──
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+let cachedResources = null;
+
+const tryFetchResources = async () => {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    const response = await fetch(`${API_URL}/api/content/resources`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!response.ok) return null;
+    const payload = await response.json();
+    const list = Array.isArray(payload?.data)
+      ? payload.data
+      : Array.isArray(payload?.data?.resources)
+        ? payload.data.resources
+        : null;
+    return list;
+  } catch {
+    return null;
+  }
+};
+
 // ── Mock API function — replace body with real fetch when backend is ready ──
 export const fetchResources = async ({
   query = "",
@@ -447,10 +474,12 @@ export const fetchResources = async ({
   category = "all",
   type = "all",
 } = {}) => {
-  // Simulate network latency
-  await new Promise((r) => setTimeout(r, 120));
+  if (!cachedResources) {
+    const remote = await tryFetchResources();
+    if (remote) cachedResources = remote;
+  }
 
-  let results = [...RESOURCES_DATA];
+  let results = [...(cachedResources ?? RESOURCES_DATA)];
 
   // Filter by category
   if (category !== "all") {
