@@ -1,4 +1,20 @@
-import { Arshan , Maheen , Ashika , Sanskar , Hiteshi , Ubed , Sara ,Sourabh , Naina , Parag , Ikra , Mahendra , Aakif , Pushpraj, Chandrashekhar } from '../assets/images/Teams/index'
+import {
+  Arshan,
+  Maheen,
+  Ashika,
+  Sanskar,
+  Hiteshi,
+  Ubed,
+  Sara,
+  Sourabh,
+  Naina,
+  Parag,
+  Ikra,
+  Mahendra,
+  Aakif,
+  Pushpraj,
+  Chandrashekhar,
+} from "../assets/images/Teams/index";
 
 export const teams = [
   {
@@ -31,24 +47,6 @@ export const teams = [
           github: null,
         },
       },
-      {
-        name: "Parag Malvi",
-        role: "Technical Lead",
-        desc: "Owns the technical roadmap. From stack decisions to code reviews — if it ships, it goes through him.",
-        img: Parag,
-        socials: {
-          instagram: "https://instagram.com/paraagmalvi",
-          linkedin: "https://www.linkedin.com/in/parag-malvi-b52330281",
-          github: null,
-        },
-      },
-      {
-        name: "Chandrashekhar Patel",
-        role: "Operations & Treasurer",
-        desc: "Manages financial allocation, tracks hardware ecosystem requests, and pilots logistics for regional hackathons.",
-        img: Chandrashekhar,
-        socials: { instagram: "#", linkedin: "#", github: "#" },
-      },
     ],
   },
   {
@@ -63,7 +61,11 @@ export const teams = [
         role: "Fullstack Developer and UI/UX Designer",
         desc: "Hybrid builder mapping high-fidelity visuals to production-grade architecture. Obsessed with modern interactive animations, custom UI/UX design, and engineering clean, scalable server structures.",
         img: Ubed,
-        socials: { instagram: "https://www.instagram.com/ubyd_.pathan/", linkedin: "#", github: null },
+        socials: {
+          instagram: "https://www.instagram.com/ubyd_.pathan/",
+          linkedin: "#",
+          github: null,
+        },
       },
       {
         name: "Sourabh Prajapat",
@@ -109,27 +111,22 @@ export const teams = [
         },
       },
       {
-        name: "Naina Seth",
-        role: "AR/VR Developer",
-        desc: "Focuses on spatial workflow configurations, environmental mapping, and asset pipeline integration.",
-        img: Naina,
+        name: "Parag Malvi",
+        role: "Technical Lead",
+        desc: "Owns the technical roadmap. From stack decisions to code reviews — if it ships, it goes through him.",
+        img: Parag,
         socials: {
-          instagram: null,
-          linkedin: "https://www.linkedin.com/in/naina-seth-9875a3276/",
+          instagram: "https://instagram.com/paraagmalvi",
+          linkedin: "https://www.linkedin.com/in/parag-malvi-b52330281",
           github: null,
         },
       },
       {
-        name: "Mahendra Nayak",
-        role: "AR/VR Developer",
-        desc: "Breathes functional mechanics into 3D environments. Optimizing physics engines for head-mounted displays.",
-        img: Mahendra,
-        socials: {
-          instagram: "https://instagram.com/sayhellotomahendra",
-          linkedin:
-            "https://www.linkedin.com/in/mahendra-nayak-710b9a383?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-          github: null,
-        },
+        name: "Chandrashekhar Patel",
+        role: "Operations & Treasurer",
+        desc: "Manages financial allocation, tracks hardware ecosystem requests, and pilots logistics for regional hackathons.",
+        img: Chandrashekhar,
+        socials: { instagram: "#", linkedin: "#", github: "#" },
       },
     ],
   },
@@ -141,25 +138,16 @@ export const teams = [
     bg: "#100510",
     members: [
       {
-        name: "Nisha Sharma",
-        role: "Design Lead",
-        desc: "Crafts the visual identity of RealXR — from event posters to motion graphics that stop your scroll.",
-        img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80",
-        socials: { instagram: "#", linkedin: "#", github: null },
-      },
-      {
-        name: "Amit Verma",
-        role: "3D Artist",
-        desc: "Blender open 24/7. Responsible for every 3D asset, render, and motion piece the club publishes.",
-        img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
-        socials: { instagram: "#", linkedin: "#", github: "#" },
-      },
-      {
-        name: "Kavya Nair",
-        role: "UI/UX Designer",
-        desc: "Designs interfaces before a single line of code. Figma all day, Spline when the brief calls for 3D.",
-        img: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=400&q=80",
-        socials: { instagram: "#", linkedin: "#", github: null },
+        name: "Mahendra Nayak",
+        role: "AR/VR Developer",
+        desc: "Breathes functional mechanics into 3D environments. Optimizing physics engines for head-mounted displays.",
+        img: Mahendra,
+        socials: {
+          instagram: "https://instagram.com/sayhellotomahendra",
+          linkedin:
+            "https://www.linkedin.com/in/mahendra-nayak-710b9a383?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+          github: null,
+        },
       },
     ],
   },
@@ -182,19 +170,24 @@ export const teams = [
           github: null,
         },
       },
+
+      {
+        name: "Naina Seth",
+        role: "Social Media & Content Creator",
+        desc: "Focuses on spatial workflow configurations, environmental mapping, and asset pipeline integration.",
+        img: Naina,
+        socials: {
+          instagram: null,
+          linkedin: "https://www.linkedin.com/in/naina-seth-9875a3276/",
+          github: null,
+        },
+      },
       {
         name: "Ashika Jain",
         role: "Video Producer",
         desc: "Behind every reel, every event highlight, and every cinematic that makes people want to join.",
         img: Ashika,
         socials: { instagram: "#", linkedin: null, github: null },
-      },
-      {
-        name: "Kabir Ahuja",
-        role: "Community Growth Manager",
-        desc: "Maintains structural health of our Discord space, pilots custom community game nights, and drives reach.",
-        img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80",
-        socials: { instagram: "#", linkedin: "#", github: null },
       },
     ],
   },
@@ -217,17 +210,23 @@ export const teams = [
         role: "Past Tech Lead · Batch 2025-26",
         desc: "Architected the club's unified deployment hub. ",
         img: Arshan,
-        socials: { instagram: "https://www.instagram.com/arshan_1/", linkedin: "#", github: "#" },
+        socials: {
+          instagram: "https://www.instagram.com/arshan_1/",
+          linkedin: "#",
+          github: "#",
+        },
       },
       {
         name: "Maheen Sheikh",
         role: "Logistics Manager & Printing Engineer · Legend",
         desc: "The absolute backbone of our on-ground operations. Masterfully synchronized heavy event logistics with precision print engineering to bring our club's physical assets to life.",
         img: Maheen, // Using the variable exported from your Teams index.js
-        socials: { instagram: "https://www.instagram.com/_maheen_shaikh_/", linkedin: "#", github: null },
+        socials: {
+          instagram: "https://www.instagram.com/_maheen_shaikh_/",
+          linkedin: "#",
+          github: null,
+        },
       },
     ],
   },
 ];
-
-
