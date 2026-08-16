@@ -173,7 +173,7 @@ export const teams = [
       {
         name: "Ikra Chhipa",
         role: "Social Media Manager",
-        desc: "Shoots, edits, and tells the RealXR story across Instagram, LinkedIn, and YouTube.",
+        desc: "Shoots, edits, and tells the RealXR story across Instagram, LinkedIn, and X(Twitter).",
         img: Ikra,
         socials: {
           instagram: "https://instagram.com/ikrachhipaa",

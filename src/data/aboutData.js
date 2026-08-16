@@ -13,9 +13,8 @@ export const aboutData = {
     },
     { text: "first deployed XR app", isHighlight: true },
     {
-      text: " — this is where builders begin. And if you want to push further, check out our ",
+      text: " — this is where builders begin. ",
       isHighlight: false,
     },
-    { text: "advanced spatial workshops.", isHighlight: true },
   ],
 };
