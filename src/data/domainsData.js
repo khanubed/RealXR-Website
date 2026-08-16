@@ -6,7 +6,7 @@ export const domainsData = {
     {
       id: "ar-dev",
       num: "01",
-      label: "SERVICES",
+      label: "AREA OF FOCUS",
       title: "AR\nDevelopment",
       description: "We build augmented reality apps that overlay digital intelligence onto the physical world. From marker-based filters to real-time object detection — using ARKit, ARCore, and Spark AR.",
       bgColor: "#EF444466",
@@ -16,7 +16,7 @@ export const domainsData = {
     {
       id: "vr-dev",
       num: "02",
-      label: "SERVICES",
+      label: "AREA OF FOCUS",
       title: "VR\nDevelopment",
       description: "We craft fully immersive virtual environments for education, therapy, gaming, and simulation. Built with Unity XR and Unreal Engine, designed to make you forget the real world exists.",
       bgColor: "#818CF866",
@@ -26,7 +26,7 @@ export const domainsData = {
     {
       id: "game-dev",
       num: "03",
-      label: "SERVICES",
+      label: "AREA OF FOCUS",
       title: "Game\nDevelopment",
       description: "We build games across both Unity and Unreal Engine — from indie 2D experiments to full 3D immersive experiences. Gameplay, physics, shaders, storytelling — all of it.",
       bgColor: "#38BDF866",
@@ -36,7 +36,7 @@ export const domainsData = {
     {
       id: "modelling-3d",
       num: "04",
-      label: "SERVICES",
+      label: "AREA OF FOCUS",
       title: "3D\nModelling",
       description: "Every great XR experience starts with great assets. We model, rig, texture, and animate 3D objects using Blender and Maya — the backbone of everything we build.",
       bgColor: "#111113",
