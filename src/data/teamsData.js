@@ -15,7 +15,7 @@ export const teams = [
         img: Pushpraj,
         socials: {
           instagram: "https://www.instagram.com/pushpraj_singh_62",
-          linkedin: "#",
+          linkedin: "https://www.linkedin.com/in/pushpraj-singh-jhala-97a2a725b",
           github: "#",
         },
       },
@@ -47,7 +47,7 @@ export const teams = [
         role: "Operations & Treasurer",
         desc: "Manages financial allocation, tracks hardware ecosystem requests, and pilots logistics for regional hackathons.",
         img: Chandrashekhar,
-        socials: { instagram: "#", linkedin: "#", github: "#" },
+        socials: { instagram: "#", linkedin: "https://www.linkedin.com/in/chandrashekhar-patel-118b15306", github: "https://github.com/cspatel2901" },
       },
     ],
   },
@@ -82,9 +82,9 @@ export const teams = [
         desc: "Handles UI components, animations, and making sure everything looks crisp on every screen size.",
         img: Sara,
         socials: {
-          instagram: null,
+          instagram: "#",
           linkedin: "https://www.linkedin.com/in/sara-thakur-1558b5330",
-          github: null,
+          github: "https://github.com/Sara-Thakur",
         },
       },
     ],
@@ -114,9 +114,9 @@ export const teams = [
         desc: "Focuses on spatial workflow configurations, environmental mapping, and asset pipeline integration.",
         img: Naina,
         socials: {
-          instagram: null,
+          instagram: "#",
           linkedin: "https://www.linkedin.com/in/naina-seth-9875a3276/",
-          github: null,
+          github: "github.com/Naina-1-0/",
         },
       },
       {
@@ -187,7 +187,7 @@ export const teams = [
         role: "Video Producer",
         desc: "Behind every reel, every event highlight, and every cinematic that makes people want to join.",
         img: Ashika,
-        socials: { instagram: "#", linkedin: null, github: null },
+        socials: { instagram: "https://www.instagram.com/aashikajain64?igsh=MXY4em1wa2VkM2twdg==&igsi=MXY4em1wa2VkM2twdg==", linkedin: "#", github: null },
       },
       {
         name: "Kabir Ahuja",
@@ -210,14 +210,14 @@ export const teams = [
         role: "Founder · Batch 2025",
         desc: "Started RealXR from scratch. Now at Meta Reality Labs. The one who made all of this possible.",
         img: Sanskar,
-        socials: { instagram: "#", linkedin: "#", github: "#" },
+        socials: { instagram: "#", linkedin: "https://www.linkedin.com/in/sanskargoyal608/", github: "https://github.com/Sanskargoyal608/Sanskargoyal608" },
       },
       {
         name: "Arshan Mansoori",
         role: "Past Tech Lead · Batch 2025-26",
         desc: "Architected the club's unified deployment hub. ",
         img: Arshan,
-        socials: { instagram: "https://www.instagram.com/arshan_1/", linkedin: "#", github: "#" },
+        socials: { instagram: "https://www.instagram.com/arshan_1/", linkedin: "https://www.linkedin.com/in/arshanmansuri", github: "#" },
       },
       {
         name: "Maheen Sheikh",
