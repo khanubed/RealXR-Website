@@ -59,7 +59,6 @@ export const teams = [
           github: null,
         },
       },
-
     ],
   },
   {
