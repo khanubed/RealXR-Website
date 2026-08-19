@@ -16,31 +16,6 @@ const defaultContent = heroData;
 const DESKTOP_QUERY = "(min-width: 769px)";
 const MOBILE_QUERY = "(max-width: 768px)";
 
-// Coalesces the many `currentTime` writes that scroll events produce into a
-// single seek per rendered frame, and applies it right before paint via
-// requestVideoFrameCallback (rAF fallback). This keeps the scrubbed playback
-// buttery smooth: no seek storms, no dropped frames, no stutter.
-function createSmoothScrubber(video) {
-  let target = 0;
-  let scheduled = false;
-  const schedule =
-    typeof video.requestVideoFrameCallback === "function"
-      ? (fn) => video.requestVideoFrameCallback(fn)
-      : (fn) => requestAnimationFrame(fn);
-  const apply = () => {
-    scheduled = false;
-    if (Math.abs(video.currentTime - target) > 0.01) {
-      video.currentTime = target;
-    }
-  };
-  return (time) => {
-    target = time;
-    if (!scheduled) {
-      scheduled = true;
-      schedule(apply);
-    }
-  };
-}
 
 // Kick the decoder once so later seeks are near-instant instead of stalling
 // on the first few frames. Muted autoplay is allowed, and the fixed layer is
@@ -109,8 +84,6 @@ const HeroVideo = ({ content = defaultContent }) => {
           const totalPx = scrubPx + fadePx + slidePx;
           wrapper.style.height = `${window.innerHeight + totalPx}px`;
 
-          const scrub = createSmoothScrubber(video);
-
           gsap.set(videoInner, { opacity: 1 });
           gsap.set(bigText, { x: vw, opacity: 0 });
 
@@ -131,20 +104,27 @@ const HeroVideo = ({ content = defaultContent }) => {
               if (self.progress <= scrubRatio) {
                 // PHASE 1: video scrubbing
                 const videoProgress = self.progress / scrubRatio;
-                scrub(videoProgress * duration);
+                const targetTime = videoProgress * duration;
+                if (Math.abs(video.currentTime - targetTime) > 0.01) {
+                  video.currentTime = targetTime;
+                }
 
                 gsap.set(videoInner, { opacity: 1 });
                 gsap.set(bigText, { x: vw, opacity: 0 });
               } else if (self.progress <= scrubRatio + fadeRatio) {
                 // PHASE 2: video fades, held on last frame
-                scrub(duration);
+                if (Math.abs(video.currentTime - duration) > 0.01) {
+                  video.currentTime = duration;
+                }
                 const fadeProgress = (self.progress - scrubRatio) / fadeRatio;
 
                 gsap.set(videoInner, { opacity: 1 - fadeProgress });
                 gsap.set(bigText, { x: vw, opacity: 0 });
               } else {
                 // PHASE 3: text marquee slides in
-                scrub(duration);
+                if (Math.abs(video.currentTime - duration) > 0.01) {
+                  video.currentTime = duration;
+                }
                 gsap.set(videoInner, { opacity: 0 });
 
                 const slideStart = scrubRatio + fadeRatio;
@@ -228,8 +208,6 @@ const HeroVideo = ({ content = defaultContent }) => {
           const totalPx = playPx + fadePx + slidePx;
           wrapper.style.height = `${window.innerHeight + totalPx}px`;
 
-          const scrub = createSmoothScrubber(video);
-
           gsap.set(videoInner, { opacity: 1 });
           gsap.set(bigText, { x: vw, opacity: 0 });
 
@@ -272,13 +250,19 @@ const HeroVideo = ({ content = defaultContent }) => {
                 gsap.set(bigText, { x: vw, opacity: 0 });
               } else if (self.progress <= playRatio + fadeRatio) {
                 // PHASE 2: fade the (now-frozen) last frame out
-                scrub(video.duration || 0);
+                const targetTime = video.duration || 0;
+                if (Math.abs(video.currentTime - targetTime) > 0.01) {
+                  video.currentTime = targetTime;
+                }
                 const fadeProgress = (self.progress - playRatio) / fadeRatio;
                 gsap.set(videoInner, { opacity: 1 - fadeProgress });
                 gsap.set(bigText, { x: vw, opacity: 0 });
               } else {
                 // PHASE 3: text marquee slides in
-                scrub(video.duration || 0);
+                const targetTime = video.duration || 0;
+                if (Math.abs(video.currentTime - targetTime) > 0.01) {
+                  video.currentTime = targetTime;
+                }
                 gsap.set(videoInner, { opacity: 0 });
 
                 const slideStart = playRatio + fadeRatio;
