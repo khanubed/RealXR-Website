@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { rainImages } from "../../data/data.js";
+import { eventsData } from "../../data/eventsData.js";
 import DistortText from "../../components/three/DistortText.jsx";
 
 // Register ScrollTrigger plugin
@@ -11,7 +11,10 @@ gsap.registerPlugin(ScrollTrigger);
 const Moments = ({ images = [], title, subTitle }) => {
   const containerRef = useRef(null);
   const itemsRef = useRef([]);
-  const imageList = images?.length ? images : rainImages;
+  const fallbackImages = (eventsData?.events || []).flatMap((event) =>
+    (event.images || []).slice(0, 3)
+  );
+  const imageList = images?.length ? images : fallbackImages;
 
   // Consolidate everything inside the useGSAP hook
   useGSAP(
