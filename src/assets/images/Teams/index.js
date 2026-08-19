@@ -13,10 +13,12 @@ import Sourabh from "./Sourabh.webp";
 import Ubed from "./ubed.webp";
 import Ashika from "./ashika.webp"
 import Chandrashekhar from './chandrashekhar.webp'
+import Tanushri from "./Tanushri.webp"
 
 // Export individually for explicit imports
 export {
   Aakif,
+  Tanushri,
   Arshan,
   Hiteshi,
   Ikra,

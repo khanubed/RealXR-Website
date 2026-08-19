@@ -17,11 +17,10 @@ const normalizeEvents = (value) => {
 const EventsShowcase = ({ content = defaultContent }) => {
   const events = useMemo(() => normalizeEvents(content), [content]);
 
-  // Extract all images from all events, flatten the array, and limit to 15 to preserve performance.
+  // Extract 3 images from each event to represent all events and preserve performance.
   const allImages = useMemo(() => {
     if (!events.length) return [];
-    const extracted = events.flatMap((event) => event?.images || []);
-    return extracted.slice(0, 15); // Performance cap
+    return events.flatMap((event) => (event?.images || []).slice(0, 3));
   }, [events]);
 
   if (!events.length) return null;
