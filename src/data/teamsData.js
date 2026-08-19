@@ -25,6 +25,17 @@ export const teams = [
     bg: "#050f0d",
     members: [
       {
+        name: "Parag Malvi",
+        role: "Technical Lead",
+        desc: "Owns the technical roadmap. From stack decisions to code reviews — if it ships, it goes through him.",
+        img: Parag,
+        socials: {
+          instagram: "https://instagram.com/paraagmalvi",
+          linkedin: "https://www.linkedin.com/in/parag-malvi-b52330281",
+          github: null,
+        },
+      },
+      {
         name: "Pushpraj Singh Jhala",
         role: "Club President",
         desc: "Visionary behind RealXR's direction. Drives strategy, partnerships, and makes sure we ship — every semester.",
@@ -111,13 +122,14 @@ export const teams = [
         },
       },
       {
-        name: "Parag Malvi",
-        role: "Technical Lead",
-        desc: "Owns the technical roadmap. From stack decisions to code reviews — if it ships, it goes through him.",
-        img: Parag,
+        name: "Mahendra Nayak",
+        role: "AR/VR Developer",
+        desc: "Breathes functional mechanics into 3D environments. Optimizing physics engines for head-mounted displays.",
+        img: Mahendra,
         socials: {
-          instagram: "https://instagram.com/paraagmalvi",
-          linkedin: "https://www.linkedin.com/in/parag-malvi-b52330281",
+          instagram: "https://instagram.com/sayhellotomahendra",
+          linkedin:
+            "https://www.linkedin.com/in/mahendra-nayak-710b9a383?utm_source=share_via&utm_content=profile&utm_medium=member_android",
           github: null,
         },
       },
@@ -130,27 +142,40 @@ export const teams = [
       },
     ],
   },
-  {
-    id: "graphics",
-    label: "04 — Visual",
-    title: "GRAPHIC DESIGNERS",
-    accent: "#f472b6",
-    bg: "#100510",
-    members: [
-      {
-        name: "Mahendra Nayak",
-        role: "AR/VR Developer",
-        desc: "Breathes functional mechanics into 3D environments. Optimizing physics engines for head-mounted displays.",
-        img: Mahendra,
-        socials: {
-          instagram: "https://instagram.com/sayhellotomahendra",
-          linkedin:
-            "https://www.linkedin.com/in/mahendra-nayak-710b9a383?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-          github: null,
-        },
-      },
-    ],
-  },
+  // {
+  //   id: "graphics",
+  //   label: "04 — Visual",
+  //   title: "GRAPHIC DESIGNERS",
+  //   accent: "#f472b6",
+  //   bg: "#100510",
+  //   members: [
+  //     {
+  //       name: "Mahendra Nayak",
+  //       role: "AR/VR Developer",
+  //       desc: "Breathes functional mechanics into 3D environments. Optimizing physics engines for head-mounted displays.",
+  //       img: Mahendra,
+  //       socials: {
+  //         instagram: "https://instagram.com/sayhellotomahendra",
+  //         linkedin:
+  //           "https://www.linkedin.com/in/mahendra-nayak-710b9a383?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+  //         github: null,
+  //       },
+  //     },
+
+  //     {
+  //       name: "Mahendra Nayak",
+  //       role: "AR/VR Developer",
+  //       desc: "Breathes functional mechanics into 3D environments. Optimizing physics engines for head-mounted displays.",
+  //       img: Mahendra,
+  //       socials: {
+  //         instagram: "https://instagram.com/sayhellotomahendra",
+  //         linkedin:
+  //           "https://www.linkedin.com/in/mahendra-nayak-710b9a383?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+  //         github: null,
+  //       },
+  //     },
+  //   ],
+  // },
   {
     id: "social",
     label: "05 — Community",
