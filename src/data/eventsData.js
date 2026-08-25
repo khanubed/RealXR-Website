@@ -39,7 +39,14 @@ import {
   YouthBootcamp2_4,
   YouthBootcamp2_5,
 } from "../assets/images/events/YouthBootcamp2";
-
+import {
+  LLC25_1,
+  LLC25_2,
+  LLC25_3,
+  LLC25_4,
+  LLC25_5,
+  LLC25_6,
+} from "../assets/images/events/LLC25";
 export const eventsData = {
   title: "MOMENTS THAT SHAPED US",
   subTitle:
@@ -155,17 +162,13 @@ export const eventsData = {
       tags: ["Regular Track", "Advanced XR", "Peer Learning"],
       accent: "#a3e635",
       images: [
-        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80",
-        "https://images.unsplash.com/photo-1550439062-609e1531270e?w=400&q=80",
-        "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=400&q=80",
-        "https://images.unsplash.com/photo-1627398240411-8cbc07d0ba6e?w=400&q=80",
-        "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=400&q=80",
-        "https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=400&q=80",
-        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&q=80",
-        "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=400&q=80",
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80",
-        "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=80",
-      ],
+          LLC25_1,
+          LLC25_2,
+          LLC25_3,
+          LLC25_4,
+          LLC25_5,
+          LLC25_6,
+        ],
       coverGradient:
         "linear-gradient(135deg, #1f330a 0%, #131f06 50%, #091003 100%)",
     },
