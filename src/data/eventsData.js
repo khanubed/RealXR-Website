@@ -9,6 +9,7 @@ import {
   Induction2025_8,
   Induction2025_9,
 } from "../assets/images/events/Induction";
+
 import {
   MegaEvent2024_1,
   MegaEvent2024_2,
@@ -21,6 +22,23 @@ import {
   MegaEvent2024_9,
   MegaEvent2024_10,
 } from "../assets/images/events/MegaEvent";
+
+import {
+  EdFair2025_1,
+  EdFair2025_2,
+  EdFair2025_3,
+  EdFair2025_4,
+  EdFair2025_5,
+  EdFair2025_6,
+} from "../assets/images/events/Edfair25"; 
+
+import {
+  YouthBootcamp2_1,
+  YouthBootcamp2_2,
+  YouthBootcamp2_3,
+  YouthBootcamp2_4,
+  YouthBootcamp2_5,
+} from "../assets/images/events/YouthBootcamp2";
 
 export const eventsData = {
   title: "MOMENTS THAT SHAPED US",
@@ -57,16 +75,13 @@ export const eventsData = {
       tags: ["Hardware Expo", "Live Demos", "Public Showcase"],
       accent: "#38bdf8",
       images: [
-        "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=400&q=80",
-        "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=400&q=80",
-        "https://images.unsplash.com/photo-1535223289827-a2f56b375b43?w=400&q=80",
-        "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&q=80",
-        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=80",
-        "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80",
-        "https://images.unsplash.com/photo-1556761175-5973dc0f32d7?w=400&q=80",
-        "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=400&q=80",
-        "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&q=80",
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80",
+        EdFair2025_1,
+        EdFair2025_2,
+        EdFair2025_3,
+        EdFair2025_4,
+        EdFair2025_5,
+        EdFair2025_6,
+
       ],
       coverGradient:
         "linear-gradient(135deg, #072a40 0%, #041a28 50%, #020d14 100%)",
@@ -101,17 +116,12 @@ export const eventsData = {
       tags: ["School Outreach", "Hands-on Workshop", "Next-Gen Tech"],
       accent: "#f472b6",
       images: [
-        "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&q=80",
-        "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80",
-        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80",
-        "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&q=80",
-        "https://images.unsplash.com/photo-1542751110-97427bbecf20?w=400&q=80",
-        "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400&q=80",
-        "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=400&q=80",
-        "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400&q=80",
-        "https://images.unsplash.com/photo-1562813733-b31f71025d54?w=400&q=80",
-        "https://images.unsplash.com/photo-1580234797602-22c37b4a6217?w=400&q=80",
-      ],
+          YouthBootcamp2_1,
+          YouthBootcamp2_2,
+          YouthBootcamp2_3,
+          YouthBootcamp2_4,
+          YouthBootcamp2_5,
+        ],
       coverGradient:
         "linear-gradient(135deg, #2b0a1a 0%, #1a0510 50%, #0f0208 100%)",
     },
