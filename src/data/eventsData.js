@@ -47,6 +47,12 @@ import {
   LLC25_5,
   LLC25_6,
 } from "../assets/images/events/LLC25";
+
+import {
+  LLC26_1,
+  LLC26_2,
+  LLC26_3
+} from "../assets/images/events/LLC26";
 export const eventsData = {
   title: "MOMENTS THAT SHAPED US",
   subTitle:
@@ -156,11 +162,26 @@ export const eventsData = {
     },
     {
       id: 6,
-      title: "LLC Classes 2025",
-      date: "2025 · College AR/VR Studio",
+      title: "LLC Classes 2026",
+      date: "2026 · College AR/VR Studio",
       desc: "Continuing our regular core curriculum sessions. Helping batchmates master advanced 3D asset workflows, real-time shaders, and spatial interaction engines.",
       tags: ["Regular Track", "Advanced XR", "Peer Learning"],
       accent: "#a3e635",
+      images: [
+          LLC26_1,
+          LLC26_2,
+          LLC26_3,
+        ],
+      coverGradient:
+        "linear-gradient(135deg, #1f330a 0%, #131f06 50%, #091003 100%)",
+    },
+    {
+      id: 7,
+      title: "LLC Classes 2025",
+      date: "2025 · College Computer Lab",
+      desc: "Our foundational hands-on training series teaching college students the basics of augmented and virtual reality development from the ground up.",
+      tags: ["Core Curriculum", "3D Foundations", "Hands-on"],
+      accent: "#ec4899",
       images: [
           LLC25_1,
           LLC25_2,
@@ -169,28 +190,6 @@ export const eventsData = {
           LLC25_5,
           LLC25_6,
         ],
-      coverGradient:
-        "linear-gradient(135deg, #1f330a 0%, #131f06 50%, #091003 100%)",
-    },
-    {
-      id: 7,
-      title: "LLC Classes 2024",
-      date: "2024 · College Computer Lab",
-      desc: "Our foundational hands-on training series teaching college students the basics of augmented and virtual reality development from the ground up.",
-      tags: ["Core Curriculum", "3D Foundations", "Hands-on"],
-      accent: "#ec4899",
-      images: [
-        "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=400&q=80",
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80",
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&q=80",
-        "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80",
-        "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80",
-        "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400&q=80",
-        "https://images.unsplash.com/photo-1617791160536-598cf32026fb?w=400&q=80",
-        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
-        "https://images.unsplash.com/photo-1616509091215-57b834e55a56?w=400&q=80",
-        "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&q=80",
-      ],
       coverGradient:
         "linear-gradient(135deg, #330a21 0%, #1f0614 50%, #10030a 100%)",
     },
