@@ -12,9 +12,16 @@ import RedSection from "../../sections/Footer/RedSection";
 import { getHeroData, getAboutData, getDomainsData, getProjectsData, getEventsData, getTeamsData } from "../../api/api";
 import EventsShowcase from "../../sections/Events/EventsShowcase.jsx";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import usePageMeta from "../../hooks/usePageMeta";
 
 const Home = () => {
   const [homeData, setHomeData] = useState(null);
+
+  usePageMeta({
+    title: "Home",
+    description: "Official portfolio of RealXR — the AR/VR and Spatial Computing laboratory at Institute of Engineering & Science, IPS Academy, Indore.",
+    canonical: "https://realxr.in/",
+  });
 
   useEffect(() => {
     let active = true;

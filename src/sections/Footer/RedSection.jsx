@@ -66,7 +66,7 @@ export default function RedSection() {
   );
 
   return (
-    <div ref={containerRef} className="w-full relative  bg-[#0A0A0C]">
+    <div ref={containerRef} className="w-full relative bg-[#0A0A0C]">
       <div
         ref={redPanelRef}
         className="sticky bottom-0 z-10 w-full h-screen bg-[#FF5A60] text-white overflow-hidden"
@@ -74,32 +74,42 @@ export default function RedSection() {
         {/* Kinetic Abstract Watermark Layer */}
         <div 
           ref={bgWatermarkRef}
-          className="absolute syne-800 inset-0 flex items-center justify-center  font-black text-[13vw] uppercase tracking-tighter text-black select-none pointer-events-none will-change-transform"
+          className="absolute syne-800 inset-0 flex items-center justify-center font-black text-[13vw] uppercase tracking-tighter text-black select-none pointer-events-none will-change-transform"
         >
           REAL XR
         </div>
 
         {/* Core Layout Interface Container */}
         <div
-          className="relative z-10 w-full h-full flex flex-col md:flex-row md:justify-between md:items-center gap-8 px-6 py-12 md:px-32 md:py-20"
+          className="relative z-10 w-full h-full flex flex-col md:flex-row md:justify-between md:items-center gap-8 px-6 py-10 sm:px-12 md:px-16 lg:px-24 md:py-16"
         >
           {/* Main Typography Track */}
-          <div className="select-none">
-            <h2 className="syne-800 text-4xl sm:text-6xl md:text-8xl lg:text-8xl tracking-tight leading-28 uppercase flex flex-col">
-              <span ref={line1Ref} className="inline-block will-change-transform">
+          <div className="select-none max-w-full md:max-w-2xl lg:max-w-4xl">
+            <h2 className="syne-800 tracking-tight uppercase flex flex-col space-y-1 sm:space-y-2">
+              <span
+                ref={line1Ref}
+                className="inline-block will-change-transform text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight text-white/90 font-bold"
+              >
                 Built At
               </span>
-              <span ref={line2Ref} className="inline-block will-change-transform origin-left text-black mix-blend-overlay">
-                IES IPS
+              <span
+                ref={line2Ref}
+                className="inline-block will-change-transform origin-left text-black mix-blend-overlay font-black text-2xl sm:text-4xl md:text-5xl lg:text-[4rem] leading-[1.08] tracking-tighter"
+              >
+                <span className="block">Institute of</span>
+                <span className="block">Engineering and Science</span>
               </span>
-              <span ref={line3Ref} className="inline-block will-change-transform">
-                Academy
+              <span
+                ref={line3Ref}
+                className="inline-block will-change-transform text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight text-white font-bold"
+              >
+                IPS Academy
               </span>
             </h2>
           </div>
 
           {/* Right Text Block Frame */}
-          <div ref={taglineRef} className="md:text-right max-w-xs md:max-w-md will-change-transform">
+          <div ref={taglineRef} className="shrink-0 md:text-right max-w-xs md:max-w-sm lg:max-w-md will-change-transform">
             <p className="orbitron-600 text-sm sm:text-base md:text-lg lg:text-xl tracking-wider uppercase leading-10 text-white/95">
               Where Imagination <br /> Meets Engineering
             </p>

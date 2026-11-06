@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
 import { gsap } from "gsap";
@@ -17,6 +17,16 @@ gsap.registerPlugin(ScrollTrigger);
 
 const RootLayout = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isTabVisible, setIsTabVisible] = useState(true);
+
+  // Pause WebGL rendering when tab is inactive to eliminate GPU draw calls
+  useEffect(() => {
+    const handleVisibility = () => {
+      setIsTabVisible(!document.hidden);
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
   const lenisRef = useRef(null);
   const eventRootRef = useRef(null);
   const location = useLocation();
@@ -114,7 +124,13 @@ const RootLayout = () => {
           className="fixed top-0 left-0 w-full h-full pointer-events-none"
           style={{ zIndex: 0 }}
         >
-          <Canvas eventSource={eventRootRef} camera={{ position: [0, 0, 1] }}>
+          <Canvas
+            eventSource={eventRootRef}
+            camera={{ position: [0, 0, 1] }}
+            frameloop={isTabVisible ? "always" : "never"}
+            dpr={[1, 1.5]}
+            gl={{ powerPreference: "high-performance", antialias: false }}
+          >
             <FluidCanvas />
           </Canvas>
         </div>

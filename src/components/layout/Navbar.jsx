@@ -72,7 +72,7 @@ const Navbar = () => {
           className="font-bold text-xl tracking-tight text-gray-900 block"
         >
           <img
-            src="/realXrLogo.PNG"
+            src="/realXrLogo.webp"
             className="drop-shadow-lg"
             alt="realXrLogo"
             width="90"

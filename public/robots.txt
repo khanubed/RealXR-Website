@@ -1,0 +1,11 @@
+# RealXR Robots Exclusion Protocol
+# Website: https://realxr.in
+
+User-agent: *
+Allow: /
+
+# Disallow backend/api endpoints if proxied
+Disallow: /api/
+
+Sitemap: https://realxr.in/sitemap.xml
+

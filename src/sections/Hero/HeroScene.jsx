@@ -1,4 +1,4 @@
-import React, { Suspense, useRef } from "react";
+import React, { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { MeshReflectorMaterial, Text, Center } from "@react-three/drei";
 import gsap from "gsap"; // 1. Import GSAP
@@ -110,10 +110,25 @@ const ReflectiveFloor = () => {
 };
 
 export default function HeroScene() {
-  useGSAP();
+  const containerRef = useRef(null);
+  const [isInView, setIsInView] = useState(true);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { rootMargin: "100px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   return (
     <div
-    className="orbitron-400"
+      ref={containerRef}
+      className="orbitron-400"
 
       style={{
         width: "100vw",
@@ -125,7 +140,9 @@ export default function HeroScene() {
     >
       <Canvas
       className="orbitron-bold"
-        gl={{ logarithmicDepthBuffer: true, antialias: true }}
+        frameloop={isInView ? "always" : "never"}
+        dpr={[1, 1.5]}
+        gl={{ powerPreference: "high-performance", antialias: true }}
         camera={{ position: [0, 1.5, 8.5], fov: 45 }}
         style={{
           position: "absolute",

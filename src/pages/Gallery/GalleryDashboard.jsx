@@ -1,31 +1,23 @@
 /**
  * GalleryDashboard.jsx
  * ─────────────────────────────────────────────────────────────────
- * RealXR — Gallery page controller
- *
- * Design language (paired with the soft white/pink liquid-distort
- * Three.js background rendered behind this component):
- *  • Light glass surfaces — never opaque dark panels
- *  • "REAL" set solid, "XR" cut from glass so the liquid bg shows
- *    through the letterforms — the club's own "two layers merging"
- *    idea, expressed as typography instead of decoration
- *  • AR-reticle custom cursor (viewfinder brackets, not a dot+ring)
- *  • GSAP: char-level headline reveal, magnetic event cards,
- *    sliding glass tab indicator, scroll-batched grid reveal
- * ─────────────────────────────────────────────────────────────────
- *
- * Route setup (in your router):
- *   <Route path="/gallery" element={<GalleryDashboard />} />
- *
- * Deep-link examples:
- *   /gallery                         → shows all events dashboard
- *   /gallery?event=hackathon-3       → opens that event's grid
- *   /gallery?event=hackathon-3&media=h3-02 → opens lightbox for that item
+ * RealXR — Pinterest-Style Spatial Media Gallery
+ *  • Optimized for high contrast against WebGL liquid background
+ *  • Native waterfall masonry grid (light, airy, uncluttered)
+ *  • Deep ink typography (#12131A) with vibrant cyber accents
+ *  • Seamless event filtering ("All Moments" + individual event pills)
+ *  • Event context header with accent glow
+ *  • Integrated fullscreen Lightbox
  * ─────────────────────────────────────────────────────────────────
  */
 
 import React, {
-  useState, useEffect, useRef, useMemo, useCallback, memo,
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  memo,
 } from "react";
 import { useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
@@ -33,20 +25,18 @@ import { useGSAP } from "@gsap/react";
 import { EVENTS } from "../../data/galleryData";
 import { getGalleryEvents } from "../../api/api";
 import MediaGrid from "./MediaGrid.jsx";
-import Lightbox  from "./Lightbox";
+import Lightbox from "./Lightbox";
+import usePageMeta from "../../hooks/usePageMeta";
 
-// ── Design tokens (shared informally across the gallery module) ──
-const INK        = "#15141A";
-const INK_SOFT   = "rgba(21,20,26,0.55)";
-const INK_FAINT  = "rgba(21,20,26,0.32)";
-const LINE       = "rgba(21,20,26,0.09)";
-const GLASS      = "rgba(255,255,255,0.5)";
-const GLASS_HI   = "rgba(255,255,255,0.78)";
-const REAL       = "#FF3D8F";
-const XR         = "#00BFAE";
+// ── Contrast-Tuned Color Tokens ────────────────────────────────
+const INK_PRIMARY = "#12131A";                   // Deep obsidian black for primary headings
+const INK_SECONDARY = "rgba(18, 19, 26, 0.72)";  // High-legibility secondary text
+const INK_MUTED = "rgba(18, 19, 26, 0.45)";      // Metadata & inactive pill labels
+const DEFAULT_ACCENT = "#00a896";               // Rich cyber teal for light canvas
 
-// ── Split a string into per-character spans for GSAP reveals ─────
+// ── Split string into per-character spans for GSAP reveals ─────
 function splitChars(str) {
+  if (!str) return null;
   return str.split("").map((ch, i) => (
     <span
       key={i}
@@ -58,502 +48,290 @@ function splitChars(str) {
   ));
 }
 
-// ── Event cover card on dashboard ────────────────────────────────
-const EventCard = memo(function EventCard({ event, onClick }) {
-  const [hovered, setHovered] = useState(false);
-  const cardRef = useRef(null);
-  const quickX  = useRef(null);
-  const quickY  = useRef(null);
-
-  // Swapped useEffect for useGSAP with scoping
-  useGSAP(() => {
-    if (!cardRef.current) return;
-    quickX.current = gsap.quickTo(cardRef.current, "x", { duration: 0.6, ease: "power3.out" });
-    quickY.current = gsap.quickTo(cardRef.current, "y", { duration: 0.6, ease: "power3.out" });
-  }, { scope: cardRef });
-
-  // Magnetic pull — subtle, capped so it never feels gimmicky
-  const handleMove = useCallback((e) => {
-    const r = cardRef.current.getBoundingClientRect();
-    const relX = e.clientX - (r.left + r.width / 2);
-    const relY = e.clientY - (r.top + r.height / 2);
-    quickX.current?.(relX * 0.06);
-    quickY.current?.(relY * 0.06);
-  }, []);
-
-  const handleLeave = useCallback(() => {
-    setHovered(false);
-    quickX.current?.(0);
-    quickY.current?.(0);
-  }, []);
-
-  return (
-    <div
-      ref={cardRef}
-      onClick={() => onClick(event.slug)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseMove={handleMove}
-      onMouseLeave={handleLeave}
-      data-cursor="view"
-      style={{
-        position: "relative", borderRadius: 20,
-        overflow: "hidden",
-        aspectRatio: "16/10",
-        background: GLASS,
-        backdropFilter: "blur(18px)",
-        WebkitBackdropFilter: "blur(18px)",
-        border: hovered
-          ? `1px solid ${event.accent}55`
-          : `1px solid rgba(255,255,255,0.6)`,
-        transition: "border-color 0.35s ease, box-shadow 0.35s ease",
-        boxShadow: hovered
-          ? `0 0 0 1px ${event.accent}22, 0 30px 70px -20px rgba(255,61,143,0.25)`
-          : "0 12px 40px -18px rgba(21,20,26,0.18)",
-        willChange: "transform",
-      }}
-    >
-      {/* Cover image */}
-      <img
-        src={event.coverThumb}
-        alt={event.title}
-        style={{
-          position: "absolute", inset: 0,
-          width: "100%", height: "100%",
-          objectFit: "cover",
-          opacity: 0.9,
-          transform: hovered ? "scale(1.06)" : "scale(1)",
-          transition: "transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94)",
-        }}
-        loading="lazy"
-        decoding="async"
-      />
-
-      {/* Soft light-to-glass gradient (replaces the old dark scrim) */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: `linear-gradient(to top, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.5) 42%, rgba(255,255,255,0.05) 100%)`,
-      }} />
-
-      {/* Accent top bar */}
-      <div style={{
-        position: "absolute", top: 0, left: 0, right: 0,
-        height: 3, background: event.accent,
-        opacity: hovered ? 1 : 0.55,
-        transition: "opacity 0.3s",
-      }} />
-
-      {/* Content */}
-      <div style={{
-        position: "absolute", inset: 0, padding: "1.4rem",
-        display: "flex", flexDirection: "column", justifyContent: "flex-end",
-      }}>
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          padding: "3px 10px", borderRadius: 999,
-          background: GLASS_HI,
-          backdropFilter: "blur(6px)",
-          border: `1px solid ${event.accent}44`,
-          marginBottom: "0.7rem", width: "fit-content",
-        }}>
-          <div style={{ width: 5, height: 5, borderRadius: "50%", background: event.accent }} />
-          <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: "0.66rem", color: INK_SOFT,
-            letterSpacing: "0.04em",
-          }}>{event.date} · {event.location}</span>
-        </div>
-
-        <h3 style={{
-          fontFamily: "Syne, sans-serif", fontWeight: 800,
-          fontSize: "clamp(1.15rem, 2.5vw, 1.8rem)",
-          color: INK, letterSpacing: "-0.03em",
-          lineHeight: 1.05, marginBottom: "0.5rem",
-        }}>{event.title}</h3>
-
-        <p style={{
-          fontFamily: "Space Grotesk, sans-serif",
-          fontSize: "0.8rem", color: INK_SOFT,
-          lineHeight: 1.5,
-          display: "-webkit-box", WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical", overflow: "hidden",
-        }}>{event.tagline}</p>
-
-        <div style={{
-          marginTop: "1rem",
-          display: "flex", alignItems: "center", gap: 6,
-          color: event.accent,
-          transform: hovered ? "translateX(4px)" : "translateX(0)",
-          transition: "transform 0.3s ease",
-        }}>
-          <span style={{
-            fontFamily: "Syne, sans-serif", fontWeight: 700,
-            fontSize: "0.72rem", letterSpacing: "0.12em",
-            textTransform: "uppercase",
-          }}>View Gallery</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </div>
-      </div>
-
-      {/* Media count badge */}
-      <div style={{
-        position: "absolute", top: 14, right: 14,
-        padding: "3px 9px", borderRadius: 999,
-        background: GLASS_HI, backdropFilter: "blur(8px)",
-        border: "1px solid rgba(21,20,26,0.08)",
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: "0.66rem", color: INK_SOFT,
-        letterSpacing: "0.03em",
-      }}>
-        {event.media.length} items
-      </div>
-    </div>
-  );
-});
-
-// ── Custom cursor — AR viewfinder reticle, not a generic dot+ring ─
-function ARCursor({ accent }) {
-  const wrapRef = useRef(null);
-  const [mode, setMode] = useState("default"); // default | view
-
-  // Kept as useEffect since this drives a raw requestAnimationFrame loop, not GSAP
-  useEffect(() => {
-    const el = wrapRef.current;
-    let mx = 0, my = 0, rx = 0, ry = 0, raf;
-
-    const move = (e) => {
-      mx = e.clientX; my = e.clientY;
-      const target = e.target.closest("[data-cursor]");
-      setMode(target ? target.dataset.cursor : "default");
-    };
-    const tick = () => {
-      rx += (mx - rx) * 0.18;
-      ry += (my - ry) * 0.18;
-      if (el) el.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
-      raf = requestAnimationFrame(tick);
-    };
-    window.addEventListener("mousemove", move);
-    tick();
-    return () => { window.removeEventListener("mousemove", move); cancelAnimationFrame(raf); };
-  }, []);
-
-  const size = mode === "view" ? 64 : 34;
-  const corner = mode === "view" ? 10 : 7;
-
-  return (
-    <div
-      ref={wrapRef}
-      style={{
-        position: "fixed", top: 0, left: 0,
-        width: size, height: size,
-        pointerEvents: "none", zIndex: 99999,
-        transition: "width 0.35s cubic-bezier(0.34,1.56,0.64,1), height 0.35s cubic-bezier(0.34,1.56,0.64,1)",
-        mixBlendMode: "difference",
-      }}
-    >
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
-        {[
-          ["M2,C L2,2 C,2", 0],
-        ].map(() => null)}
-        {/* four corner brackets, drawn manually for full control */}
-        <path d={`M2 ${corner + 2} L2 2 L${corner + 2} 2`} fill="none" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
-        <path d={`M${size - corner - 2} 2 L${size - 2} 2 L${size - 2} ${corner + 2}`} fill="none" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
-        <path d={`M${size - 2} ${size - corner - 2} L${size - 2} ${size - 2} L${size - corner - 2} ${size - 2}`} fill="none" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
-        <path d={`M${corner + 2} ${size - 2} L2 ${size - 2} L2 ${size - corner - 2}`} fill="none" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
-        <circle cx={size / 2} cy={size / 2} r="1.6" fill={accent} />
-      </svg>
-    </div>
-  );
-}
-
-// ── Main Dashboard ────────────────────────────────────────────────
 export default function GalleryDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [events, setEvents] = useState(EVENTS);
-  const activeSlug  = searchParams.get("event");
-  const activeEvent = useMemo(
-    () => activeSlug ? events.find((e) => e.slug === activeSlug) ?? null : null,
-    [activeSlug, events]
-  );
+  const activeSlug = searchParams.get("event") || "all";
 
-  // Backend-first: refresh gallery content when available.
+  // Backend-first: refresh gallery content when available
   useEffect(() => {
     let cancelled = false;
     getGalleryEvents().then((list) => {
       if (!cancelled && list?.length) setEvents(list);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const headerRef    = useRef(null);
-  const gridWrapRef  = useRef(null);
-  const tabBarRef    = useRef(null);
-  const indicatorRef = useRef(null);
+  const headerRef = useRef(null);
+  const gridWrapRef = useRef(null);
+  const tabBarRef = useRef(null);
 
-  // ── Header char-reveal on mount (Scoped to headerRef) ─────────
-  useGSAP(() => {
-    // With scope defined, we can safely select using string selectors
-    gsap.fromTo(".char-unit",
-      { opacity: 0, yPercent: 120, rotateZ: 6 },
-      {
-        opacity: 1, yPercent: 0, rotateZ: 0,
-        duration: 0.9, ease: "expo.out",
-        stagger: { each: 0.028, from: "start" },
-        delay: 0.15,
-      }
+  // Active event resolution
+  const activeEvent = useMemo(() => {
+    if (!activeSlug || activeSlug === "all") return null;
+    return events.find((e) => e.slug === activeSlug) ?? null;
+  }, [activeSlug, events]);
+
+  const activeAccent = activeEvent?.accent || DEFAULT_ACCENT;
+
+  usePageMeta({
+    title: activeEvent ? `${activeEvent.title} · Gallery` : "Moments & Media Gallery",
+    description: activeEvent?.description || "Browse moments, hackathons, workshops, and immersive VR demos captured at RealXR Lab, IES IPS Academy.",
+    canonical: `https://realxr.in/gallery${activeSlug !== "all" ? `?event=${activeSlug}` : ""}`,
+  });
+
+  // Flatten all media across all events with event context
+  const allMedia = useMemo(() => {
+    return events.flatMap((ev) =>
+      (ev.media || []).map((m) => ({
+        ...m,
+        eventTitle: ev.title,
+        eventSlug: ev.slug,
+        accent: ev.accent,
+      }))
     );
-    gsap.fromTo(".eyebrow-tag",
-      { opacity: 0, x: -12 },
-      { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", delay: 0.05 }
-    );
-  }, { dependencies: [activeSlug], scope: headerRef });
+  }, [events]);
 
-  // ── Event switch transition (Scoped config) ────────────────────
-  useGSAP(() => {
-    if (!gridWrapRef.current) return;
-    gsap.fromTo(gridWrapRef.current,
-      { opacity: 0, y: 24 },
-      { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }
-    );
-  }, { dependencies: [activeSlug] });
+  // Current media displayed based on active filter
+  const currentMedia = useMemo(() => {
+    if (!activeEvent) return allMedia;
+    return (activeEvent.media || []).map((m) => ({
+      ...m,
+      eventTitle: activeEvent.title,
+      eventSlug: activeEvent.slug,
+      accent: activeEvent.accent,
+    }));
+  }, [activeEvent, allMedia]);
 
-  // ── Sliding glass tab indicator (Scoped to tabBarRef) ──────────
-  useGSAP(() => {
-    if (!activeEvent || !tabBarRef.current || !indicatorRef.current) return;
-    const activeBtn = tabBarRef.current.querySelector(`[data-slug="${activeSlug}"]`);
-    if (!activeBtn) return;
-    const barRect = tabBarRef.current.getBoundingClientRect();
-    const btnRect = activeBtn.getBoundingClientRect();
-    
-    gsap.to(indicatorRef.current, {
-      x: btnRect.left - barRect.left + tabBarRef.current.scrollLeft,
-      width: btnRect.width,
-      background: `${activeEvent.accent}14`,
-      borderColor: `${activeEvent.accent}55`,
-      duration: 0.5, ease: "power3.out",
-    });
-  }, { dependencies: [activeSlug, activeEvent], scope: tabBarRef });
-
-  const openEvent  = useCallback((slug) => setSearchParams({ event: slug }), [setSearchParams]);
-  const clearEvent = useCallback(() => setSearchParams({}), [setSearchParams]);
-
-  const currentMedia = useMemo(
-    () => activeEvent?.media ?? [],
-    [activeEvent]
+  // ── Header Char-Reveal GSAP Animation ────────────────────────
+  useGSAP(
+    () => {
+      gsap.fromTo(
+        ".char-unit",
+        { opacity: 0, yPercent: 100, rotateZ: 3 },
+        {
+          opacity: 1,
+          yPercent: 0,
+          rotateZ: 0,
+          duration: 0.8,
+          ease: "expo.out",
+          stagger: { each: 0.02, from: "start" },
+          delay: 0.08,
+        }
+      );
+      gsap.fromTo(
+        ".eyebrow-tag",
+        { opacity: 0, x: -10 },
+        { opacity: 1, x: 0, duration: 0.5, ease: "power3.out", delay: 0.04 }
+      );
+    },
+    { dependencies: [activeSlug], scope: headerRef }
   );
 
-  const heroAccent = activeEvent?.accent ?? XR;
+  // ── Grid Transition on Filter Switch ─────────────────────────
+  useGSAP(
+    () => {
+      if (!gridWrapRef.current) return;
+      gsap.fromTo(
+        gridWrapRef.current,
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }
+      );
+    },
+    { dependencies: [activeSlug] }
+  );
+
+  const selectEvent = useCallback(
+    (slug) => {
+      const next = new URLSearchParams(searchParams);
+      if (slug === "all") {
+        next.delete("event");
+      } else {
+        next.set("event", slug);
+      }
+      setSearchParams(next);
+    },
+    [searchParams, setSearchParams]
+  );
 
   return (
-    <div className="pt-12" style={{
-      minHeight: "100vh",
-      background: "transparent", // liquid-distort Three.js canvas shows through
-      color: INK,
-      fontFamily: "Space Grotesk, sans-serif",
-      overflowX: "hidden",
-      position: "relative",
-    }}>
-      <ARCursor accent={heroAccent} />
-
-      {/* ── Header ────────────────────────────────────────────── */}
+    <div
+      className="min-h-screen pt-20 pb-28 text-[#12131A] relative overflow-x-hidden"
+      style={{
+        background: "transparent",
+        fontFamily: "Space Grotesk, sans-serif",
+      }}
+    >
+      {/* ── Page Header ────────────────────────────────────────── */}
       <header
         ref={headerRef}
-        style={{
-          padding: "3.5rem 3rem 2rem",
-          borderBottom: `1px solid ${LINE}`,
-          display: "flex", alignItems: "flex-end",
-          justifyContent: "space-between", flexWrap: "wrap", gap: "1rem",
-        }}
+        className="px-6 sm:px-10 lg:px-16 pt-8 pb-6 max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6"
       >
         <div>
-          <p className="eyebrow-tag" style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: "0.68rem", letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            color: heroAccent,
-            marginBottom: "0.6rem",
-            display: "flex", alignItems: "center", gap: 8,
-          }}>
-            <span style={{ width: 20, height: 1, background: heroAccent, display: "inline-block" }} />
-            {activeEvent ? activeEvent.label ?? "Event Gallery" : "RealXR · IES IPS Academy"}
+          {/* Eyebrow Breadcrumb with high contrast */}
+          <p
+            className="eyebrow-tag font-mono text-[11px] sm:text-xs tracking-[0.24em] uppercase mb-3 flex items-center gap-2.5 font-bold"
+            style={{ color: activeAccent }}
+          >
+            <span
+              style={{
+                width: 22,
+                height: 2,
+                background: activeAccent,
+                display: "inline-block",
+              }}
+            />
+            {activeEvent
+              ? `${activeEvent.title} · ${activeEvent.date}`
+              : "RealXR Archives · IES IPS Academy"}
           </p>
 
-          <h1 style={{
-            fontFamily: "Syne, sans-serif", fontWeight: 800,
-            fontSize: "clamp(2.4rem, 7vw, 5.6rem)",
-            letterSpacing: "-0.04em", lineHeight: 0.92,
-            display: "flex", flexWrap: "wrap",
-          }}>
+          {/* Main Title in Deep Ink */}
+          <h1 className="font-['Syne'] font-extrabold text-4xl sm:text-6xl lg:text-7xl tracking-tight leading-[0.95] text-[#12131A]">
             {activeEvent ? (
-              <>
-                <span style={{ overflow: "hidden", display: "inline-block" }}>{splitChars(activeEvent.title)}</span>
-                <span style={{
-                  display: "block", width: "100%",
-                  fontSize: "0.4em", color: activeEvent.accent, marginTop: "0.3em",
-                }}>{splitChars(activeEvent.date)}</span>
-              </>
+              <span className="block">{splitChars(activeEvent.title)}</span>
             ) : (
-              <>
-                {/* REAL — solid ink */}
-                <span style={{ overflow: "hidden", display: "inline-block", color: INK }}>
-                  {splitChars("REAL")}
-                </span>
-                {/* XR — glass cutout: a soft pink→teal gradient fill on the
-                    letterforms themselves, so it visually "bleeds" the
-                    liquid background's palette straight through the type */}
+              <div className="flex flex-wrap items-baseline gap-2.5">
+                <span className="text-[#12131A]">{splitChars("MOMENTS")}</span>
                 <span
-                  className="xr-fill"
                   style={{
-                    overflow: "hidden", display: "inline-block",
-                    marginLeft: "0.14em",
+                    color: activeAccent,
+                    textShadow: `0 0 35px ${activeAccent}33`,
                   }}
                 >
-                  {splitChars("XR")}
+                  {splitChars("& EXPERIMENTS")}
                 </span>
-                <span style={{
-                  display: "block", width: "100%",
-                  fontSize: "0.28em", color: INK_FAINT, marginTop: "0.35em",
-                  fontFamily: "Space Grotesk, sans-serif", fontWeight: 400,
-                  letterSpacing: "-0.01em",
-                }}>
-                  {splitChars("moments that shaped us.")}
-                </span>
-              </>
+              </div>
             )}
           </h1>
+
+          {/* Subtitle description */}
+          {!activeEvent && (
+            <p className="mt-3 text-xs sm:text-sm font-normal text-[#12131A]/65 max-w-xl leading-relaxed">
+              Every build night, every demo that finally worked, every headset tangled in cables — captured live across the RealXR laboratory.
+            </p>
+          )}
         </div>
 
-        {activeEvent && (
-          <button
-            onClick={clearEvent}
-            data-cursor="view"
+        {/* Media Counter & Total Badge (High Contrast Glass) */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div
+            className="px-4 py-2 rounded-full text-xs font-mono font-bold tracking-wider flex items-center gap-2.5 shadow-sm"
             style={{
-              padding: "0.6rem 1.4rem",
-              border: "1px solid rgba(21,20,26,0.12)",
-              borderRadius: 999, background: GLASS,
-              backdropFilter: "blur(10px)",
-              color: INK_SOFT, cursor: "pointer",
-              fontFamily: "Space Grotesk, sans-serif",
-              fontSize: "0.8rem", letterSpacing: "0.05em",
-              display: "flex", alignItems: "center", gap: 8,
-              transition: "border-color 0.2s, color 0.2s",
+              background: "rgba(255, 255, 255, 0.82)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(18, 19, 26, 0.12)",
+              color: INK_PRIMARY,
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = activeEvent.accent + "77"; e.currentTarget.style.color = INK; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(21,20,26,0.12)"; e.currentTarget.style.color = INK_SOFT; }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-            All Events
-          </button>
-        )}
+            <span
+              className="w-2 h-2 rounded-full animate-pulse"
+              style={{ background: activeAccent }}
+            />
+            <span>{currentMedia.length} CAPTURES</span>
+          </div>
+        </div>
       </header>
 
-      {/* ── Event tab bar (glass pills, sliding indicator) ──────── */}
-      {activeEvent && (
+      {/* ── Pinterest Filter Bar (Pill Tabs) ───────────────────── */}
+      <div className="px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto mb-8">
         <div
           ref={tabBarRef}
-          style={{
-            position: "relative",
-            display: "flex", gap: "0.3rem", overflowX: "auto",
-            borderBottom: `1px solid ${LINE}`,
-            padding: "0.6rem 3rem",
-            scrollbarWidth: "none",
-          }}
+          className="flex items-center gap-2 overflow-x-auto py-2 scrollbar-none"
         >
-          <div
-            ref={indicatorRef}
+          {/* "All Moments" Tab */}
+          <button
+            onClick={() => selectEvent("all")}
+            className="px-4 py-2 rounded-full text-xs sm:text-sm font-['Syne'] font-semibold tracking-wide whitespace-nowrap transition-all duration-300"
             style={{
-              position: "absolute", top: "0.6rem", left: "3rem",
-              height: "calc(100% - 1.2rem)",
-              borderRadius: 999,
-              border: "1px solid transparent",
-              pointerEvents: "none",
+              background: activeSlug === "all" ? INK_PRIMARY : "rgba(255, 255, 255, 0.72)",
+              color: activeSlug === "all" ? "#ffffff" : INK_SECONDARY,
+              border: activeSlug === "all" ? `1px solid ${INK_PRIMARY}` : "1px solid rgba(18, 19, 26, 0.12)",
+              boxShadow: activeSlug === "all" ? "0 4px 14px -3px rgba(18, 19, 26, 0.35)" : "none",
+              backdropFilter: "blur(8px)",
             }}
-          />
-          {events.map((ev) => (
-            <button
-              key={ev.id}
-              data-slug={ev.slug}
-              data-cursor="view"
-              onClick={() => setSearchParams({ event: ev.slug })}
-              style={{
-                position: "relative",
-                padding: "0.6rem 1.1rem",
-                background: "none", border: "none", cursor: "pointer",
-                fontFamily: "Syne, sans-serif", fontWeight: 600,
-                fontSize: "0.78rem", letterSpacing: "0.05em",
-                whiteSpace: "nowrap", borderRadius: 999,
-                color: ev.slug === activeSlug ? INK : INK_FAINT,
-                transition: "color 0.25s",
-              }}
-            >{ev.title}</button>
-          ))}
+          >
+            ✦ All Moments ({allMedia.length})
+          </button>
+
+          {/* Individual Event Pills */}
+          {events.map((ev) => {
+            const isSelected = ev.slug === activeSlug;
+            return (
+              <button
+                key={ev.id}
+                onClick={() => selectEvent(ev.slug)}
+                className="px-4 py-2 rounded-full text-xs sm:text-sm font-['Syne'] font-semibold tracking-wide whitespace-nowrap transition-all duration-300 flex items-center gap-1.5"
+                style={{
+                  background: isSelected ? INK_PRIMARY : "rgba(255, 255, 255, 0.72)",
+                  color: isSelected ? "#ffffff" : INK_SECONDARY,
+                  border: isSelected ? `1px solid ${ev.accent}` : "1px solid rgba(18, 19, 26, 0.12)",
+                  boxShadow: isSelected ? `0 4px 16px -2px ${ev.accent}44` : "none",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: ev.accent }}
+                />
+                <span>{ev.title}</span>
+                <span style={{ opacity: isSelected ? 0.7 : 0.45 }}>({ev.media?.length || 0})</span>
+              </button>
+            );
+          })}
         </div>
-      )}
 
-      {/* ── Main content ─────────────────────────────────────────── */}
-      <main style={{ padding: "2.5rem 3rem 6rem" }}>
-
-        {!activeEvent && (
-          <div>
-            <p style={{
-              fontSize: "0.85rem", color: INK_SOFT,
-              marginBottom: "2.2rem", lineHeight: 1.65,
-              maxWidth: 480,
-            }}>
-              Every build night, every demo that finally worked, every headset
-              tangled in cables — captured here. Click an event to step into
-              its gallery.
-            </p>
-
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: "1.4rem",
-            }}>
-              {events.map((ev) => (
-                <EventCard key={ev.id} event={ev} onClick={openEvent} />
-              ))}
+        {/* Event Context Description Banner (Light High-Contrast Glass Card) */}
+        {activeEvent && (
+          <div
+            className="mt-4 p-5 sm:p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 transition-all duration-300"
+            style={{
+              background: "rgba(255, 255, 255, 0.8)",
+              backdropFilter: "blur(14px)",
+              border: "1px solid rgba(18, 19, 26, 0.1)",
+              boxShadow: "0 10px 30px -10px rgba(18, 19, 26, 0.08)",
+            }}
+          >
+            <div className="max-w-2xl">
+              <p
+                className="text-xs font-mono font-bold tracking-wider uppercase mb-1.5 flex items-center gap-2"
+                style={{ color: activeAccent }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: activeAccent }} />
+                {activeEvent.tagline}
+              </p>
+              <p className="text-[#12131A]/75 text-xs sm:text-sm leading-relaxed font-normal">
+                {activeEvent.description}
+              </p>
+            </div>
+            <div className="text-left sm:text-right sm:self-center shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#12131A]/10">
+              <span className="text-[10px] font-mono tracking-widest text-[#12131A]/45 block font-bold uppercase">
+                VENUE / LOCATION
+              </span>
+              <span className="text-xs sm:text-sm text-[#12131A] font-bold">
+                {activeEvent.location}
+              </span>
             </div>
           </div>
         )}
+      </div>
 
-        {activeEvent && (
-          <div ref={gridWrapRef}>
-            <p style={{
-              fontSize: "0.9rem", color: INK_SOFT,
-              marginBottom: "2.2rem", maxWidth: 560, lineHeight: 1.75,
-            }}>{activeEvent.description}</p>
-
-            <MediaGrid
-              items={currentMedia}
-              accent={activeEvent.accent}
-              eventId={activeEvent.id}
-            />
-          </div>
-        )}
+      {/* ── Main Pinterest Waterfall Grid ──────────────────────── */}
+      <main className="px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto">
+        <div ref={gridWrapRef}>
+          <MediaGrid
+            items={currentMedia}
+            accent={activeAccent}
+            eventTitle={activeEvent?.title}
+            eventId={activeSlug}
+          />
+        </div>
       </main>
 
-      {activeEvent && (
-        <Lightbox items={currentMedia} accent={activeEvent.accent} />
-      )}
-
-      <style>{`
-        .xr-fill {
-          background-image: linear-gradient(120deg, ${REAL}, ${XR});
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-          -webkit-text-stroke: 0px;
-          display: inline-block;
-        }
-        @media (pointer: fine) {
-          * { cursor: none !important; }
-        }
-      `}</style>
+      {/* Fullscreen Interactive Lightbox */}
+      <Lightbox items={currentMedia} accent={activeAccent} />
     </div>
   );
 }

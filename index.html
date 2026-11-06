@@ -2,19 +2,97 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="" />
-    <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>realxr-website</title>
-    <!-- <link rel="stylesheet" href="./src/index.css"> -->
+    <title>RealXR — Spatial Computing Lab · IES IPS Academy</title>
+
+    <!-- Primary Metadata -->
+    <meta name="description" content="RealXR is the premier AR/VR, Game Development, and Spatial Computing student laboratory at the Institute of Engineering & Science, IPS Academy, Indore. Est. 2022." />
+    <meta name="keywords" content="RealXR, AR, VR, Virtual Reality, Augmented Reality, Spatial Computing, WebXR, Three.js, Unity, Unreal Engine, IPS Academy, IES, Student Lab, Indore" />
+    <meta name="author" content="RealXR Lab" />
+    <meta name="theme-color" content="#06070a" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://realxr.in/" />
+
+    <!-- Favicon & PWA Icons -->
+    <link rel="icon" type="image/webp" href="/realXrLogo.webp" />
+    <link rel="apple-touch-icon" href="/realXrLogo.webp" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Open Graph / Facebook / LinkedIn / Discord -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="RealXR Lab" />
+    <meta property="og:url" content="https://realxr.in/" />
+    <meta property="og:title" content="RealXR — Spatial Computing Lab · IES IPS Academy" />
+    <meta property="og:description" content="We Don't Just Study the Future — We Build It. Official portfolio showcasing student AR/VR prototypes, hackathons, and spatial tools." />
+    <meta property="og:image" content="https://realxr.in/image.webp" />
+    <meta property="og:image:alt" content="RealXR Spatial Computing Lab Showcase" />
+    <meta property="og:image:type" content="image/webp" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@realxr_ipsa" />
+    <meta name="twitter:creator" content="@realxr_ipsa" />
+    <meta name="twitter:url" content="https://realxr.in/" />
+    <meta name="twitter:title" content="RealXR — Spatial Computing Lab · IES IPS Academy" />
+    <meta name="twitter:description" content="We Don't Just Study the Future — We Build It. Student-led spatial computing innovation at IES IPS Academy." />
+    <meta name="twitter:image" content="https://realxr.in/image.webp" />
+
+    <!-- Preconnected High-Performance Fonts (Zero CSS waterfall) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Orbitron:wght@400..900&family=Syne:wght@400..800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&family=Syne:wght@400..800&display=swap"
       rel="stylesheet"
     />
-    <style>
-    </style>
+
+    <!-- Schema.org JSON-LD Structured Data for University Lab -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "EducationalOrganization",
+            "@id": "https://realxr.in/#organization",
+            "name": "RealXR",
+            "alternateName": [
+              "RealXR Club",
+              "RealXR Spatial Computing Lab",
+              "RealXR IPSA"
+            ],
+            "url": "https://realxr.in",
+            "logo": "https://realxr.in/realXrLogo.webp",
+            "image": "https://realxr.in/image.webp",
+            "description": "Student-led AR/VR and Spatial Computing laboratory at Institute of Engineering & Science, IPS Academy, Indore.",
+            "foundingDate": "2022",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Indore",
+              "addressRegion": "Madhya Pradesh",
+              "addressCountry": "IN"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Institute of Engineering and Science, IPS Academy, Indore",
+              "url": "https://iesipsacademy.ac.in"
+            },
+            "sameAs": [
+              "https://www.instagram.com/realxr.ipsa",
+              "https://www.linkedin.com/company/realxr",
+              "https://github.com/realxr-org"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://realxr.in/#website",
+            "url": "https://realxr.in",
+            "name": "RealXR Portfolio",
+            "publisher": { "@id": "https://realxr.in/#organization" }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

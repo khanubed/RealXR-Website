@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "optimize:media": "node scripts/optimize-media.js",
+    "optimize:images": "node scripts/optimize-media.js --type=image",
+    "optimize:videos": "node scripts/optimize-media.js --type=video",
+    "optimize:all": "node scripts/optimize-media.js --recompress-webp"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.3.0",

@@ -93,8 +93,25 @@ const DistortText = forwardRef(
     const measureRef = useRef(null);
     const [texture, setTexture] = useState(null);
     const [dims, setDims] = useState({ width: 0, height: 0 });
+    const [isInView, setIsInView] = useState(false);
 
     useImperativeHandle(forwardedRef, () => wrapperRef.current);
+
+    useEffect(() => {
+      const el = wrapperRef.current;
+      if (!el || typeof IntersectionObserver === "undefined") {
+        setIsInView(true);
+        return;
+      }
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsInView(entry.isIntersecting);
+        },
+        { rootMargin: "150px" }
+      );
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, []);
 
     const isTouch = useMemo(
       () => typeof window !== "undefined" && window.matchMedia("(hover: none)").matches,
@@ -197,8 +214,9 @@ const DistortText = forwardRef(
           <div style={{ position: "absolute", inset: 0, pointerEvents: "auto" }}>
             <Canvas
               orthographic
-              dpr={[1, 2]}
-              gl={{ alpha: true, antialias: true }}
+              frameloop={isInView ? "always" : "never"}
+              dpr={[1, 1.5]}
+              gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
               style={{ width: "100%", height: "100%", display: "block" }}
             >
               <FitOrthoCamera width={dims.width} height={dims.height} />

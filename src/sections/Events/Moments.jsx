@@ -25,9 +25,11 @@ const Moments = ({ images = [], title, subTitle }) => {
       // Safety check: skip GSAP logic if there are no images to animate
       if (!imageList || imageList.length === 0) return;
 
+      let isRainActive = false;
+
       // Master function to manage a single image's lifecycle
       const startRainCycle = (el, isInitialSpawn = false) => {
-        if (!el || !containerRef.current) return;
+        if (!el || !containerRef.current || !isRainActive) return;
 
         // 1. Generate wide-variance properties for deep 3D-like layering
         const randomScale = gsap.utils.random(0.3, 1.0); // Extreme size differences
@@ -59,16 +61,41 @@ const Moments = ({ images = [], title, subTitle }) => {
           rotation: randomRotation + gsap.utils.random(-30, 30),
           duration: randomDuration,
           ease: "none",
-          onComplete: () => startRainCycle(el, false),
+          onComplete: () => {
+            if (isRainActive) {
+              startRainCycle(el, false);
+            }
+          },
         });
       };
 
-      // Kick off the rain for all elements simultaneously
-      itemsRef.current.forEach((el) => {
-        startRainCycle(el, true);
+      const stopRain = () => {
+        isRainActive = false;
+        itemsRef.current.forEach((el) => {
+          if (el) gsap.killTweensOf(el);
+        });
+      };
+
+      const resumeRain = () => {
+        if (isRainActive) return;
+        isRainActive = true;
+        itemsRef.current.forEach((el) => {
+          if (el) startRainCycle(el, true);
+        });
+      };
+
+      // 5. Viewport Gating ScrollTrigger: Only animate falling cards when section is approaching or in viewport
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: "top bottom",
+        end: "+=1800",
+        onEnter: resumeRain,
+        onEnterBack: resumeRain,
+        onLeave: stopRain,
+        onLeaveBack: stopRain,
       });
 
-      // 5. Create Pinning ScrollTrigger to hold the section on screen
+      // 6. Create Pinning ScrollTrigger to hold the section on screen
       ScrollTrigger.create({
         trigger: containerRef.current,
         start: "top top", // Locks section to viewport frame when top reaches top
@@ -77,6 +104,8 @@ const Moments = ({ images = [], title, subTitle }) => {
         pinSpacing: true, // Pushes lower components down cleanly
         anticipatePin: 1, // Eliminates visual snapping during fast scrolls
       });
+
+      return () => stopRain();
     },
     { scope: containerRef, dependencies: [imageList] },
   );

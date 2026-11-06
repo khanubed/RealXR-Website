@@ -3,65 +3,25 @@
 ## Files
 ```
 gallery/
-├── GalleryData.js        ← Mock data (swap exports for API calls)
 ├── GalleryDashboard.jsx  ← Main page controller
-├── MediaGrid.jsx         ← Bento grid with GSAP stagger
-├── MediaCard.jsx         ← Individual tile (image + video)
+├── MediaGrid.jsx         ← Responsive Pinterest-style waterfall masonry grid with GSAP stagger
+├── MediaCard.jsx         ← Lightweight Pinterest tile (natural aspect ratio, hover video preview, clean overlay)
 ├── Lightbox.jsx          ← Fullscreen modal viewer
 └── README.md
 ```
 
-## Setup
+## Content Management
 
-### 1. Install dependencies
-```bash
-npm i gsap react-router-dom
-```
+Gallery data is managed directly in code in [`src/data/galleryData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/galleryData.js). To add or update event albums and media items, edit the `EVENTS` array in that file.
 
-### 2. Add route in your router
-```jsx
-// App.jsx or your router file
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import GalleryDashboard from "./gallery/GalleryDashboard";
-
-<BrowserRouter>
-  <Routes>
-    <Route path="/gallery" element={<GalleryDashboard />} />
-  </Routes>
-</BrowserRouter>
-```
-
-### 3. Deep-link URLs
+### Deep-link URLs
 ```
 /gallery                                 → Event dashboard
 /gallery?event=hackathon-3               → Event grid
 /gallery?event=hackathon-3&media=h3-02  → Lightbox open
 ```
 
-## Replacing mock data with a real API
-
-In `GalleryData.js`, replace the `EVENTS` export with an async fetch:
-
-```js
-// Before (mock)
-export const EVENTS = [ ... ];
-
-// After (real API)
-export const fetchEvents = async () => {
-  const res = await fetch("/api/gallery/events");
-  return res.json();
-};
-```
-
-Then in `GalleryDashboard.jsx`, use `useEffect` + `useState`:
-```jsx
-const [events, setEvents] = useState([]);
-useEffect(() => { fetchEvents().then(setEvents); }, []);
-```
-
-Zero other changes needed — the UI layer is fully decoupled from the data layer.
-
-## Performance notes
+## Performance Notes
 
 | Technique | Where | Why |
 |---|---|---|

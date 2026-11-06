@@ -1,0 +1,22 @@
+{
+  "name": "RealXR — AR/VR & Spatial Computing Club",
+  "short_name": "RealXR",
+  "description": "The official student-led AR/VR and Spatial Computing laboratory at Institute of Engineering & Science, IPS Academy, Indore.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#12131A",
+  "icons": [
+    {
+      "src": "/realXrLogo.webp",
+      "sizes": "192x192",
+      "type": "image/webp"
+    },
+    {
+      "src": "/realXr.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}
+
