@@ -12,7 +12,7 @@ gallery/
 
 ## Content Management
 
-Gallery data is managed directly in code in [`src/data/galleryData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/galleryData.js). To add or update event albums and media items, edit the `EVENTS` array in that file.
+Gallery data is managed directly in code in [`src/data/eventsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/eventsData.js). To add or update event albums and media items, edit the `EVENTS` array in that file. Every event supports a `featured: boolean` flag (`true` to feature on the homepage, `false` for gallery archive only).
 
 ### Deep-link URLs
 ```

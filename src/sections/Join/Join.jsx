@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { postJoinForm } from "../../api/api";
+import { sendJoinApplication } from "../../services/emailService";
 import { trackEvent } from "../../lib/analytics.js";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -18,7 +18,7 @@ const DEFAULT_INTEREST_OPTIONS = [
 
 const inputStyle = {
   width: "100%",
-  padding: "0.5rem 1.3rem",
+  padding: "0.6rem 1.3rem",
   borderRadius: "10px",
   background: "#161616",
   border: "1px solid rgba(255,255,255,0.08)",
@@ -26,6 +26,8 @@ const inputStyle = {
   fontFamily: "Syne, sans-serif",
   fontSize: "0.95rem",
   outline: "none",
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease",
 };
 
 const labelStyle = {
@@ -34,7 +36,7 @@ const labelStyle = {
   fontSize: "0.82rem",
   fontWeight: 600,
   color: "#00F5D4",
-  marginBottom: "0.2rem",
+  marginBottom: "0.25rem",
 };
 
 const Join = () => {
@@ -59,16 +61,13 @@ const Join = () => {
   // Context-safe animation hook
   useGSAP(
     () => {
-      // Gated check: If form is submitted successfully, skip animating form elements
       if (status === "done") return;
 
-      // Set initial hidden states safely within scope
       gsap.set([headingRef.current, subRef.current], { opacity: 0, y: 20 });
       if (formRef.current) {
         gsap.set(formRef.current, { opacity: 0, y: 24 });
       }
 
-      // Simple once-only content reveal
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -104,12 +103,25 @@ const Join = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleReset = () => {
+    setForm({
+      name: "",
+      branch: "",
+      email: "",
+      phone: "",
+      interests: [],
+      message: "",
+    });
+    setError("");
+    setStatus("idle");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     if (!form.name.trim() || !form.branch.trim() || !form.email.trim()) {
-      setError("Please fill in your name, branch & year, and email.");
+      setError("Please fill in your name, branch & year, and email address.");
       return;
     }
 
@@ -117,7 +129,7 @@ const Join = () => {
 
     setStatus("submitting");
     try {
-      await postJoinForm({
+      await sendJoinApplication({
         name: form.name.trim(),
         branch: form.branch.trim(),
         email: form.email.trim(),
@@ -125,9 +137,11 @@ const Join = () => {
         interests: form.interests,
         message: form.message.trim(),
       });
+
       trackEvent("join_form_submit", {
         interests: form.interests.join(", "),
       });
+
       setStatus("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not submit the form. Please try again.");
@@ -188,14 +202,91 @@ const Join = () => {
           <div
             style={{
               textAlign: "center",
-              padding: "2rem 0",
-              fontFamily: "Syne, sans-serif",
-              fontWeight: 700,
-              fontSize: "1.3rem",
-              color: "#00F5D4",
+              padding: "2.5rem 1.5rem",
+              background: "rgba(22, 22, 22, 0.7)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(0, 245, 212, 0.25)",
+              borderRadius: "20px",
+              boxShadow: "0 10px 40px rgba(0, 245, 212, 0.08)",
             }}
           >
-            "Thanks for applying! We'll be in touch soon."
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                background: "rgba(0, 245, 212, 0.15)",
+                border: "1.5px solid #00F5D4",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 1.2rem auto",
+              }}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#00F5D4"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3
+              style={{
+                fontFamily: "Syne, sans-serif",
+                fontWeight: 800,
+                fontSize: "1.6rem",
+                color: "#ffffff",
+                margin: "0 0 0.5rem 0",
+              }}
+            >
+              Application Received!
+            </h3>
+            <p
+              style={{
+                fontFamily: "Syne, sans-serif",
+                fontSize: "0.95rem",
+                color: "rgba(255,255,255,0.7)",
+                maxWidth: 440,
+                margin: "0 auto 1.5rem auto",
+                lineHeight: 1.6,
+              }}
+            >
+              Thank you for applying to RealXR. Our core team has received your submission and will get in touch regarding onboarding and upcoming hackathons.
+            </p>
+            <button
+              type="button"
+              onClick={handleReset}
+              style={{
+                padding: "0.6rem 1.6rem",
+                borderRadius: "999px",
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                color: "#fff",
+                fontFamily: "Syne, sans-serif",
+                fontWeight: 600,
+                fontSize: "0.85rem",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#00F5D4";
+                e.currentTarget.style.color = "#0a0a0a";
+                e.currentTarget.style.borderColor = "#00F5D4";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+                e.currentTarget.style.color = "#fff";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+              }}
+            >
+              Submit Another Application
+            </button>
           </div>
         ) : (
           <form
@@ -212,8 +303,10 @@ const Join = () => {
                   name="name"
                   value={form.name}
                   onChange={handleChange}
+                  disabled={status === "submitting"}
                   style={inputStyle}
                   placeholder="Your full name"
+                  required
                 />
               </div>
               <div style={{ flex: "1 1 240px" }}>
@@ -223,8 +316,10 @@ const Join = () => {
                   name="branch"
                   value={form.branch}
                   onChange={handleChange}
+                  disabled={status === "submitting"}
                   style={inputStyle}
                   placeholder="e.g. CSE, 2nd Year"
+                  required
                 />
               </div>
             </div>
@@ -238,17 +333,20 @@ const Join = () => {
                   name="email"
                   value={form.email}
                   onChange={handleChange}
+                  disabled={status === "submitting"}
                   style={inputStyle}
                   placeholder="you@example.com"
+                  required
                 />
               </div>
               <div style={{ flex: "1 1 240px" }}>
                 <label style={labelStyle}>Phone</label>
                 <input
-                  type="teal"
+                  type="tel"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
+                  disabled={status === "submitting"}
                   style={inputStyle}
                   placeholder="Optional"
                 />
@@ -277,7 +375,7 @@ const Join = () => {
                         display: "flex",
                         alignItems: "center",
                         gap: "0.6rem",
-                        cursor: "pointer",
+                        cursor: status === "submitting" ? "not-allowed" : "pointer",
                         userSelect: "none",
                         fontFamily: "Syne, sans-serif",
                         fontSize: "0.88rem",
@@ -314,6 +412,7 @@ const Join = () => {
                       <input
                         type="checkbox"
                         checked={checked}
+                        disabled={status === "submitting"}
                         onChange={() => toggleInterest(option)}
                         style={{ display: "none" }}
                       />
@@ -331,6 +430,7 @@ const Join = () => {
                 name="message"
                 value={form.message}
                 onChange={handleChange}
+                disabled={status === "submitting"}
                 placeholder="Enter message here"
                 rows={2}
                 style={{
@@ -359,18 +459,22 @@ const Join = () => {
               type="submit"
               disabled={status === "submitting"}
               style={{
-                marginTop: "0.2rem",
-                padding: "0.8rem 2rem",
+                marginTop: "0.4rem",
+                padding: "0.85rem 2rem",
                 borderRadius: "999px",
-                background: "transparent",
-                border: "1.5px solid #fff",
-                color: "#fff",
+                background: status === "submitting" ? "rgba(0, 245, 212, 0.15)" : "transparent",
+                border: status === "submitting" ? "1.5px solid #00F5D4" : "1.5px solid #fff",
+                color: status === "submitting" ? "#00F5D4" : "#fff",
                 fontFamily: "Syne, sans-serif",
                 fontWeight: 700,
                 fontSize: "0.95rem",
                 cursor: status === "submitting" ? "wait" : "pointer",
-                opacity: status === "submitting" ? 0.7 : 1,
-                transition: "background 0.2s, color 0.2s",
+                opacity: status === "submitting" ? 0.85 : 1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.6rem",
+                transition: "all 0.2s ease",
               }}
               onMouseEnter={(e) => {
                 if (status === "submitting") return;
@@ -378,11 +482,36 @@ const Join = () => {
                 e.currentTarget.style.color = "#0a0a0a";
               }}
               onMouseLeave={(e) => {
+                if (status === "submitting") return;
                 e.currentTarget.style.background = "transparent";
                 e.currentTarget.style.color = "#fff";
               }}
             >
-              {status === "submitting" ? "Submitting…" : "Apply to Join RealXR"}
+              {status === "submitting" ? (
+                <>
+                  <svg
+                    style={{ animation: "spin 1s linear infinite", width: 16, height: 16 }}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      opacity="0.25"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span>Submitting Application…</span>
+                </>
+              ) : (
+                "Apply to Join RealXR"
+              )}
             </button>
           </form>
         )}

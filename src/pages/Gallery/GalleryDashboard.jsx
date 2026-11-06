@@ -5,8 +5,9 @@
  *  • Optimized for high contrast against WebGL liquid background
  *  • Native waterfall masonry grid (light, airy, uncluttered)
  *  • Deep ink typography (#12131A) with vibrant cyber accents
+ *  • Horizontal event navigation with chevron step controls & auto-scroll
  *  • Seamless event filtering ("All Moments" + individual event pills)
- *  • Event context header with accent glow
+ *  • Event context header with accent glow and quick switcher
  *  • Integrated fullscreen Lightbox
  * ─────────────────────────────────────────────────────────────────
  */
@@ -22,7 +23,7 @@ import React, {
 import { useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import { EVENTS } from "../../data/galleryData";
+import { EVENTS } from "../../data/eventsData";
 import { getGalleryEvents } from "../../api/api";
 import MediaGrid from "./MediaGrid.jsx";
 import Lightbox from "./Lightbox";
@@ -67,6 +68,7 @@ export default function GalleryDashboard() {
   const headerRef = useRef(null);
   const gridWrapRef = useRef(null);
   const tabBarRef = useRef(null);
+  const pillRefs = useRef({});
 
   // Active event resolution
   const activeEvent = useMemo(() => {
@@ -156,6 +158,74 @@ export default function GalleryDashboard() {
     [searchParams, setSearchParams]
   );
 
+  // ── Ordered Navigation Items ─────────────────────────────────
+  const navItems = useMemo(() => [
+    { slug: "all", title: "All Moments", count: allMedia.length },
+    ...events.map((ev) => ({
+      id: ev.id,
+      slug: ev.slug,
+      title: ev.title,
+      accent: ev.accent,
+      count: ev.media?.length || 0,
+    })),
+  ], [allMedia.length, events]);
+
+  const currentIndex = useMemo(() => {
+    const idx = navItems.findIndex((item) => item.slug === activeSlug);
+    return idx >= 0 ? idx : 0;
+  }, [navItems, activeSlug]);
+
+  const canGoPrev = currentIndex > 0;
+  const canGoNext = currentIndex < navItems.length - 1;
+
+  // Previous & Next event selection
+  const handlePrevEvent = useCallback(() => {
+    if (currentIndex > 0) {
+      selectEvent(navItems[currentIndex - 1].slug);
+    }
+  }, [currentIndex, navItems, selectEvent]);
+
+  const handleNextEvent = useCallback(() => {
+    if (currentIndex < navItems.length - 1) {
+      selectEvent(navItems[currentIndex + 1].slug);
+    }
+  }, [currentIndex, navItems, selectEvent]);
+
+  // ── Auto-scroll active pill into view ─────────────────────────
+  useEffect(() => {
+    const activeBtn = pillRefs.current[activeSlug];
+    if (activeBtn && tabBarRef.current) {
+      const container = tabBarRef.current;
+      const btnLeft = activeBtn.offsetLeft;
+      const btnWidth = activeBtn.offsetWidth;
+      const containerWidth = container.offsetWidth;
+      const targetScroll = btnLeft - containerWidth / 2 + btnWidth / 2;
+
+      container.scrollTo({
+        left: Math.max(0, targetScroll),
+        behavior: "smooth",
+      });
+    }
+  }, [activeSlug]);
+
+  // ── Track horizontal scroll boundaries for gradient fades ────
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollState = useCallback(() => {
+    if (tabBarRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabBarRef.current;
+      setCanScrollLeft(scrollLeft > 6);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+    }
+  }, []);
+
+  useEffect(() => {
+    updateScrollState();
+    window.addEventListener("resize", updateScrollState);
+    return () => window.removeEventListener("resize", updateScrollState);
+  }, [updateScrollState, events]);
+
   return (
     <div
       className="min-h-screen pt-20 pb-28 text-[#12131A] relative overflow-x-hidden"
@@ -235,52 +305,158 @@ export default function GalleryDashboard() {
         </div>
       </header>
 
-      {/* ── Pinterest Filter Bar (Pill Tabs) ───────────────────── */}
+      {/* ── Horizontal Event Navigation & Filter Bar ────────────── */}
       <div className="px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto mb-8">
-        <div
-          ref={tabBarRef}
-          className="flex items-center gap-2 overflow-x-auto py-2 scrollbar-none"
-        >
-          {/* "All Moments" Tab */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Previous Event Button */}
           <button
-            onClick={() => selectEvent("all")}
-            className="px-4 py-2 rounded-full text-xs sm:text-sm font-['Syne'] font-semibold tracking-wide whitespace-nowrap transition-all duration-300"
+            type="button"
+            onClick={handlePrevEvent}
+            disabled={!canGoPrev}
+            aria-label="Previous event"
+            title={canGoPrev ? `Select ${navItems[currentIndex - 1]?.title}` : "At first event"}
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm focus:outline-none"
             style={{
-              background: activeSlug === "all" ? INK_PRIMARY : "rgba(255, 255, 255, 0.72)",
-              color: activeSlug === "all" ? "#ffffff" : INK_SECONDARY,
-              border: activeSlug === "all" ? `1px solid ${INK_PRIMARY}` : "1px solid rgba(18, 19, 26, 0.12)",
-              boxShadow: activeSlug === "all" ? "0 4px 14px -3px rgba(18, 19, 26, 0.35)" : "none",
-              backdropFilter: "blur(8px)",
+              background: "rgba(255, 255, 255, 0.85)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(18, 19, 26, 0.12)",
+              color: INK_PRIMARY,
+              opacity: canGoPrev ? 1 : 0.35,
+              cursor: canGoPrev ? "pointer" : "not-allowed",
+              boxShadow: canGoPrev ? "0 2px 8px rgba(18, 19, 26, 0.08)" : "none",
             }}
           >
-            ✦ All Moments ({allMedia.length})
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
           </button>
 
-          {/* Individual Event Pills */}
-          {events.map((ev) => {
-            const isSelected = ev.slug === activeSlug;
-            return (
+          {/* Horizontally Listed Events Track with Gradient Fades */}
+          <div className="relative flex-1 overflow-hidden rounded-full">
+            {/* Left Edge Fade */}
+            <div
+              className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 z-10 transition-opacity duration-300"
+              style={{
+                background: "linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent)",
+                opacity: canScrollLeft ? 1 : 0,
+              }}
+            />
+
+            <div
+              ref={tabBarRef}
+              onScroll={updateScrollState}
+              tabIndex={0}
+              role="tablist"
+              aria-label="Event categories"
+              onKeyDown={(e) => {
+                if (e.key === "ArrowLeft") {
+                  e.preventDefault();
+                  handlePrevEvent();
+                } else if (e.key === "ArrowRight") {
+                  e.preventDefault();
+                  handleNextEvent();
+                }
+              }}
+              className="flex items-center gap-2 overflow-x-auto py-2 px-1 scrollbar-none scroll-smooth focus:outline-none"
+            >
+              {/* "All Moments" Tab */}
               <button
-                key={ev.id}
-                onClick={() => selectEvent(ev.slug)}
-                className="px-4 py-2 rounded-full text-xs sm:text-sm font-['Syne'] font-semibold tracking-wide whitespace-nowrap transition-all duration-300 flex items-center gap-1.5"
+                ref={(el) => (pillRefs.current["all"] = el)}
+                role="tab"
+                aria-selected={activeSlug === "all"}
+                onClick={() => selectEvent("all")}
+                className="px-4 py-2 rounded-full text-xs sm:text-sm font-['Syne'] font-semibold tracking-wide whitespace-nowrap transition-all duration-300 cursor-pointer"
                 style={{
-                  background: isSelected ? INK_PRIMARY : "rgba(255, 255, 255, 0.72)",
-                  color: isSelected ? "#ffffff" : INK_SECONDARY,
-                  border: isSelected ? `1px solid ${ev.accent}` : "1px solid rgba(18, 19, 26, 0.12)",
-                  boxShadow: isSelected ? `0 4px 16px -2px ${ev.accent}44` : "none",
+                  background: activeSlug === "all" ? INK_PRIMARY : "rgba(255, 255, 255, 0.72)",
+                  color: activeSlug === "all" ? "#ffffff" : INK_SECONDARY,
+                  border: activeSlug === "all" ? `1px solid ${INK_PRIMARY}` : "1px solid rgba(18, 19, 26, 0.12)",
+                  boxShadow: activeSlug === "all" ? "0 4px 14px -3px rgba(18, 19, 26, 0.35)" : "none",
                   backdropFilter: "blur(8px)",
                 }}
               >
-                <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: ev.accent }}
-                />
-                <span>{ev.title}</span>
-                <span style={{ opacity: isSelected ? 0.7 : 0.45 }}>({ev.media?.length || 0})</span>
+                ✦ All Moments ({allMedia.length})
               </button>
-            );
-          })}
+
+              {/* Individual Event Pills */}
+              {events.map((ev) => {
+                const isSelected = ev.slug === activeSlug;
+                return (
+                  <button
+                    key={ev.id}
+                    ref={(el) => (pillRefs.current[ev.slug] = el)}
+                    role="tab"
+                    aria-selected={isSelected}
+                    onClick={() => selectEvent(ev.slug)}
+                    className="px-4 py-2 rounded-full text-xs sm:text-sm font-['Syne'] font-semibold tracking-wide whitespace-nowrap transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                    style={{
+                      background: isSelected ? INK_PRIMARY : "rgba(255, 255, 255, 0.72)",
+                      color: isSelected ? "#ffffff" : INK_SECONDARY,
+                      border: isSelected ? `1px solid ${ev.accent}` : "1px solid rgba(18, 19, 26, 0.12)",
+                      boxShadow: isSelected ? `0 4px 16px -2px ${ev.accent}44` : "none",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: ev.accent }}
+                    />
+                    <span>{ev.title}</span>
+                    <span style={{ opacity: isSelected ? 0.7 : 0.45 }}>({ev.media?.length || 0})</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right Edge Fade */}
+            <div
+              className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 z-10 transition-opacity duration-300"
+              style={{
+                background: "linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent)",
+                opacity: canScrollRight ? 1 : 0,
+              }}
+            />
+          </div>
+
+          {/* Next Event Button */}
+          <button
+            type="button"
+            onClick={handleNextEvent}
+            disabled={!canGoNext}
+            aria-label="Next event"
+            title={canGoNext ? `Select ${navItems[currentIndex + 1]?.title}` : "At last event"}
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm focus:outline-none"
+            style={{
+              background: "rgba(255, 255, 255, 0.85)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(18, 19, 26, 0.12)",
+              color: INK_PRIMARY,
+              opacity: canGoNext ? 1 : 0.35,
+              cursor: canGoNext ? "pointer" : "not-allowed",
+              boxShadow: canGoNext ? "0 2px 8px rgba(18, 19, 26, 0.08)" : "none",
+            }}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
         </div>
 
         {/* Event Context Description Banner (Light High-Contrast Glass Card) */}
@@ -306,13 +482,44 @@ export default function GalleryDashboard() {
                 {activeEvent.description}
               </p>
             </div>
-            <div className="text-left sm:text-right sm:self-center shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#12131A]/10">
-              <span className="text-[10px] font-mono tracking-widest text-[#12131A]/45 block font-bold uppercase">
-                VENUE / LOCATION
-              </span>
-              <span className="text-xs sm:text-sm text-[#12131A] font-bold">
-                {activeEvent.location}
-              </span>
+
+            <div className="flex flex-col sm:items-end gap-3 shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#12131A]/10">
+              <div className="text-left sm:text-right">
+                <span className="text-[10px] font-mono tracking-widest text-[#12131A]/45 block font-bold uppercase">
+                  VENUE / LOCATION
+                </span>
+                <span className="text-xs sm:text-sm text-[#12131A] font-bold">
+                  {activeEvent.location}
+                </span>
+              </div>
+
+              {/* Step indicator and quick prev/next shortcuts inside banner */}
+              <div className="flex items-center gap-2 text-xs font-mono">
+                <span className="text-[#12131A]/50">
+                  EVENT {currentIndex} OF {events.length}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handlePrevEvent}
+                    disabled={!canGoPrev}
+                    className="px-2 py-0.5 rounded transition-all hover:bg-black/5 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed font-bold"
+                    style={{ color: activeAccent }}
+                    title="Previous event"
+                  >
+                    ← Prev
+                  </button>
+                  <span className="text-[#12131A]/20">·</span>
+                  <button
+                    onClick={handleNextEvent}
+                    disabled={!canGoNext}
+                    className="px-2 py-0.5 rounded transition-all hover:bg-black/5 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed font-bold"
+                    style={{ color: activeAccent }}
+                    title="Next event"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

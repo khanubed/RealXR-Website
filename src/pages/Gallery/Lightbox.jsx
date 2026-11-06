@@ -16,14 +16,42 @@ const GalleryLightbox = memo(function GalleryLightbox({ items, accent = "#00BFAE
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const open = activeIndex >= 0;
 
+  // Slides without captions - pure visual focus
   const slides = useMemo(() => items.map((item) => (
     item.type === "video"
       ? {
-          type: "video", poster: item.thumb, alt: item.caption,
-          width: item.width, height: item.height, controls: true, playsInline: true,
-          sources: [{ src: item.videoMp4, type: "video/mp4" }],
+          type: "video",
+          poster: item.thumb,
+          alt: item.eventTitle || "RealXR Media",
+          width: item.width,
+          height: item.height,
+          controls: true,
+          playsInline: true,
+          sources: [
+            ...(item.videoWebm
+              ? [{ src: item.videoWebm, type: "video/webm" }]
+              : []),
+            ...(item.videoMp4
+              ? [{ src: item.videoMp4, type: "video/mp4" }]
+              : []),
+            ...(!item.videoWebm && !item.videoMp4 && item.videoSrc
+              ? [
+                  {
+                    src: item.videoSrc,
+                    type: item.videoSrc.endsWith(".webm")
+                      ? "video/webm"
+                      : "video/mp4",
+                  },
+                ]
+              : []),
+          ],
         }
-      : { src: item.src, alt: item.caption, title: item.caption, width: item.width, height: item.height }
+      : {
+          src: item.src,
+          alt: item.eventTitle || "RealXR Media",
+          width: item.width,
+          height: item.height,
+        }
   )), [items]);
 
   const updateMedia = useCallback((mediaId) => {

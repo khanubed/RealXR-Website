@@ -5,8 +5,7 @@
  *  • Natural intrinsic aspect ratio (no awkward cropping or heavy padding)
  *  • Progressive lazy-load image with smooth fade-in
  *  • Muted inline video preview on hover
- *  • Uncluttered hover overlay with clean typography and action badges
- *  • Smooth micro-scale and soft shadow elevation on hover
+ *  • Uncluttered hover overlay with clean badges and micro-elevation
  * ─────────────────────────────────────────────────────────────────
  */
 
@@ -107,7 +106,7 @@ const MediaCard = memo(function MediaCard({
         {item.type === "image" && (
           <img
             src={inView ? item.src : item.thumb}
-            alt={item.caption || "RealXR gallery moment"}
+            alt={eventTitle || "RealXR gallery moment"}
             loading="lazy"
             decoding="async"
             onLoad={() => setLoaded(true)}
@@ -124,7 +123,7 @@ const MediaCard = memo(function MediaCard({
           <>
             <img
               src={item.thumb}
-              alt={item.caption || "Video poster"}
+              alt={eventTitle || "Video poster"}
               loading="lazy"
               decoding="async"
               onLoad={() => setLoaded(true)}
@@ -136,7 +135,11 @@ const MediaCard = memo(function MediaCard({
             />
             <video
               ref={videoRef}
-              src={inView ? item.videoMp4 : undefined}
+              src={
+                inView
+                  ? item.videoWebm || item.videoMp4 || item.videoSrc
+                  : undefined
+              }
               muted
               loop
               playsInline
@@ -155,7 +158,7 @@ const MediaCard = memo(function MediaCard({
           className="absolute inset-0 pointer-events-none transition-opacity duration-300"
           style={{
             background:
-              "linear-gradient(to top, rgba(6, 7, 10, 0.9) 0%, rgba(6, 7, 10, 0.4) 40%, rgba(6, 7, 10, 0.05) 75%, transparent 100%)",
+              "linear-gradient(to top, rgba(6, 7, 10, 0.75) 0%, rgba(6, 7, 10, 0.25) 45%, transparent 100%)",
             opacity: hovered ? 1 : 0,
           }}
         />
@@ -214,21 +217,6 @@ const MediaCard = memo(function MediaCard({
               <line x1="3" y1="21" x2="10" y2="14" />
             </svg>
           </div>
-        </div>
-
-        {/* ── Bottom Caption Container (Pinterest style) ──────── */}
-        <div
-          className="absolute bottom-0 inset-x-0 p-3.5 transition-all duration-300 pointer-events-none"
-          style={{
-            opacity: hovered ? 1 : 0,
-            transform: hovered ? "translateY(0)" : "translateY(6px)",
-          }}
-        >
-          {item.caption && (
-            <p className="text-white text-xs sm:text-[13px] font-['Space_Grotesk'] leading-snug line-clamp-2 drop-shadow-sm">
-              {item.caption}
-            </p>
-          )}
         </div>
       </div>
     </div>

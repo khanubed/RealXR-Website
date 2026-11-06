@@ -83,6 +83,11 @@ RealX-Website/
     │   │   └── ... (all members in .webp)
     │   │
     │   └── events/                # Event albums segmented by event name
+    │       ├── induction-2026/
+    │       │   ├── raw/           # Raw uncompressed camera JPGs & MP4 masters
+    │       │   ├── index.js       # Media export hub
+    │       │   ├── induction-2026-1.webp
+    │       │   └── ... (all 55 WebPs)
     │       ├── Induction/
     │       │   ├── induction-2025-1.webp
     │       │   └── ...

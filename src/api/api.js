@@ -1,12 +1,11 @@
 import { heroData } from "../data/heroData";
 import { aboutData } from "../data/aboutData";
 import { domainsData } from "../data/domainsData";
-import { projectsData } from "../data/projectData";
-import { eventsData } from "../data/eventsData";
+import { projectsData, PROJECTS } from "../data/projectData";
+import { eventsData, EVENTS } from "../data/eventsData";
 import { teams } from "../data/teamsData";
-import { EVENTS } from "../data/galleryData";
-import { PROJECTS } from "../data/projectsPageData";
 import { RESOURCES_DATA } from "../data/resourceData";
+import { sendJoinApplication } from "../services/emailService";
 
 // -----------------------------------------------
 // API client (backend-first, local data fallback)
@@ -103,29 +102,9 @@ export const getResourcesData = async () => {
 };
 
 // -----------------------------------------------
-// Join form submission
+// Join form submission (EmailJS)
 // -----------------------------------------------
 
 export const postJoinForm = async (payload) => {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
-  try {
-    const response = await fetch(`${API_URL}/api/join`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(body?.error || "Could not submit the form. Please try again.");
-    }
-    return body;
-  } catch (err) {
-    if (err?.name === "AbortError") {
-      throw new Error("The server took too long to respond. Please try again.");
-    }
-    throw err;
-  }
+  return sendJoinApplication(payload);
 };

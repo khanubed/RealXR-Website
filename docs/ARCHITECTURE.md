@@ -158,10 +158,8 @@ The platform adopts a **code-first content model** managed entirely in JavaScrip
 | **Hero & Tagline** | [`heroData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/heroData.js) | Title, tagline, circular college seal, 3D headset assets, video links, marquee ticker text. |
 | **About & Mission** | [`aboutData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/aboutData.js) | Lab manifesto, technical pillars, and historical milestones. |
 | **Domains Matrix** | [`domainsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/domainsData.js) | AR, VR, Game Dev, 3D Modelling, WebXR disciplines, descriptions, and icon mappings. |
-| **Featured Projects** | [`projectData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/projectData.js) | Homepage pinned project rows with mouse hover preview thumbnails. |
-| **Projects Catalog** | [`projectsPageData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/projectsPageData.js) | Filterable catalog with status pills (`live`, `prototype`, `rnd`, `archived`), tech tags, and links. |
-| **Events & Moments** | [`eventsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/eventsData.js) | Hackathons, workshops, induction events, and moments photo assets. |
-| **Gallery Albums** | [`galleryData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/galleryData.js) | Media albums with intrinsic aspect ratios, video clips, and captions for the Lightbox. |
+| **Projects & Showcase** | [`projectData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/projectData.js) | Unified master catalog and home marquee showcase with `featured` filtering, status pills, tech tags, and links. |
+| **Events, Moments & Gallery** | [`eventsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/eventsData.js) | Unified master events catalog, home card stack timeline, 3D falling moments photo rain, and `/gallery` Pinterest lightbox albums with `featured` filtering. |
 | **Team & Alumni** | [`teamsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/teamsData.js) | Functional squads (Leadership, Web Dev, AR/VR, Social, Alumni), member bios, and social links. |
 | **Resource Vault** | [`resourceData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/resourceData.js) | Filterable spatial computing roadmaps, tools, papers, and tutorials with difficulty indicators. |
 

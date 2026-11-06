@@ -171,10 +171,8 @@ RealX-Website/
 │   │   ├── heroData.js        # Hero title, tagline, seal, and video
 │   │   ├── aboutData.js       # Mission, philosophy, and manifesto
 │   │   ├── domainsData.js     # AR, VR, Game Dev, 3D Modelling, WebXR
-│   │   ├── projectData.js     # Home pinned showcase projects
-│   │   ├── projectsPageData.js# Full filterable project catalog
-│   │   ├── eventsData.js      # Events list & moments photo rain
-│   │   ├── galleryData.js     # Album media collections & lightbox
+│   │   ├── projectData.js     # Master unified projects catalog & home showcase
+│   │   ├── eventsData.js      # Unified master events catalog, moments photo rain & gallery lightbox
 │   │   ├── teamsData.js       # Team squads, roles, bios, and socials
 │   │   └── resourceData.js    # Curated learning roadmap vault
 │   ├── hooks/                 # Reusable React hooks (usePageMeta, etc.)

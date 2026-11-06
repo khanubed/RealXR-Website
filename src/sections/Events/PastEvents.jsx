@@ -10,17 +10,31 @@ const CursorPreview = ({ images, accent, visible, x, y }) => {
   const [activeIdx, setActiveIdx] = useState(0);
   const intervalRef = useRef(null);
 
+  // Cap at 7 images and ensure only image strings are previewed for smooth 60 FPS
+  const previewImages = React.useMemo(() => {
+    return (images || [])
+      .filter(
+        (img) =>
+          typeof img === "string" &&
+          !img.endsWith(".mp4") &&
+          !img.endsWith(".webm")
+      )
+      .slice(0, 7);
+  }, [images]);
+
   useEffect(() => {
-    if (visible) {
+    if (visible && previewImages.length > 0) {
       intervalRef.current = setInterval(() => {
-        setActiveIdx((i) => (i + 1) % images.length);
+        setActiveIdx((i) => (i + 1) % previewImages.length);
       }, 800);
     } else {
       clearInterval(intervalRef.current);
       setActiveIdx(0);
     }
     return () => clearInterval(intervalRef.current);
-  }, [visible, images.length]);
+  }, [visible, previewImages.length]);
+
+  if (!previewImages.length) return null;
 
   return (
     <div
@@ -42,7 +56,7 @@ const CursorPreview = ({ images, accent, visible, x, y }) => {
         boxShadow: `0 8px 40px rgba(0,0,0,0.5), 0 0 0 1.5px ${accent}44`,
       }}
     >
-      {images.map((src, i) => (
+      {previewImages.map((src, i) => (
         <img
           key={i}
           src={src}
@@ -70,7 +84,7 @@ const CursorPreview = ({ images, accent, visible, x, y }) => {
           gap: 5,
         }}
       >
-        {images.map((_, i) => (
+        {previewImages.map((_, i) => (
           <div
             key={i}
             style={{

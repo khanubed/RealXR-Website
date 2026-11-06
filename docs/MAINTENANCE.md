@@ -28,10 +28,8 @@ The RealXR platform manages all dynamic content through clean, modular JavaScrip
 | **Hero & Tagline** | [`heroData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/heroData.js) | `heroData` | Title, tagline, circular seal, 3D headset assets, video links, ticker |
 | **About Mission** | [`aboutData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/aboutData.js) | `aboutData` | Manifesto, engineering pillars, and lab philosophy |
 | **Domains Matrix** | [`domainsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/domainsData.js) | `domainsData` | AR, VR, Game Dev, 3D Modelling, WebXR cards and icons |
-| **Home Projects** | [`projectData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/projectData.js) | `projectsData` | Featured marquee rows with cursor thumbnail hover cards |
-| **Projects Page** | [`projectsPageData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/projectsPageData.js) | `PROJECTS`, `CATEGORIES` | Filterable project catalog with status badges, tags, and links |
-| **Events & Moments** | [`eventsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/eventsData.js) | `eventsData` | Hackathons, workshops, induction events, and moments photo rain |
-| **Gallery Albums** | [`galleryData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/galleryData.js) | `EVENTS` | Media collections with aspect ratios, captions, and Lightbox assets |
+| **Projects & Showcase** | [`projectData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/projectData.js) | `PROJECTS`, `projectsData`, `CATEGORIES` | Unified master projects catalog, home marquee showcase, and `featured` filtering |
+| **Events, Moments & Gallery** | [`eventsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/eventsData.js) | `EVENTS`, `eventsData`, `getEventBySlug` | Unified single source of truth for all events, moments 3D photo rain, and `/gallery` Pinterest lightbox albums |
 | **Team & Alumni** | [`teamsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/teamsData.js) | `teams` | Squad rosters (Leadership, Web Dev, AR/VR, Social, Alumni) |
 | **Resource Vault** | [`resourceData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/resourceData.js) | `RESOURCES_DATA` | Filterable spatial roadmaps, tools, papers, and tutorials |
 
@@ -74,102 +72,82 @@ Teams are segmented into functional squads:
 
 ## 3. Managing Projects & Showcases
 
-### 3.1 Home Page Projects Marquee
-Open [`src/data/projectData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/projectData.js).
+All projects are managed in the single unified dataset [`src/data/projectData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/projectData.js). This single master file powers both the **Home Page interactive marquee table** and the **Deep `/projects` catalog page**.
 
-Add or update project items displayed on the homepage with interactive hover preview cards:
-```javascript
-{
-  id: "05",
-  title: "NEUROLENS AR",
-  category: "Augmented Reality",
-  year: "2026",
-  image: NeuroLensThumb, // Import from src/assets/images/projects/
-  tags: ["ARCore", "WebXR", "Three.js"],
-  link: "https://github.com/realxr-org/neurolens",
-}
-```
+### Adding or Editing a Project:
 
-### 3.2 Deep Projects Catalog Page (`/projects`)
-Open [`src/data/projectsPageData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/projectsPageData.js).
+1. **Place project thumbnail:** Save an optimized WebP image (e.g. 1200×800) in `src/assets/images/projects/`.
+2. **Import image:** In `src/data/projectData.js`:
+   ```javascript
+   import MyProjectImg from "../assets/images/projects/my-project.webp";
+   ```
+3. **Add entry to `PROJECTS` array:**
+   ```javascript
+   {
+     id: "my-project",
+     title: "Project Title",
+     tag: "VR Game",                               // Displayed on Home page row badge
+     category: "vr",                               // Filter: "game" | "vr" | "ar" | "webxr" | "mr" | "tool"
+     status: "live",                               // "live" | "prototype" | "rnd" | "archived"
+     year: 2026,
+     featured: true,                               // If true, appears on the Home page showcase
+     img: MyProjectImg,                            // WebP thumbnail for cards and hover preview
+     image: MyProjectImg,
+     tagline: "One-line catchy summary of the project",
+     platform: "Meta Quest 3 · OpenXR",
+     team: [
+       { name: "Student Name", role: "XR Architect" },
+     ],
+     stack: ["Unity", "OpenXR", "C#", "Blender"],
+     tags: ["vr", "spatial-ui", "openxr"],
+     description: "Comprehensive 2–3 sentence overview of the project mechanics and features.",
+     links: {
+       live: "https://realxr.in/project-link",
+       github: "https://github.com/realxr-org/project",
+       demo: "https://youtube.com/watch?v=sample",
+     },
+   }
+   ```
 
-Add a project to the filterable catalog:
-```javascript
-{
-  id: "p-neurolens",
-  title: "NeuroLens AR",
-  tagline: "Collaborative hand-tracked AR anatomy explorer for spatial classrooms",
-  category: "ar",          // "ar" | "vr" | "mr" | "webxr" | "game" | "tool"
-  status: "live",           // "live" (green) | "prototype" (cyan) | "rnd" (magenta) | "archived" (slate)
-  year: 2026,
-  featured: true,          // If true, highlighted in top spotlight
-  platform: "Meta Quest 3 · WebXR",
-  team: [
-    { name: "Pushpraj Singh Jhala", role: "XR Architect" },
-    { name: "Parag Malvi", role: "Frontend Lead" },
-  ],
-  stack: ["Three.js", "WebXR Device API", "React Three Fiber", "WebAssembly"],
-  tags: ["hand-tracking", "spatial-ui", "education"],
-  description: "Allows medical students to inspect 3D volumetric MRI scans collaboratively in real-time AR.",
-  links: {
-    live: "https://realxr.in/projects/neurolens",
-    github: "https://github.com/realxr-org/neurolens",
-    demo: "https://youtube.com/watch?v=sample",
-  },
-}
-```
+> [!TIP]
+> **Homescreen Visibility Control:**
+> Set `featured: true` to display the project on the homepage interactive hover list. Set `featured: false` to keep it exclusively in the `/projects` catalog.
 
 ---
 
 ## 4. Managing Events & Gallery Albums
 
-### 4.1 Home Page Events Matrix
-Open [`src/data/eventsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/eventsData.js).
+All event showcase items, moments 3D photo rain, and full Pinterest gallery albums are unified in [`src/data/eventsData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/eventsData.js).
 
-Update major club event headlines and photos that feed into the falling photo rain:
+### 4.1 Event Schema & Adding a New Event
+Add a new object to the `EVENTS` array in `src/data/eventsData.js`:
 ```javascript
 {
-  id: "megaevent-2026",
-  title: "REALXR ANNUAL EXPO 2026",
-  date: "OCTOBER 2026",
-  location: "IPS ACADEMY AUDITORIUM",
-  tagline: "Central India's largest student spatial computing exhibition showcasing 15+ interactive prototypes.",
-  photos: [Photo1, Photo2, Photo3], // Import from src/assets/images/events/
+  id: "vradical-mega-event-2026",
+  slug: "vradical-mega-event-2026",
+  title: "VRadical Mega Event 2026",
+  date: "October 2026",
+  location: "Auditorium, IES IPS Academy",
+  desc: "Central India's premier student spatial computing exhibition featuring live VR demos, spatial audio showcases, and interactive hardware rigs.",
+  description: "Central India's premier student spatial computing exhibition featuring live VR demos, spatial audio showcases, and interactive hardware rigs.",
+  tagline: "Central India's Premier Spatial Computing Exhibition",
+  tags: ["Spatial Computing", "Meta Quest", "WebGL", "Community"],
+  accent: "#00E5FF",
+  coverThumb: MegaEventPhoto1,
+  coverGradient: "linear-gradient(135deg, #0A192F 0%, #00E5FF 100%)",
+  featured: true, // true = appears on homepage timeline & moments photo rain; false = gallery only
+  images: [MegaEventPhoto1, MegaEventPhoto2, MegaEventPhoto3],
+  media: createEventMedia(
+    [MegaEventPhoto1, MegaEventPhoto2, MegaEventPhoto3],
+    "vradical-mega-event-2026"
+  ),
 }
 ```
 
-### 4.2 Full Gallery Albums & Lightbox (`/gallery`)
-Open [`src/data/galleryData.js`](file:///d:/CODING/Collage/RealXR-Portfolio/RealX-Website/src/data/galleryData.js).
-
-Add albums or media items to the masonry grid:
-```javascript
-{
-  id: "induction-2026",
-  title: "Lab Induction 2026",
-  subtitle: "Welcoming 50+ New Spatial Computing Innovators",
-  date: "September 2026",
-  items: [
-    {
-      id: "ind-01",
-      src: Induction01,
-      type: "image",
-      title: "Hands-on VR Rig Assembly",
-      aspectRatio: "3/2", // "3/2" | "2/3" | "1/1" | "16/9"
-      width: 1200,
-      height: 800,
-    },
-    {
-      id: "ind-02",
-      src: "/videos/induction-reel.mp4",
-      type: "video",
-      title: "Induction Aftermovie Clip",
-      aspectRatio: "16/9",
-      width: 1920,
-      height: 1080,
-    },
-  ],
-}
-```
+> **Home vs Gallery Filtering:**
+> - Set `featured: true` to include the event in the homepage `PastEvents` card stack and feed its first 3 images to the `Moments` 3D falling photo rain.
+> - Set `featured: false` if you want the event album to appear exclusively in the `/gallery` dashboard without cluttering the homepage.
+> - The helper `createEventMedia(images, slug)` automatically formats each photo with natural Pinterest aspect ratios (`1200x800`, `800x1100`, etc.), dynamic spans (`"2"`, `"tall"`, `"1"`), and sequential identifiers for the Lightbox modal.
 
 ---
 
@@ -249,3 +227,37 @@ Whenever content changes are made:
    git push origin main
    ```
    Hosting providers (Vercel, Cloudflare, Netlify) will automatically rebuild and deploy the static site in seconds.
+
+---
+
+## 8. Configuring EmailJS for Join Form Applications
+
+The **Join RealXR** application form on the homepage uses [EmailJS](https://www.emailjs.com/) to route student applications straight to your team inbox without requiring a backend server.
+
+### 8.1 Setup Instructions (Takes 3 Minutes):
+1. Sign up for a free account at [EmailJS](https://www.emailjs.com/) (200 free emails/month).
+2. Under **Email Services**, click **Add New Service** and connect your Gmail / Outlook / lab email (e.g. Service ID: `service_realxr`).
+3. Under **Email Templates**, click **Create New Template** and configure:
+   - **Subject:** `🚀 New RealXR Member Application: {{user_name}} ({{branch_year}})`
+   - **Content:**
+     ```text
+     Applicant Name: {{user_name}}
+     Branch & Year:  {{branch_year}}
+     Email:          {{user_email}}
+     Phone:          {{phone_number}}
+     Interests:      {{interests}}
+
+     Message / Notes:
+     {{message}}
+
+     Submitted at: {{submitted_at}}
+     ```
+   - **Settings:** Set **Reply-To** to `{{user_email}}` so clicking Reply in Gmail replies directly to the student!
+4. Copy your **Service ID**, **Template ID**, and **Public Key** (found in Account > API Keys).
+5. Add them to your `.env` (and Vercel environment variables):
+   ```env
+   VITE_EMAILJS_SERVICE_ID=your_service_id
+   VITE_EMAILJS_TEMPLATE_ID=your_template_id
+   VITE_EMAILJS_PUBLIC_KEY=your_public_key
+   ```
+> *Note: If keys are omitted in development mode, the form runs safely in simulated mode so you can test animations and UI states without error.*
