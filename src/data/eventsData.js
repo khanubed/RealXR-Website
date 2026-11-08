@@ -378,15 +378,15 @@ export const EVENTS = [
 ];
 
 // Unified home data contract:
-// `events` getter filters EVENTS by featured !== false,
-// ensuring the home screen Moments rain and PastEvents timeline dynamically reflect the flag.
+// Pre-filtered static array of featured events ensures stable reference
+// and prevents GSAP ScrollTrigger teardown loops on re-renders.
+const FEATURED_EVENTS = EVENTS.filter((e) => e.featured !== false);
+
 export const eventsData = {
   title: "MOMENTS THAT SHAPED US",
   subTitle:
     "Every event, every late night, every demo that actually worked — captured here.",
-  get events() {
-    return EVENTS.filter((e) => e.featured !== false);
-  },
+  events: FEATURED_EVENTS,
 };
 
 // Utility — flat lookup by event slug

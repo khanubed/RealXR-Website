@@ -24,7 +24,6 @@ import { useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { EVENTS } from "../../data/eventsData";
-import { getGalleryEvents } from "../../api/api";
 import MediaGrid from "./MediaGrid.jsx";
 import Lightbox from "./Lightbox";
 import usePageMeta from "../../hooks/usePageMeta";
@@ -51,19 +50,8 @@ function splitChars(str) {
 
 export default function GalleryDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [events, setEvents] = useState(EVENTS);
+  const events = EVENTS;
   const activeSlug = searchParams.get("event") || "all";
-
-  // Backend-first: refresh gallery content when available
-  useEffect(() => {
-    let cancelled = false;
-    getGalleryEvents().then((list) => {
-      if (!cancelled && list?.length) setEvents(list);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const headerRef = useRef(null);
   const gridWrapRef = useRef(null);

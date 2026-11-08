@@ -209,11 +209,11 @@ export const PROJECTS = [
 ];
 
 // Unified home data contract:
-// `projects` getter filters PROJECTS by featured === true,
-// ensuring the home screen showcase dynamically mirrors the featured flag.
+// Pre-filtered static array of featured projects ensures stable reference
+// and prevents GSAP ScrollTrigger teardown loops on re-renders.
+const FEATURED_PROJECTS = PROJECTS.filter((p) => p.featured !== false);
+
 export const projectsData = {
   marqueeText: "RECENT PROJECTS — ",
-  get projects() {
-    return PROJECTS.filter((p) => p.featured !== false);
-  },
+  projects: FEATURED_PROJECTS,
 };

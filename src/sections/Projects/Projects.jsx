@@ -74,6 +74,7 @@ const Projects = ({ content = defaultContent }) => {
           start: "top top",
           end: "+=1200",
           pin: true,
+          pinSpacing: true,
           scrub: 1,
           anticipatePin: 1,
         },
@@ -115,7 +116,7 @@ const Projects = ({ content = defaultContent }) => {
         gsap.ticker.remove(dynamicVelocityTracker);
       };
     },
-    { scope: componentRef, dependencies: [featuredProjects] },
+    { scope: componentRef, dependencies: [featuredProjects.length] },
   );
 
   // Event handler for passing mouse coordinate movements

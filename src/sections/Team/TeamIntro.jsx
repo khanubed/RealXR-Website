@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { teams } from "../../data/teamsData.js";
-import { getTeamsData } from "../../api/api";
 import DistortText from "../../components/three/DistortText.jsx";
 
 const TeamIntroData = {

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -11,9 +11,13 @@ gsap.registerPlugin(ScrollTrigger);
 const Moments = ({ images = [], title, subTitle }) => {
   const containerRef = useRef(null);
   const itemsRef = useRef([]);
-  const fallbackImages = (eventsData?.events || []).flatMap((event) =>
-    (event.images || []).slice(0, 3)
-  );
+
+  const fallbackImages = useMemo(() => {
+    return (eventsData?.events || []).flatMap((event) =>
+      (event.images || []).slice(0, 3)
+    );
+  }, []);
+
   const imageList = images?.length ? images : fallbackImages;
 
   // Consolidate everything inside the useGSAP hook
@@ -25,11 +29,9 @@ const Moments = ({ images = [], title, subTitle }) => {
       // Safety check: skip GSAP logic if there are no images to animate
       if (!imageList || imageList.length === 0) return;
 
-      let isRainActive = false;
-
       // Master function to manage a single image's lifecycle
       const startRainCycle = (el, isInitialSpawn = false) => {
-        if (!el || !containerRef.current || !isRainActive) return;
+        if (!el || !containerRef.current) return;
 
         // 1. Generate wide-variance properties for deep 3D-like layering
         const randomScale = gsap.utils.random(0.3, 1.0); // Extreme size differences
@@ -61,41 +63,16 @@ const Moments = ({ images = [], title, subTitle }) => {
           rotation: randomRotation + gsap.utils.random(-30, 30),
           duration: randomDuration,
           ease: "none",
-          onComplete: () => {
-            if (isRainActive) {
-              startRainCycle(el, false);
-            }
-          },
+          onComplete: () => startRainCycle(el, false),
         });
       };
 
-      const stopRain = () => {
-        isRainActive = false;
-        itemsRef.current.forEach((el) => {
-          if (el) gsap.killTweensOf(el);
-        });
-      };
-
-      const resumeRain = () => {
-        if (isRainActive) return;
-        isRainActive = true;
-        itemsRef.current.forEach((el) => {
-          if (el) startRainCycle(el, true);
-        });
-      };
-
-      // 5. Viewport Gating ScrollTrigger: Only animate falling cards when section is approaching or in viewport
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: "top bottom",
-        end: "+=1800",
-        onEnter: resumeRain,
-        onEnterBack: resumeRain,
-        onLeave: stopRain,
-        onLeaveBack: stopRain,
+      // Kick off the rain for all elements simultaneously
+      itemsRef.current.forEach((el) => {
+        startRainCycle(el, true);
       });
 
-      // 6. Create Pinning ScrollTrigger to hold the section on screen
+      // 5. Create Pinning ScrollTrigger to hold the section on screen
       ScrollTrigger.create({
         trigger: containerRef.current,
         start: "top top", // Locks section to viewport frame when top reaches top
@@ -104,16 +81,14 @@ const Moments = ({ images = [], title, subTitle }) => {
         pinSpacing: true, // Pushes lower components down cleanly
         anticipatePin: 1, // Eliminates visual snapping during fast scrolls
       });
-
-      return () => stopRain();
     },
-    { scope: containerRef, dependencies: [imageList] },
+    { scope: containerRef, dependencies: [imageList.length] },
   );
 
   return (
     <section
       ref={containerRef}
-      className="relative w-full h-screen min-h-[650px] b flex flex-col justify-center items-center overflow-hidden select-none"
+      className="relative w-full h-screen min-h-[650px] flex flex-col justify-center items-center overflow-hidden select-none"
     >
       {/* BACKGROUND: Truly Random Infinite Falling Images */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -136,7 +111,7 @@ const Moments = ({ images = [], title, subTitle }) => {
 
       {/* FOREGROUND: Typography Section Layer */}
       <div className="relative z-20 text-center max-w-5xl px-6 pointer-events-none mix-blend-difference md:mix-blend-normal">
-        <DistortText className = {"text-black syne-800 font-black tracking-tighter max uppercase text-4xl sm:text-7xl md:text-[5vw] leading-[0.88] mb-6 "} text={title} />
+        <DistortText className={"text-black syne-800 font-black tracking-tighter max uppercase text-4xl sm:text-7xl md:text-[5vw] leading-[0.88] mb-6 "} text={title} />
         <p className="text-black font-medium tracking-tight syne-600 text-sm sm:text-base md:text-lg max-w-4xl mx-auto opacity-90">
           {subTitle}
         </p>

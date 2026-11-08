@@ -1,9 +1,8 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Aperture, ArrowUpRight } from "lucide-react";
 import { PROJECTS, CATEGORIES } from "../../data/projectData";
-import { getProjectsPageData } from "../../api/api";
 import { SearchBar } from "../../components/ui/SearchBar";
 import { FilterTabs } from "../../components/ui/FilterTabs";
 import { FeaturedSpotlight } from "./components/FeaturedSpotlight";
@@ -18,16 +17,8 @@ export default function Projects() {
   });
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
-  const [projects, setProjects] = useState(PROJECTS);
+  const projects = PROJECTS;
   const headerRef = useRef(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    getProjectsPageData().then((list) => {
-      if (!cancelled && list?.length) setProjects(list);
-    });
-    return () => { cancelled = true; };
-  }, []);
 
   const featured = useMemo(() => projects.find((project) => project.featured), [projects]);
   const filtered = useMemo(() => {
