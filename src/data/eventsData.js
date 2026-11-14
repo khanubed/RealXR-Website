@@ -41,6 +41,27 @@ import {
   MegaEvent2024_10,
 } from "../assets/images/events/MegaEvent";
 
+import {
+  LLC25_1,
+  LLC25_IMAGES,
+  LLC25_VIDEOS,
+} from "../assets/images/events/LLC25";
+
+import {
+  EdFair2025_1,
+  EDFAIR_2025_IMAGES,
+} from "../assets/images/events/Edfair25";
+
+import {
+  YouthBootcamp2_1,
+  YOUTH_BOOTCAMP_2_IMAGES,
+} from "../assets/images/events/YouthBootCamp2";
+
+import {
+  LLC26_1,
+  LLC26_IMAGES,
+} from "../assets/images/events/LLC26";
+
 /**
  * Generates structured media items with natural Pinterest-style
  * masonry aspect ratios and thumbnails for the gallery.
@@ -118,6 +139,24 @@ const INDUCTION_2026_ALL_MEDIA = (() => {
   return result;
 })();
 
+// Combine LLC 2025 captures with video highlights
+const LLC_2025_ALL_MEDIA = (() => {
+  const photoMedia = createEventMedia(LLC25_IMAGES, "llc-classes-2025");
+  const result = [];
+  let videoIdx = 0;
+  for (let i = 0; i < photoMedia.length; i++) {
+    result.push(photoMedia[i]);
+    // Every 2 photos, insert a video highlight if available
+    if ((i + 1) % 2 === 0 && videoIdx < (LLC25_VIDEOS || []).length) {
+      result.push(LLC25_VIDEOS[videoIdx++]);
+    }
+  }
+  while (videoIdx < (LLC25_VIDEOS || []).length) {
+    result.push(LLC25_VIDEOS[videoIdx++]);
+  }
+  return result;
+})();
+
 // Master events catalog powering both the Homescreen and the Gallery Dashboard
 export const EVENTS = [
   {
@@ -189,26 +228,12 @@ export const EVENTS = [
     tagline: "External Expo · 100+ Visitors · Live Hardware Demos",
     tags: ["Hardware Expo", "Live Demos", "Public Showcase"],
     accent: "#38bdf8",
-    coverThumb:
-      "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=800&q=80",
+    coverThumb: EdFair2025_1,
     coverGradient:
       "linear-gradient(135deg, #072a40 0%, #041a28 50%, #020d14 100%)",
     featured: true,
-    images: [
-      "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=800&q=80",
-      "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=800&q=80",
-      "https://images.unsplash.com/photo-1535223289827-a2f56b375b43?w=800&q=80",
-      "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80",
-      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80",
-      "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80",
-      "https://images.unsplash.com/photo-1556761175-5973dc0f32d7?w=800&q=80",
-      "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80",
-      "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&q=80",
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80",
-    ],
-    get media() {
-      return createEventMedia(this.images, "education-fair-2025");
-    },
+    images: EDFAIR_2025_IMAGES,
+    media: createEventMedia(EDFAIR_2025_IMAGES, "education-fair-2025"),
   },
   {
     id: "education-fair-2024",
@@ -255,26 +280,12 @@ export const EVENTS = [
     tagline: "STEM Outreach · Hands-on Workshop · 3D Engines",
     tags: ["School Outreach", "Hands-on Workshop", "Next-Gen Tech"],
     accent: "#f472b6",
-    coverThumb:
-      "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80",
+    coverThumb: YouthBootcamp2_1,
     coverGradient:
       "linear-gradient(135deg, #2b0a1a 0%, #1a0510 50%, #0f0208 100%)",
     featured: true,
-    images: [
-      "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80",
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80",
-      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80",
-      "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=800&q=80",
-      "https://images.unsplash.com/photo-1542751110-97427bbecf20?w=800&q=80",
-      "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&q=80",
-      "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&q=80",
-      "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=800&q=80",
-      "https://images.unsplash.com/photo-1562813733-b31f71025d54?w=800&q=80",
-      "https://images.unsplash.com/photo-1580234797602-22c37b4a6217?w=800&q=80",
-    ],
-    get media() {
-      return createEventMedia(this.images, "youth-bootcamp-2");
-    },
+    images: YOUTH_BOOTCAMP_2_IMAGES,
+    media: createEventMedia(YOUTH_BOOTCAMP_2_IMAGES, "youth-bootcamp-2"),
   },
   {
     id: "youth-bootcamp-1",
@@ -321,59 +332,31 @@ export const EVENTS = [
     tagline: "Core Curriculum · Shaders & R3F · Spatial UI",
     tags: ["Regular Track", "Advanced XR", "Peer Learning"],
     accent: "#a3e635",
-    coverThumb:
-      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
+    coverThumb: LLC25_1,
     coverGradient:
       "linear-gradient(135deg, #1f330a 0%, #131f06 50%, #091003 100%)",
     featured: true,
-    images: [
-      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
-      "https://images.unsplash.com/photo-1550439062-609e1531270e?w=800&q=80",
-      "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80",
-      "https://images.unsplash.com/photo-1627398240411-8cbc07d0ba6e?w=800&q=80",
-      "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=800&q=80",
-      "https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=800&q=80",
-      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80",
-      "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&q=80",
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80",
-      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
-    ],
-    get media() {
-      return createEventMedia(this.images, "llc-classes-2025");
-    },
+    images: LLC25_IMAGES,
+    media: LLC_2025_ALL_MEDIA,
   },
   {
-    id: "llc-classes-2024",
-    slug: "llc-classes-2024",
-    title: "LLC Classes 2024",
-    date: "2024 · College Computer Lab",
-    location: "College Computer Lab",
-    desc: "Our foundational hands-on training series teaching college students the basics of augmented and virtual reality development from the ground up.",
+    id: "llc-classes-2026",
+    slug: "llc-classes-2026",
+    title: "LLC Classes 2026",
+    date: "2026 · College AR/VR Studio",
+    location: "College AR/VR Studio",
+    desc: "Latest hands-on cohorts diving into next-generation spatial computing, interactive 3D mechanics, and real-time engine pipelines.",
     description:
-      "Our foundational hands-on training series teaching college students the basics of augmented and virtual reality development from the ground up.",
-    tagline: "Foundational Track · Blender to Unity · 0 to 1",
-    tags: ["Core Curriculum", "3D Foundations", "Hands-on"],
-    accent: "#ec4899",
-    coverThumb:
-      "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800&q=80",
+      "Latest hands-on cohorts diving into next-generation spatial computing, interactive 3D mechanics, and real-time engine pipelines.",
+    tagline: "Core Curriculum · Spatial Computing · Hands-on Labs",
+    tags: ["Core Curriculum", "Spatial Computing", "Hands-on"],
+    accent: "#06b6d4",
+    coverThumb: LLC26_1,
     coverGradient:
-      "linear-gradient(135deg, #330a21 0%, #1f0614 50%, #10030a 100%)",
+      "linear-gradient(135deg, #083344 0%, #04202c 50%, #021118 100%)",
     featured: true,
-    images: [
-      "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800&q=80",
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80",
-      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80",
-      "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80",
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80",
-      "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80",
-      "https://images.unsplash.com/photo-1617791160536-598cf32026fb?w=800&q=80",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-      "https://images.unsplash.com/photo-1616509091215-57b834e55a56?w=800&q=80",
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80",
-    ],
-    get media() {
-      return createEventMedia(this.images, "llc-classes-2024");
-    },
+    images: LLC26_IMAGES,
+    media: createEventMedia(LLC26_IMAGES, "llc-classes-2026"),
   },
 ];
 
