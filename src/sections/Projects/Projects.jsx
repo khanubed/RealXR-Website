@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -7,7 +7,7 @@ import { projectsData } from "../../data/projectData";
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
-// Fallback content to keep the UI intact if CMS data is missing
+// Fallback content to keep the UI intact if external data is missing
 const defaultContent = projectsData;
 
 const Projects = ({ content = defaultContent }) => {
@@ -15,17 +15,22 @@ const Projects = ({ content = defaultContent }) => {
   const revealBoxRef = useRef(null);
   const marqueeRef = useRef(null);
 
+  // Filter projects by featured flag for homescreen presentation
+  const featuredProjects = useMemo(() => {
+    return (content.projects || []).filter((p) => p.featured !== false);
+  }, [content.projects]);
+
   // Safely initialize the active image
   const [activeImage, setActiveImage] = useState(
-    content.projects?.[0]?.img || "",
+    featuredProjects[0]?.img || "",
   );
 
-  // Update active image if the CMS injects new data
+  // Update active image if data changes
   useEffect(() => {
-    if (content.projects && content.projects.length > 0) {
-      setActiveImage(content.projects[0].img);
+    if (featuredProjects.length > 0) {
+      setActiveImage(featuredProjects[0].img);
     }
-  }, [content.projects]);
+  }, [featuredProjects]);
 
   // GSAP quickTo refs for responsive mouse positioning tracking
   const xTo = useRef(null);
@@ -35,7 +40,7 @@ const Projects = ({ content = defaultContent }) => {
   useGSAP(
     () => {
       // Safety check: skip GSAP if there are no projects to render
-      if (!content.projects || content.projects.length === 0) return;
+      if (!featuredProjects || featuredProjects.length === 0) return;
 
       // 1. Setup high-speed cursor target tracking
       xTo.current = gsap.quickTo(revealBoxRef.current, "x", {
@@ -69,6 +74,7 @@ const Projects = ({ content = defaultContent }) => {
           start: "top top",
           end: "+=1200",
           pin: true,
+          pinSpacing: true,
           scrub: 1,
           anticipatePin: 1,
         },
@@ -99,53 +105,53 @@ const Projects = ({ content = defaultContent }) => {
           : 0;
         const targetScale = 1 + scrollVelocity * 0.002;
 
-        currentScale += (targetScale - currentScale) * 0.08;
+        currentScale = gsap.utils.interpolate(currentScale, targetScale, 0.05);
         marqueeTween.timeScale(currentScale);
       };
 
       gsap.ticker.add(dynamicVelocityTracker);
 
-      // useGSAP handles killing components automatically,
-      // but the custom ticker loop needs manual removal on unmount
+      // Clean up dynamic velocity tick tracker
       return () => {
         gsap.ticker.remove(dynamicVelocityTracker);
       };
     },
-    { scope: componentRef, dependencies: [content.projects] },
+    { scope: componentRef, dependencies: [featuredProjects.length] },
   );
 
+  // Event handler for passing mouse coordinate movements
   const handleMouseMove = (e) => {
-    if (!componentRef.current || !revealBoxRef.current) return;
-
+    if (!componentRef.current || !xTo.current || !yTo.current) return;
     const bounds = componentRef.current.getBoundingClientRect();
     const mouseX = e.clientX - bounds.left;
     const mouseY = e.clientY - bounds.top;
 
-    if (xTo.current && yTo.current) {
-      xTo.current(mouseX);
-      yTo.current(mouseY);
-    }
+    xTo.current(mouseX);
+    yTo.current(mouseY);
   };
 
-  const handleMouseEnterRow = (imgUrl) => {
-    setActiveImage(imgUrl);
-
+  // Trigger floating thumbnail reveal
+  const handleMouseEnterRow = (img) => {
+    if (img) {
+      setActiveImage(img);
+    }
     gsap.to(revealBoxRef.current, {
       scale: 1,
-      rotation: 2,
       opacity: 1,
-      duration: 0.35,
-      ease: "back.out(1.4)",
+      duration: 0.4,
+      ease: "power2.out",
+      overwrite: "auto",
     });
   };
 
+  // Hide floating thumbnail on cursor exit
   const handleMouseLeaveRow = () => {
     gsap.to(revealBoxRef.current, {
       scale: 0,
-      rotation: -2,
       opacity: 0,
-      duration: 0.25,
+      duration: 0.3,
       ease: "power2.in",
+      overwrite: "auto",
     });
   };
 
@@ -174,7 +180,7 @@ const Projects = ({ content = defaultContent }) => {
 
       {/* Main Project Stack Table Structure */}
       <div className="w-full max-w-6xl mx-auto mt-6 border-t border-black">
-        {content.projects?.map((project) => (
+        {featuredProjects.map((project) => (
           <div
             key={project.id}
             onMouseEnter={() => handleMouseEnterRow(project.img)}

@@ -1,75 +1,103 @@
 /**
  * MediaGrid.jsx
  * ─────────────────────────────────────────────────────────────────
- * Hardware-accelerated asymmetric bento grid — RealXR gallery.
- *  • CSS Grid with variable col/row spans from item.span
- *  • GSAP staggered 3D entry animation on mount / event switch
- *  • ScrollTrigger batch reveal for cards scrolled into view
- *  • Memoized to prevent re-render when lightbox opens/closes
+ * High-performance Pinterest-style Masonry Waterfall Grid — RealXR.
+ *  • Dynamic column calculation (2 cols mobile, 3 tablet, 4 desktop)
+ *  • Greedy waterfall distribution: balances column heights evenly
+ *  • GSAP staggered reveal on filter change or event switch
+ *  • Zero awkward gaps, zero artificial cropping
  * ─────────────────────────────────────────────────────────────────
  */
 
-import React, { useRef, useCallback, memo } from "react";
+import React, { useRef, useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import MediaCard from "./MediaCard";
 
-gsap.registerPlugin(ScrollTrigger);
+function getColumnCount(width) {
+  if (width < 640) return 2;       // Mobile: 2 columns
+  if (width < 1024) return 3;      // Tablet: 3 columns
+  return 4;                        // Desktop & Ultrawide: 4 columns
+}
 
-const MediaGrid = memo(function MediaGrid({ items, accent, eventId }) {
-  const gridRef = useRef(null);
+const MediaGrid = memo(function MediaGrid({ items = [], accent, eventTitle, eventId }) {
+  const containerRef = useRef(null);
   const [search, setSearch] = useSearchParams();
+  const [columnsCount, setColumnsCount] = useState(() =>
+    typeof window !== "undefined" ? getColumnCount(window.innerWidth) : 3
+  );
 
-  // ── Stagger entry on mount or when event switches ─────────────
+  // ── Track responsive window width ────────────────────────────
+  useEffect(() => {
+    const handleResize = () => {
+      setColumnsCount(getColumnCount(window.innerWidth));
+    };
+
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // ── Greedy Waterfall Masonry Distribution ─────────────────────
+  // Distributes each item into the column with minimum cumulative height
+  const columns = useMemo(() => {
+    if (!items || items.length === 0) return [];
+
+    const cols = Array.from({ length: columnsCount }, () => ({
+      height: 0,
+      items: [],
+    }));
+
+    items.forEach((item) => {
+      // Find the currently shortest column
+      let shortest = cols[0];
+      for (let i = 1; i < cols.length; i++) {
+        if (cols[i].height < shortest.height) {
+          shortest = cols[i];
+        }
+      }
+
+      // Calculate aspect height factor (height / width)
+      const ratio =
+        item.width && item.height ? item.height / item.width : 1;
+
+      shortest.items.push(item);
+      shortest.height += ratio;
+    });
+
+    return cols.map((col) => col.items);
+  }, [items, columnsCount]);
+
+  // ── GSAP Staggered Entrance Animation ─────────────────────────
   useGSAP(
     () => {
-      const cards = gridRef.current?.querySelectorAll(".media-card-wrap");
-      if (!cards?.length) return;
+      const cards = containerRef.current?.querySelectorAll(".pinterest-item");
+      if (!cards || cards.length === 0) return;
 
       gsap.killTweensOf(cards);
 
       gsap.fromTo(
         cards,
-        // Change rotateX to rotationX
         {
           opacity: 0,
-          y: 46,
-          scale: 0.94,
-          rotationX: -6,
-          transformPerspective: 800,
+          y: 35,
+          scale: 0.96,
         },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          rotationX: 0, // Change rotateX to rotationX
-          duration: 0.75,
-          ease: "expo.out",
-          stagger: { each: 0.055, from: "start" },
-          clearProps: "transform", // This is fine now that properties are consistent
-        },
+          duration: 0.6,
+          ease: "power3.out",
+          stagger: {
+            each: 0.04,
+            from: "start",
+          },
+          clearProps: "transform",
+        }
       );
-
-      // Cards below the fold get a lighter scroll-triggered reveal too,
-      // so long galleries don't dump everything in on page load.
-      const st = ScrollTrigger.batch(cards, {
-        start: "top 88%",
-        onEnter: (batch) =>
-          gsap.to(batch, {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            ease: "power3.out",
-            stagger: 0.06,
-            overwrite: true,
-          }),
-      });
-
-      return () => st.forEach((t) => t.kill());
     },
-    { dependencies: [eventId], scope: gridRef },
+    { dependencies: [eventId, items.length, columnsCount], scope: containerRef }
   );
 
   const openLightbox = useCallback(
@@ -78,40 +106,39 @@ const MediaGrid = memo(function MediaGrid({ items, accent, eventId }) {
       next.set("media", item.id);
       setSearch(next);
     },
-    [search, setSearch],
+    [search, setSearch]
   );
 
-  const onCursorEnter = useCallback(() => {}, []);
-  const onCursorLeave = useCallback(() => {}, []);
+  if (!items || items.length === 0) {
+    return (
+      <div className="py-20 text-center">
+        <p className="font-mono text-sm tracking-widest text-[#12131A]/55 uppercase font-medium">
+          No moments found in this collection.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
-      ref={gridRef}
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))",
-        gridAutoRows: "clamp(180px, 23vw, 280px)",
-        gap: "clamp(10px, 1.5vw, 14px)",
-        width: "100%",
-      }}
+      ref={containerRef}
+      className="flex gap-3 sm:gap-4 lg:gap-5 w-full items-start"
     >
-      {items.map((item) => (
+      {columns.map((colItems, colIdx) => (
         <div
-          key={item.id}
-          className="media-card-wrap"
-          data-cursor="view"
-          style={{
-            gridColumn: item.span === "2" ? "span 2" : "span 1",
-            gridRow: item.span === "tall" ? "span 2" : "span 1",
-          }}
+          key={colIdx}
+          className="flex-1 flex flex-col gap-3 sm:gap-4 lg:gap-5 min-w-0"
         >
-          <MediaCard
-            item={item}
-            accent={accent}
-            onClick={openLightbox}
-            onCursorEnter={onCursorEnter}
-            onCursorLeave={onCursorLeave}
-          />
+          {colItems.map((item) => (
+            <div key={item.id} className="pinterest-item w-full">
+              <MediaCard
+                item={item}
+                accent={accent}
+                eventTitle={eventTitle}
+                onClick={openLightbox}
+              />
+            </div>
+          ))}
         </div>
       ))}
     </div>

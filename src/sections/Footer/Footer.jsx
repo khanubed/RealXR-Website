@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import collegeLogo from "../../assets/images/ies-ips-logo.webp";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -91,10 +92,22 @@ export default function Footer() {
         className="w-full rounded-t-[2.5rem] md:rounded-t-[4rem] overflow-hidden shadow-[0_-60px_100px_-20px_rgba(0,0,0,0.65)] bg-black"
       >
         <div className="w-full bg-black px-6 pt-16 pb-8 md:px-16 md:pt-24 grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-          {/* Logo & Info Column */}
+          {/* Logo & Info Column with Paired RealXR Club & College Logos */}
           <div className="reveal-item md:col-span-4 lg:col-span-4 flex flex-col space-y-6">
-            <div className="relative w-44 h-auto opacity-90 hover:opacity-100 transition-opacity">
-              <img src="/realXr.PNG" alt="RealXR logo" loading="lazy" decoding="async" />
+            <div className="flex items-center gap-4 sm:gap-6">
+              <div className="relative w-36 sm:w-44 h-auto opacity-90 hover:opacity-100 transition-opacity">
+                <img src="/realXr.webp" alt="RealXR logo" loading="lazy" decoding="async" />
+              </div>
+              <div className="h-12 sm:h-16 w-px bg-white/20 shrink-0" />
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 opacity-90 hover:opacity-100 transition-opacity">
+                <img
+                  src={collegeLogo}
+                  alt="IES IPS Academy logo"
+                  className="w-full h-full object-contain rounded-full drop-shadow-md"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
             </div>
 
             <div className="space-y-1">

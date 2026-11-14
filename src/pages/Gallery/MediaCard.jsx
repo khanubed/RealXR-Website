@@ -1,45 +1,30 @@
 /**
  * MediaCard.jsx
  * ─────────────────────────────────────────────────────────────────
- * Individual media tile — RealXR gallery. Handles:
- *  • Aspect-ratio containment before load (zero CLS)
- *  • Intersection Observer lazy loading
- *  • Video: buffers only when visible, auto-pauses when hidden
- *  • Hover micro-interactions: scale, tilt, overlay fade, video preview
- *  • Light-glass skeleton + frame so cards read correctly against
- *    the soft white/pink liquid background behind the page
+ * Lightweight Pinterest-style media card for RealXR Gallery.
+ *  • Natural intrinsic aspect ratio (no awkward cropping or heavy padding)
+ *  • Progressive lazy-load image with smooth fade-in
+ *  • Muted inline video preview on hover
+ *  • Uncluttered hover overlay with clean badges and micro-elevation
  * ─────────────────────────────────────────────────────────────────
  */
 
-import React, { useRef, useEffect, useState, useCallback, memo } from "react";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
-
-const SPAN_CLASS = {
-  2: "col-span-2",
-  tall: "row-span-2",
-  1: "col-span-1",
-};
-
-const aspectPadding = (w, h) => `${((h / w) * 100).toFixed(4)}%`;
+import React, { useRef, useState, useEffect, useCallback, memo } from "react";
 
 const MediaCard = memo(function MediaCard({
   item,
-  accent = "#00BFAE",
+  accent = "#00F5D4",
+  eventTitle,
   onClick,
-  onCursorEnter,
-  onCursorLeave,
 }) {
   const cardRef = useRef(null);
-  const tiltRef = useRef(null);
   const videoRef = useRef(null);
-  const imgRef = useRef(null);
 
   const [loaded, setLoaded] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [inView, setInView] = useState(false);
 
-  // ── Intersection Observer ─────────────────────────────────────
+  // ── Intersection Observer for lazy loading ───────────────────
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
@@ -48,22 +33,22 @@ const MediaCard = memo(function MediaCard({
       ([entry]) => {
         if (entry.isIntersecting) {
           setInView(true);
-          if (videoRef.current) videoRef.current.load();
         } else if (videoRef.current) {
           videoRef.current.pause();
         }
       },
-      { rootMargin: "200px 0px" },
+      { rootMargin: "250px 0px" }
     );
 
     io.observe(el);
     return () => io.disconnect();
   }, []);
 
-  // ── Video hover preview ───────────────────────────────────────
+  // ── Video preview on hover ───────────────────────────────────
   useEffect(() => {
     const v = videoRef.current;
     if (!v || !inView) return;
+
     if (hovered) {
       v.play().catch(() => {});
     } else {
@@ -72,274 +57,168 @@ const MediaCard = memo(function MediaCard({
     }
   }, [hovered, inView]);
 
-  // ── Subtle 3D tilt toward the cursor — a quiet, premium touch ──
-  // ── Subtle 3D tilt toward the cursor — a quiet, premium touch ──
-  useGSAP(
-    () => {
-      if (!hovered || !tiltRef.current) return;
-      const el = tiltRef.current;
+  const handleClick = useCallback(() => {
+    onClick?.(item);
+  }, [onClick, item]);
 
-      const quickRX = gsap.quickTo(el, "rotationX", {
-        duration: 0.4,
-        ease: "power3.out",
-      });
-      const quickRY = gsap.quickTo(el, "rotationY", {
-        duration: 0.4,
-        ease: "power3.out",
-      });
-
-      const handle = (e) => {
-        const r = el.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5;
-        const py = (e.clientY - r.top) / r.height - 0.5;
-        quickRY(px * 6);
-        quickRX(-py * 6);
-      };
-
-      cardRef.current.addEventListener("mousemove", handle);
-
-      return () => {
-        cardRef.current?.removeEventListener("mousemove", handle);
-
-        // FIX: Use explicit GSAP animation for rotation reset
-        gsap.to(el, {
-          rotationX: 0,
-          rotationY: 0,
-          duration: 0.5,
-          ease: "power3.out",
-          overwrite: true, // Ensures no conflicting animations
-        });
-      };
-    },
-    { dependencies: [hovered], scope: cardRef },
-  );
-
-  const handleClick = useCallback(() => onClick(item), [onClick, item]);
-  const handleEnter = useCallback(() => {
-    setHovered(true);
-    onCursorEnter?.();
-  }, [onCursorEnter]);
-  const handleLeave = useCallback(() => {
-    setHovered(false);
-    onCursorLeave?.();
-  }, [onCursorLeave]);
-
-  const spanClass = SPAN_CLASS[item.span] ?? "col-span-1";
-  const padBottom = aspectPadding(item.width, item.height);
+  // Compute aspect ratio string (e.g., "1200 / 800")
+  const aspectRatio =
+    item.width && item.height ? `${item.width} / ${item.height}` : "4 / 3";
 
   return (
     <div
       ref={cardRef}
-      className={`${spanClass} relative overflow-hidden rounded-2xl group`}
-      style={{
-        willChange: "transform",
-        background: "rgba(255,255,255,0.45)",
-        backdropFilter: "blur(6px)",
-        border: "1px solid rgba(255,255,255,0.6)",
-        boxShadow: hovered
-          ? `0 24px 60px -24px rgba(21,20,26,0.28), 0 0 0 1px ${accent}33`
-          : "0 10px 32px -18px rgba(21,20,26,0.16)",
-        transition: "box-shadow 0.35s ease, border-color 0.35s ease",
-      }}
       onClick={handleClick}
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      data-cursor="view"
+      className="group relative w-full overflow-hidden rounded-2xl cursor-pointer transition-all duration-400 ease-out"
+      style={{
+        background: "rgba(255, 255, 255, 0.85)",
+        backdropFilter: "blur(10px)",
+        border: hovered
+          ? `1px solid ${accent}`
+          : "1px solid rgba(18, 19, 26, 0.09)",
+        transform: hovered ? "translateY(-5px)" : "translateY(0)",
+        boxShadow: hovered
+          ? `0 20px 40px -15px rgba(18, 19, 26, 0.18), 0 0 20px -5px ${accent}25`
+          : "0 4px 18px -4px rgba(18, 19, 26, 0.06)",
+      }}
     >
+      {/* ── Media Container with natural aspect ratio ─────────── */}
       <div
-        ref={tiltRef}
-        className="relative w-full"
-        style={{ paddingBottom: padBottom, transformStyle: "preserve-3d" }}
+        className="relative w-full overflow-hidden"
+        style={{ aspectRatio }}
       >
-        {/* ── Skeleton shimmer — light glass tone, not dark ── */}
+        {/* Shimmer placeholder before image loads */}
         {!loaded && (
           <div
             className="absolute inset-0 animate-pulse"
             style={{
               background:
-                "linear-gradient(90deg, rgba(255,255,255,0.35) 25%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.35) 75%)",
+                "linear-gradient(90deg, rgba(18,19,26,0.03) 25%, rgba(18,19,26,0.07) 50%, rgba(18,19,26,0.03) 75%)",
               backgroundSize: "200% 100%",
-              animation: "shimmer 1.5s infinite",
             }}
           />
         )}
 
-        {/* ── IMAGE ─────────────────────────────────────────────── */}
+        {/* ── IMAGE ───────────────────────────────────────────── */}
         {item.type === "image" && (
           <img
-            ref={imgRef}
-            src={inView ? item.src : undefined}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              opacity: loaded ? 1 : 0,
-              transition:
-                "opacity 0.5s ease, transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)",
-              transform: hovered ? "scale(1.05)" : "scale(1)",
-            }}
-            alt={item.caption}
+            src={inView ? item.src : item.thumb}
+            alt={eventTitle || "RealXR gallery moment"}
             loading="lazy"
             decoding="async"
             onLoad={() => setLoaded(true)}
+            className="w-full h-full object-cover block transition-transform duration-700 ease-out group-hover:scale-105"
+            style={{
+              opacity: loaded ? 1 : 0.4,
+              transition: "opacity 0.4s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)",
+            }}
           />
         )}
 
-        {/* ── VIDEO ─────────────────────────────────────────────── */}
+        {/* ── VIDEO ───────────────────────────────────────────── */}
         {item.type === "video" && (
           <>
-            {!hovered && (
-              <img
-                src={item.thumb}
-                alt={item.caption}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  transition: "opacity 0.3s ease",
-                  opacity: loaded ? 1 : 0,
-                }}
-                loading="lazy"
-                decoding="async"
-                onLoad={() => setLoaded(true)}
-              />
-            )}
+            <img
+              src={item.thumb}
+              alt={eventTitle || "Video poster"}
+              loading="lazy"
+              decoding="async"
+              onLoad={() => setLoaded(true)}
+              className="w-full h-full object-cover block transition-transform duration-700 ease-out group-hover:scale-105"
+              style={{
+                opacity: hovered ? 0 : 1,
+                transition: "opacity 0.3s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)",
+              }}
+            />
             <video
               ref={videoRef}
-              src={inView ? item.videoMp4 : undefined}
-              poster={item.thumb}
+              src={
+                inView
+                  ? item.videoWebm || item.videoMp4 || item.videoSrc
+                  : undefined
+              }
               muted
               loop
               playsInline
               preload="none"
+              className="absolute inset-0 w-full h-full object-cover"
               style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
                 opacity: hovered ? 1 : 0,
-                transition:
-                  "opacity 0.4s ease, transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)",
-                transform: hovered ? "scale(1.04)" : "scale(1)",
+                transition: "opacity 0.35s ease",
               }}
             />
           </>
         )}
 
-        {/* ── Hover overlay — dark scrim on the media itself only,
-             for caption legibility; unrelated to the page's light theme ── */}
+        {/* ── Pinterest Hover Overlay (Gradient Scrim) ─────────── */}
         <div
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300"
           style={{
-            position: "absolute",
-            inset: 0,
-            background: `linear-gradient(to top, rgba(10,10,12,0.78) 0%, rgba(10,10,12,0.12) 55%, transparent 100%)`,
+            background:
+              "linear-gradient(to top, rgba(6, 7, 10, 0.75) 0%, rgba(6, 7, 10, 0.25) 45%, transparent 100%)",
             opacity: hovered ? 1 : 0,
-            transition: "opacity 0.35s ease",
           }}
         />
 
-        {/* ── Type badge ── */}
-        {item.type === "video" && (
+        {/* ── Top Badges ──────────────────────────────────────── */}
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+          {/* Media Type / Event Chip */}
           <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wider uppercase transition-all duration-300"
             style={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "4px 10px",
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.75)",
-              backdropFilter: "blur(6px)",
+              background: "rgba(10, 12, 18, 0.7)",
+              backdropFilter: "blur(8px)",
               border: `1px solid ${accent}44`,
+              color: "#fff",
+              opacity: item.type === "video" ? 1 : hovered ? 1 : 0,
+              transform: item.type === "video" || hovered ? "translateY(0)" : "translateY(-4px)",
             }}
           >
-            <svg width="10" height="10" viewBox="0 0 10 10" fill={accent}>
-              <polygon points="2,1 9,5 2,9" />
-            </svg>
-            <span
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: "0.6rem",
-                letterSpacing: "0.08em",
-                color: "#15141A",
-              }}
-            >
-              VIDEO
-            </span>
+            {item.type === "video" ? (
+              <>
+                <svg width="8" height="8" viewBox="0 0 10 10" fill={accent}>
+                  <polygon points="2,1 9,5 2,9" />
+                </svg>
+                <span style={{ color: accent }}>VIDEO</span>
+              </>
+            ) : (
+              <span>{eventTitle || "MOMENT"}</span>
+            )}
           </div>
-        )}
 
-        {/* ── Caption on hover ─────────────────────────────────── */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: "1rem 1rem 0.9rem",
-            transform: hovered ? "translateY(0)" : "translateY(8px)",
-            opacity: hovered ? 1 : 0,
-            transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
-          }}
-        >
-          <p
+          {/* Quick Zoom / Expand Icon Button */}
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
             style={{
-              fontFamily: "Space Grotesk, sans-serif",
-              fontSize: "0.78rem",
-              color: "rgba(255,255,255,0.92)",
-              lineHeight: 1.5,
+              background: "rgba(10, 12, 18, 0.75)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              color: "#fff",
+              opacity: hovered ? 1 : 0,
+              transform: hovered ? "scale(1)" : "scale(0.8)",
             }}
           >
-            {item.caption}
-          </p>
-        </div>
-
-        {/* ── Expand icon ── */}
-        <div
-          style={{
-            position: "absolute",
-            top: 12,
-            right: 12,
-            width: 32,
-            height: 32,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(8px)",
-            border: `1px solid ${accent}44`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: hovered ? 1 : 0,
-            transform: hovered ? "scale(1)" : "scale(0.7)",
-            transition: "all 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-          }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={accent}
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-          </svg>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="15 3 21 3 21 9" />
+              <polyline points="9 21 3 21 3 15" />
+              <line x1="21" y1="3" x2="14" y2="10" />
+              <line x1="3" y1="21" x2="10" y2="14" />
+            </svg>
+          </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes shimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
     </div>
   );
 });

@@ -8,10 +8,16 @@ import { FilterTabs } from "../../components/ui/FilterTabs";
 import { Pagination } from "../../components/ui/Pagination";
 import { ResourceCard } from "./components/ResourceCard";
 import { SkeletonCard } from "../../components/ui/SkeletonCard";
+import usePageMeta from "../../hooks/usePageMeta";
 
 const PER_PAGE = 10;
 
 export default function Resources() {
+  usePageMeta({
+    title: "Learning Resources & Toolkits",
+    description: "Curated WebXR, Three.js, Unity, Blender, and Spatial Computing guides and open-source tools from RealXR Lab.",
+    canonical: "https://realxr.in/resources",
+  });
   const [resources, setResources] = useState([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);

@@ -6,27 +6,28 @@ import Navbar from "../../components/layout/Navbar"; // Ensure path is correct
 
 // You can keep a local fallback image here just in case the API fails
 import FallbackHeroImg from "../../assets/images/Hero/headset.webp";
+import FallbackCollegeLogo from "../../assets/images/ies-ips-logo.webp";
 import { heroData } from "../../data/heroData";
 import DistortText from "../../components/three/DistortText";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const HEADSET_SIZE = "clamp(240px, 30vw, 400px)";
+const HEADSET_SIZE = "clamp(160px, 26vw, 380px)";
 
 const wordmarkStyle = {
   fontFamily: "Syne, sans-serif",
   fontWeight: 800,
-  fontSize: "clamp(3.5rem, 10vw, 11rem)",
+  fontSize: "clamp(2rem, 9.5vw, 11rem)",
   letterSpacing: "-0.03em",
   color: "#0a0a0a",
   lineHeight: 0.9,
   margin: 0,
   display: "flex",
-  gap: HEADSET_SIZE,
+  justifyContent: "center",
+  alignItems: "center",
+  maxWidth: "100%",
   textAlign: "center",
-  whiteSpace : 'nowrap'
-  
-  
+  whiteSpace: "nowrap",
 };
 
 const reflectionWrapperStyle = {
@@ -219,6 +220,35 @@ const Hero = ({ content = defaultContent }) => {
     { scope: containerRef, dependencies: [content] },
   ); // Scopes selections and wraps execution in a cleanup-safe container
 
+  // Render tagline with zoomed circular college crest before the college name
+  const renderTagline = () => {
+    const text = content.tagline || "";
+    const logo = content.collegeLogo || FallbackCollegeLogo;
+
+    const collegePattern = /(Institute of Engineering and Science|IPS Academy)/i;
+    const match = text.search(collegePattern);
+
+    if (match !== -1 && logo) {
+      const before = text.slice(0, match);
+      const after = text.slice(match);
+      return (
+        <>
+          <span>{before}</span>
+          <img
+            src={logo}
+            alt="IES IPS Academy Logo"
+            className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full object-contain inline-block shrink-0 align-middle mr-1.5 -mt-0.5 drop-shadow-sm"
+            loading="eager"
+            decoding="async"
+          />
+          <span>{after}</span>
+        </>
+      );
+    }
+
+    return text;
+  };
+
   return (
     <section
       ref={containerRef}
@@ -246,6 +276,8 @@ const Hero = ({ content = defaultContent }) => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          width: "100%",
+          maxWidth: "100vw",
         }}
       >
         {/* Text layer */}
@@ -256,21 +288,36 @@ const Hero = ({ content = defaultContent }) => {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            maxWidth: "100vw",
+            padding: "0 0.75rem",
+            boxSizing: "border-box",
           }}
         >
-          <div style={{ overflow: "visible" }}>
+          <div
+            style={{
+              overflow: "visible",
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
             <DistortText
               ref={textNormalRef}
               text={content.title}
               style={wordmarkStyle}
               nowrap={true}
             />
-            {/* Dynamic Title */}
-            {/* <h1 ref={textNormalRef} style={wordmarkStyle}>
-              {content.title}
-            </h1> */}
           </div>
-          <div style={reflectionWrapperStyle}>
+          <div
+            style={{
+              ...reflectionWrapperStyle,
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
             {/* Dynamic Title Reflection */}
             <h1 ref={textReflectRef} style={wordmarkStyle}>
               {content.title}
@@ -283,13 +330,14 @@ const Hero = ({ content = defaultContent }) => {
           style={{
             position: "absolute",
             zIndex: 2,
-            top: 45,
+            top: "clamp(20px, 4.5vw, 45px)",
             left: 0,
             right: 0,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            pointerEvents: "none",
           }}
         >
           {/* Dynamic Image & Alt Text */}
@@ -301,9 +349,17 @@ const Hero = ({ content = defaultContent }) => {
               width: HEADSET_SIZE,
               display: "block",
               filter: "drop-shadow(0 30px 50px rgba(0,0,0,0.25))",
+              pointerEvents: "auto",
             }}
           />
-          <div style={reflectionWrapperStyle}>
+          <div
+            style={{
+              ...reflectionWrapperStyle,
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
             {/* Dynamic Image Reflection */}
             <img
               ref={imgReflectRef}
@@ -316,20 +372,36 @@ const Hero = ({ content = defaultContent }) => {
         </div>
 
         {/* Dynamic Tagline */}
-        <div style={{ position: "absolute", top: "-5rem" }}>
+        <div
+          style={{
+            position: "absolute",
+            top: "clamp(-4.5rem, -8vh, -3.2rem)",
+            left: 0,
+            right: 0,
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "0 1rem",
+            pointerEvents: "none",
+          }}
+        >
           <p
             ref={taglineRef}
             style={{
-              fontSize: "0.72rem",
-              letterSpacing: "0.22em",
+              fontSize: "clamp(0.6rem, 1.8vw, 0.72rem)",
+              letterSpacing: "clamp(0.12em, 0.4vw, 0.22em)",
               textTransform: "uppercase",
               color: "#888",
               fontFamily: "Space Grotesk, sans-serif",
               fontWeight: 500,
-              whiteSpace: "nowrap",
+              textAlign: "center",
+              lineHeight: 1.5,
+              maxWidth: "min(92vw, 42rem)",
             }}
+            className="whitespace-normal sm:whitespace-nowrap"
           >
-            {content.tagline}
+            {renderTagline()}
           </p>
         </div>
       </div>

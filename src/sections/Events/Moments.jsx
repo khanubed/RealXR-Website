@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -11,9 +11,13 @@ gsap.registerPlugin(ScrollTrigger);
 const Moments = ({ images = [], title, subTitle }) => {
   const containerRef = useRef(null);
   const itemsRef = useRef([]);
-  const fallbackImages = (eventsData?.events || []).flatMap((event) =>
-    (event.images || []).slice(0, 3)
-  );
+
+  const fallbackImages = useMemo(() => {
+    return (eventsData?.events || []).flatMap((event) =>
+      (event.images || []).slice(0, 3)
+    );
+  }, []);
+
   const imageList = images?.length ? images : fallbackImages;
 
   // Consolidate everything inside the useGSAP hook
@@ -78,13 +82,13 @@ const Moments = ({ images = [], title, subTitle }) => {
         anticipatePin: 1, // Eliminates visual snapping during fast scrolls
       });
     },
-    { scope: containerRef, dependencies: [imageList] },
+    { scope: containerRef, dependencies: [imageList.length] },
   );
 
   return (
     <section
       ref={containerRef}
-      className="relative w-full h-screen min-h-[650px] b flex flex-col justify-center items-center overflow-hidden select-none"
+      className="relative w-full h-screen min-h-[650px] flex flex-col justify-center items-center overflow-hidden select-none"
     >
       {/* BACKGROUND: Truly Random Infinite Falling Images */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -107,7 +111,7 @@ const Moments = ({ images = [], title, subTitle }) => {
 
       {/* FOREGROUND: Typography Section Layer */}
       <div className="relative z-20 text-center max-w-5xl px-6 pointer-events-none mix-blend-difference md:mix-blend-normal">
-        <DistortText className = {"text-black syne-800 font-black tracking-tighter max uppercase text-4xl sm:text-7xl md:text-[5vw] leading-[0.88] mb-6 "} text={title} />
+        <DistortText className={"text-black syne-800 font-black tracking-tighter max uppercase text-4xl sm:text-7xl md:text-[5vw] leading-[0.88] mb-6 "} text={title} />
         <p className="text-black font-medium tracking-tight syne-600 text-sm sm:text-base md:text-lg max-w-4xl mx-auto opacity-90">
           {subTitle}
         </p>

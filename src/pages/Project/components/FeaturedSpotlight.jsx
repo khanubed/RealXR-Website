@@ -1,10 +1,11 @@
 import React, { useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import {  ArrowUpRight, PlayCircle, Radar } from "lucide-react";
-import { STATUS } from "../../../data/projectsPageData";
+import { ArrowUpRight, PlayCircle, Radar } from "lucide-react";
+import { STATUS } from "../../../data/projectData";
 import { MagneticLink } from "./MagneticLink";
 import { Github } from "../../../assets/icons/icon";
+
 export function FeaturedSpotlight({ project }) {
   const rootRef = useRef(null);
   const scanRef = useRef(null);
@@ -36,7 +37,9 @@ export function FeaturedSpotlight({ project }) {
   }, []);
 
   if (!project) return null;
-  const status = STATUS[project.status];
+  const status = STATUS[project.status] ?? STATUS.live;
+  const projectImg = project.img || project.image;
+  const idDisplay = String(project.id).replace(/\D/g, "").padStart(2, "0") || "01";
 
   return (
     <div ref={rootRef} className="relative">
@@ -49,24 +52,34 @@ export function FeaturedSpotlight({ project }) {
 
       <div className="grid lg:grid-cols-[1.1fr_1fr] gap-0 border border-[#15141a]/10 bg-white/45 overflow-hidden shadow-[0_28px_70px_-38px_rgba(0,191,174,.42)]">
         {/* Preview / viewfinder panel */}
-        <div className="relative aspect-[4/3] lg:aspect-auto min-h-[320px] overflow-hidden bg-gradient-to-br from-cyan-500/15 via-white to-pink-500/15">
+        <div className="relative aspect-[4/3] lg:aspect-auto min-h-[320px] overflow-hidden bg-slate-950">
+          {projectImg ? (
+            <img
+              src={projectImg}
+              alt={project.title}
+              className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-500/15 via-white to-pink-500/15">
+              <span className="syne-800 text-6xl sm:text-7xl text-slate-900/10 select-none tracking-tight">
+                {project.title.slice(0, 2).toUpperCase()}
+              </span>
+            </div>
+          )}
+
           {/* corner reticle */}
           {["top-5 left-5 border-t-2 border-l-2", "top-5 right-5 border-t-2 border-r-2", "bottom-5 left-5 border-b-2 border-l-2", "bottom-5 right-5 border-b-2 border-r-2"].map((pos, i) => (
-            <span key={i} className={`absolute w-6 h-6 border-cyan-500/50 rounded-[2px] ${pos}`} />
+            <span key={i} className={`absolute w-6 h-6 border-cyan-500/50 rounded-[2px] z-10 ${pos}`} />
           ))}
 
           {/* scan line */}
-          <div ref={scanRef} className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
+          <div ref={scanRef} className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent z-10" />
 
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="syne-800 text-6xl sm:text-7xl text-slate-900/10 select-none tracking-tight">
-              {project.title.slice(0, 2).toUpperCase()}
-            </span>
-          </div>
-
-          <div className="absolute top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-none bg-white/80 border border-slate-900/5 text-[0.65rem] font-semibold text-slate-500 space-500">
+          <div className="absolute top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-none bg-black/75 backdrop-blur-sm border border-white/10 text-[0.65rem] font-semibold text-white/90 space-500 z-10">
             <span className="w-1.5 h-1.5 rounded-none bg-pink-500 animate-pulse" />
-            OBJ_{project.id.replace(/\D/g, "").padStart(2, "0")} · {project.platform}
+            OBJ_{idDisplay} · {project.platform}
           </div>
         </div>
 
@@ -89,7 +102,7 @@ export function FeaturedSpotlight({ project }) {
           <p className="text-slate-500 leading-relaxed mb-6 max-w-md">{project.description}</p>
 
           <div className="flex flex-wrap gap-1.5 mb-7">
-            {project.stack.map((s) => (
+            {project.stack?.map((s) => (
               <span key={s} className="text-[0.7rem] px-2.5 py-1 rounded-none bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 space-500">
                 {s}
               </span>
@@ -97,19 +110,23 @@ export function FeaturedSpotlight({ project }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <MagneticLink
-              href={project.links.demo}
-              className="items-center gap-2 px-5 py-3 rounded-none bg-gradient-to-r from-cyan-500 to-pink-500 text-white text-sm syne-700 shadow-[0_8px_24px_rgba(6,182,212,0.3)] hover:shadow-[0_10px_30px_rgba(6,182,212,0.4)] transition-shadow"
-            >
-              <PlayCircle size={16} /> Watch demo
-            </MagneticLink>
-            <MagneticLink
-              href={project.links.github}
-              className="items-center gap-2 px-5 py-3 rounded-none bg-white border border-slate-900/10 text-slate-700 text-sm syne-700 hover:border-cyan-500/40 transition-colors"
-            >
-              <Github size={16} /> Source
-            </MagneticLink>
-            {project.links.live && project.links.live !== "#" && (
+            {project.links?.demo && project.links.demo !== "#" && (
+              <MagneticLink
+                href={project.links.demo}
+                className="items-center gap-2 px-5 py-3 rounded-none bg-gradient-to-r from-cyan-500 to-pink-500 text-white text-sm syne-700 shadow-[0_8px_24px_rgba(6,182,212,0.3)] hover:shadow-[0_10px_30px_rgba(6,182,212,0.4)] transition-shadow"
+              >
+                <PlayCircle size={16} /> Watch demo
+              </MagneticLink>
+            )}
+            {project.links?.github && (
+              <MagneticLink
+                href={project.links.github}
+                className="items-center gap-2 px-5 py-3 rounded-none bg-white border border-slate-900/10 text-slate-700 text-sm syne-700 hover:border-cyan-500/40 transition-colors"
+              >
+                <Github size={16} /> Source
+              </MagneticLink>
+            )}
+            {project.links?.live && project.links.live !== "#" && (
               <MagneticLink href={project.links.live} className="items-center gap-1 text-slate-400 hover:text-pink-500 text-sm space-500 transition-colors">
                 Live <ArrowUpRight size={14} />
               </MagneticLink>
